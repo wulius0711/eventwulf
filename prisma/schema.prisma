@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Client {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  config       String        // JSON string (YogaConfig)
+  users        User[]
+  blockedDates BlockedDate[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // bcrypt hash
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model BlockedDate {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  startDate DateTime
+  endDate   DateTime
+  label     String   @default("nicht verfügbar")
+  createdAt DateTime @default(now())
+}

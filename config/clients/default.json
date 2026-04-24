@@ -1,0 +1,37 @@
+{
+  "company": {
+    "name": "Open Space Retreat",
+    "tagline": "Dein Raum für Wachstum & Entspannung",
+    "logo": "",
+    "email": "info@openspace.at",
+    "phone": "+43 1 234567",
+    "website": "https://openspace.at",
+    "address": "Musterstraße 1, 1010 Wien",
+    "primaryColor": "#4f46e5",
+    "accentColor": "#7c3aed"
+  },
+  "formTitle": "Du hast Interesse an einem Retreat bei uns?",
+  "verpflegungOptions": [
+    "Keine",
+    "Frühstück",
+    "Mittagessen",
+    "Abendessen",
+    "Kaffeepauschale",
+    "Obst / Nüsse",
+    "Kuchen",
+    "Selbstversorgung"
+  ],
+  "zimmerwunschOptions": [
+    "Keine Zimmer",
+    "Einzelzimmer",
+    "Doppelzimmer",
+    "Mehrbettzimmer",
+    "Apartements"
+  ],
+  "abrechnungOptions": [
+    "Veranstalter",
+    "Teilnehmer zahlen selbst",
+    "Teilnehmer zahlen Nächtigung, Veranstalter zahlt Räumlichkeiten"
+  ],
+  "notifyEmail": "info@openspace.at"
+}
