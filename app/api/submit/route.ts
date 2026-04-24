@@ -72,7 +72,8 @@ export async function POST(req: NextRequest) {
         ${rows}
       </table>
       <p style="margin-top:2rem;font-size:0.8rem;color:#6b6256">
-        ${config.company.name}${config.company.email ? ` · ${config.company.email}` : ""}${config.company.phone ? ` · ${config.company.phone}` : ""}
+        ${config.company.name}${config.company.tagline ? ` – ${config.company.tagline}` : ""}<br/>
+        ${[config.company.address, config.company.phone, config.company.email, config.company.website].filter(Boolean).join(" · ")}
       </p>
     </div>
   `;

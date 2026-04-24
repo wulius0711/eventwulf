@@ -219,6 +219,11 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
       {tab === "firma" && (
         <>
           <Section title="Firmendaten">
+            <p style={{ margin: "0 0 1.25rem", fontSize: "0.82rem", color: "var(--muted)" }}>
+              Diese Daten erscheinen in den Bestätigungs-E-Mails an deine Gäste.
+            </p>
+            <Field label="Name"><input type="text" value={config.company.name} onChange={(e) => setCompany("name", e.target.value)} /></Field>
+            <Field label="Tagline"><input type="text" value={config.company.tagline} onChange={(e) => setCompany("tagline", e.target.value)} /></Field>
             <Field label="E-Mail"><input type="email" value={config.company.email} onChange={(e) => setCompany("email", e.target.value)} /></Field>
             <Field label="Telefon"><input type="text" value={config.company.phone} onChange={(e) => setCompany("phone", e.target.value)} /></Field>
             <Field label="Website"><input type="text" value={config.company.website} onChange={(e) => setCompany("website", e.target.value)} /></Field>
