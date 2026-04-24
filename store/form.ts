@@ -28,6 +28,12 @@ const initialForm: InquiryFormData = {
   zimmerwunsch: "",
   wuenscheRahmenprogramm: "",
   abrechnung: "",
+  telefon: "",
+  sprache: "",
+  anreise: "",
+  barrierefreiheit: "",
+  budget: "",
+  quelle: "",
 };
 
 export const TOTAL_STEPS = 5;

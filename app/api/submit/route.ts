@@ -46,6 +46,12 @@ export async function POST(req: NextRequest) {
     row("Zimmerwunsch", body.zimmerwunsch),
     row("Rahmenprogramm", body.wuenscheRahmenprogramm),
     row("Abrechnung", body.abrechnung),
+    row("Telefon", body.telefon),
+    row("Sprache", body.sprache),
+    row("Anreise", body.anreise),
+    row("Besondere Bedürfnisse", body.barrierefreiheit),
+    row("Budgetrahmen", body.budget),
+    row("Wie gefunden", body.quelle),
   ].filter(Boolean).join("\n");
 
   const operatorHtml = `

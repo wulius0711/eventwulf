@@ -81,6 +81,14 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
     setConfig((c) => ({ ...c, [key]: value }));
   }
 
+  function setFormField(field: keyof NonNullable<YogaConfig["formFields"]>, value: boolean) {
+    setConfig((c) => ({ ...c, formFields: { ...c.formFields, [field]: value } }));
+  }
+
+  function fieldEnabled(field: keyof NonNullable<YogaConfig["formFields"]>) {
+    return config.formFields?.[field] !== false;
+  }
+
   function setCompany(key: keyof YogaConfig["company"], value: string) {
     setConfig((c) => ({ ...c, company: { ...c.company, [key]: value } }));
   }
@@ -269,6 +277,28 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
           <OptionsEditor field="verpflegungOptions" label="Verpflegung-Optionen" />
           <OptionsEditor field="zimmerwunschOptions" label="Zimmerwunsch-Optionen" />
           <OptionsEditor field="abrechnungOptions" label="Abrechnungs-Optionen" />
+
+          <div style={{ marginTop: "0.5rem" }}>
+            <div style={{ fontSize: "0.85rem", color: "var(--muted)", marginBottom: "0.75rem" }}>Optionale Felder ein-/ausblenden</div>
+            {([
+              ["telefon",        "Telefon (Gruppenleitung)"],
+              ["sprache",        "Sprache der Gruppe"],
+              ["anreise",        "Anreise"],
+              ["barrierefreiheit", "Besondere Bedürfnisse / Barrierefreiheit"],
+              ["budget",         "Budgetrahmen"],
+              ["quelle",         "Wie habt ihr uns gefunden?"],
+            ] as [keyof NonNullable<YogaConfig["formFields"]>, string][]).map(([field, label]) => (
+              <label key={field} style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem", cursor: "pointer", fontSize: "0.88rem", color: "var(--text)", fontWeight: 400 }}>
+                <input
+                  type="checkbox"
+                  checked={fieldEnabled(field)}
+                  onChange={(e) => setFormField(field, e.target.checked)}
+                  style={{ width: "auto", cursor: "pointer" }}
+                />
+                {label}
+              </label>
+            ))}
+          </div>
         </Section>
       )}
 

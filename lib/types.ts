@@ -1,3 +1,12 @@
+export interface FormFields {
+  telefon?: boolean;
+  sprache?: boolean;
+  anreise?: boolean;
+  barrierefreiheit?: boolean;
+  budget?: boolean;
+  quelle?: boolean;
+}
+
 export interface YogaConfig {
   company: {
     name: string;
@@ -16,6 +25,7 @@ export interface YogaConfig {
   zimmerwunschOptions: string[];
   abrechnungOptions: string[];
   notifyEmail: string;
+  formFields?: FormFields;
 }
 
 export interface BlockedDateEntry {
@@ -44,4 +54,10 @@ export interface InquiryFormData {
   zimmerwunsch: string;
   wuenscheRahmenprogramm: string;
   abrechnung: string;
+  telefon: string;
+  sprache: string;
+  anreise: string;
+  barrierefreiheit: string;
+  budget: string;
+  quelle: string;
 }
