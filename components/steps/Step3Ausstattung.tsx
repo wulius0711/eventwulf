@@ -28,14 +28,22 @@ export default function Step3Ausstattung({ config }: Props) {
   const ff = config.formFields;
   const showBestuhlung = ff?.bestuhlung !== false;
   const showTische = ff?.tische !== false;
+  const showBeamer = ff?.beamer !== false;
+  const showSoundanlage = ff?.soundanlage !== false;
+  const showAussenbereich = ff?.aussenbereich !== false;
   const showEquipment = ff?.sonstigesEquipment !== false;
+
+  const anyYesNo = showBestuhlung || showTische || showBeamer || showSoundanlage || showAussenbereich;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      {(showBestuhlung || showTische) && (
+      {anyYesNo && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(180px, 100%), 1fr))", gap: "1rem" }}>
           {showBestuhlung && <YesNo label="Bestuhlung" value={form.bestuhlung} onChange={(v) => setField("bestuhlung", v)} />}
           {showTische && <YesNo label="Tische" value={form.tische} onChange={(v) => setField("tische", v)} />}
+          {showBeamer && <YesNo label="Beamer / Projektor" value={form.beamer} onChange={(v) => setField("beamer", v)} />}
+          {showSoundanlage && <YesNo label="Soundanlage / Mikrofon" value={form.soundanlage} onChange={(v) => setField("soundanlage", v)} />}
+          {showAussenbereich && <YesNo label="Außenbereich" value={form.aussenbereich} onChange={(v) => setField("aussenbereich", v)} />}
         </div>
       )}
       {showEquipment && (

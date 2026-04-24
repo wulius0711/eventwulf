@@ -9,6 +9,9 @@ export interface FormFields {
   // Step 3
   bestuhlung?: boolean;
   tische?: boolean;
+  beamer?: boolean;
+  soundanlage?: boolean;
+  aussenbereich?: boolean;
   sonstigesEquipment?: boolean;
   // Step 4
   verpflegung?: boolean;
@@ -64,6 +67,9 @@ export interface InquiryFormData {
   leiterinnen: string;
   bestuhlung: boolean | null;
   tische: boolean | null;
+  beamer: boolean | null;
+  soundanlage: boolean | null;
+  aussenbereich: boolean | null;
   sonstigesEquipment: string;
   verpflegung: string;
   zimmerwunsch: string;
