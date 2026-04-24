@@ -1,8 +1,10 @@
 "use client";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface Props {
   isSuperAdmin: boolean;
+  slugs: string[];
+  activeSlug: string;
 }
 
 const links = [
@@ -11,8 +13,18 @@ const links = [
   { href: "/admin/inquiries",    label: "Anfragen" },
 ];
 
-export default function AdminNav({ isSuperAdmin }: Props) {
+export default function AdminNav({ isSuperAdmin, slugs, activeSlug }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function switchSlug(slug: string) {
+    await fetch("/api/admin/switch-slug", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+    });
+    router.refresh();
+  }
 
   return (
     <>
@@ -38,6 +50,26 @@ export default function AdminNav({ isSuperAdmin }: Props) {
         }}>
           Kunden
         </a>
+      )}
+      {slugs.length > 1 && (
+        <select
+          value={activeSlug}
+          onChange={(e) => switchSlug(e.target.value)}
+          style={{
+            fontSize: "0.82rem",
+            padding: "0.3rem 0.6rem",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)",
+            background: "var(--bg2)",
+            color: "var(--text)",
+            cursor: "pointer",
+            width: "auto",
+          }}
+        >
+          {slugs.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
       )}
       <a href="/" target="_blank" style={{ fontSize: "0.85rem", color: "var(--muted)", textDecoration: "none" }}>
         Vorschau ↗

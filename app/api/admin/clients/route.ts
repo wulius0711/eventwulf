@@ -12,12 +12,15 @@ export async function GET() {
     return NextResponse.json({ error: "Kein Zugriff" }, { status: 403 });
   }
 
-  const clients = await prisma.client.findMany({
-    select: { id: true, slug: true, createdAt: true, _count: { select: { users: true } } },
+  const orgs = await prisma.organization.findMany({
+    include: {
+      clients: { select: { id: true, slug: true, createdAt: true }, orderBy: { createdAt: "asc" } },
+      users: { select: { email: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(clients);
+  return NextResponse.json(orgs);
 }
 
 export async function POST(req: NextRequest) {
@@ -34,17 +37,13 @@ export async function POST(req: NextRequest) {
 
   const defaultConfig = loadConfig("default");
 
-  const client = await prisma.client.create({
-    data: { slug, config: JSON.stringify(defaultConfig) },
-  });
-
-  await prisma.user.create({
+  const org = await prisma.organization.create({
     data: {
-      email,
-      password: hashSync(password, 12),
-      clientId: client.id,
+      name: slug,
+      clients: { create: { slug, config: JSON.stringify(defaultConfig) } },
+      users: { create: { email, password: hashSync(password, 12) } },
     },
   });
 
-  return NextResponse.json({ id: client.id, slug: client.slug });
+  return NextResponse.json({ id: org.id, slug });
 }

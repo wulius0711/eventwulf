@@ -5,7 +5,7 @@ import type { YogaConfig } from "@/lib/types";
 
 export default async function ConfigPage() {
   const session = await getSession();
-  const client = await prisma.client.findUnique({ where: { id: session!.clientId } });
+  const client = await prisma.client.findUnique({ where: { slug: session!.clientSlug } });
   const config = JSON.parse(client!.config) as YogaConfig;
 
   return (

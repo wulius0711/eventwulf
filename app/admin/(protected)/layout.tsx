@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import LogoutButton from "@/components/admin/LogoutButton";
 import AdminNav from "@/components/admin/AdminNav";
 
@@ -9,6 +10,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const SUPERADMIN = process.env.SUPERADMIN_SLUG ?? "admin";
   const isSuperAdmin = session.clientSlug === SUPERADMIN;
+
+  const org = await prisma.organization.findUnique({
+    where: { id: session.organizationId },
+    include: { clients: { select: { slug: true }, orderBy: { createdAt: "asc" } } },
+  });
+  const slugs = org?.clients.map((c) => c.slug) ?? [];
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
@@ -25,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         }}
       >
         <span style={{ position: "absolute", left: "1.5rem", fontWeight: 700, fontSize: "0.95rem" }}>Admin</span>
-        <AdminNav isSuperAdmin={isSuperAdmin} />
+        <AdminNav isSuperAdmin={isSuperAdmin} slugs={slugs} activeSlug={session.clientSlug} />
         <div style={{ position: "absolute", right: "1.5rem" }}>
           <LogoutButton />
         </div>

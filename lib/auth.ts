@@ -6,7 +6,7 @@ const COOKIE = "yoga_admin_token";
 
 export interface AdminSession {
   userId: string;
-  clientId: string;
+  organizationId: string;
   clientSlug: string;
   email: string;
 }

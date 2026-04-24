@@ -8,17 +8,27 @@ export async function POST(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { client: true },
+    include: {
+      organization: {
+        include: { clients: { select: { slug: true }, orderBy: { createdAt: "asc" }, take: 1 } },
+      },
+    },
   });
 
   if (!user || !compareSync(password, user.password)) {
     return NextResponse.json({ error: "Ungültige Anmeldedaten" }, { status: 401 });
   }
 
+  if (!user.organization) {
+    return NextResponse.json({ error: "Kein Zugriff konfiguriert" }, { status: 403 });
+  }
+
+  const clientSlug = user.organization.clients[0]?.slug ?? "";
+
   const token = await signToken({
     userId: user.id,
-    clientId: user.clientId,
-    clientSlug: user.client.slug,
+    organizationId: user.organization.id,
+    clientSlug,
     email: user.email,
   });
 

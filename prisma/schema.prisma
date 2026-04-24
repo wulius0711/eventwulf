@@ -6,24 +6,33 @@ datasource db {
   provider = "postgresql"
 }
 
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  clients   Client[]
+  users     User[]
+  createdAt DateTime @default(now())
+}
+
 model Client {
-  id           String        @id @default(cuid())
-  slug         String        @unique
-  config       String        // JSON string (YogaConfig)
-  users        User[]
-  blockedDates BlockedDate[]
-  inquiries    Inquiry[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  config         String        // JSON string (YogaConfig)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  blockedDates   BlockedDate[]
+  inquiries      Inquiry[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // bcrypt hash
-  clientId  String
-  client    Client   @relation(fields: [clientId], references: [id])
-  createdAt DateTime @default(now())
+  id             String        @id @default(cuid())
+  email          String        @unique
+  password       String        // bcrypt hash
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
 }
 
 model BlockedDate {
@@ -34,7 +43,7 @@ model BlockedDate {
   endDate   DateTime
   label     String   @default("nicht verfügbar")
   type      String   @default("blocked") // "blocked" | "event"
-  color     String   @default("")        // optional hex color for events
+  color     String   @default("")
   createdAt DateTime @default(now())
 }
 
@@ -43,6 +52,6 @@ model Inquiry {
   clientId  String
   client    Client   @relation(fields: [clientId], references: [id])
   data      String   // JSON string of InquiryFormData
-  status    String   @default("neu") // "neu" | "in_pruefung" | "bestaetigt" | "abgelehnt"
+  status    String   @default("neu")
   createdAt DateTime @default(now())
 }

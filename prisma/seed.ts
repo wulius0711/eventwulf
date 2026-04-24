@@ -25,17 +25,14 @@ async function main() {
 
   const existing = await prisma.client.findUnique({ where: { slug } });
   if (!existing) {
-    const client = await prisma.client.create({
-      data: { slug, config: defaultConfig },
-    });
-    await prisma.user.create({
+    await prisma.organization.create({
       data: {
-        email,
-        password: hashSync(password, 12),
-        clientId: client.id,
+        name: slug,
+        clients: { create: { slug, config: defaultConfig } },
+        users: { create: { email, password: hashSync(password, 12) } },
       },
     });
-    console.log(`Created client "${slug}" with user "${email}"`);
+    console.log(`Created org + client "${slug}" with user "${email}"`);
   } else {
     console.log(`Client "${slug}" already exists — skipping seed`);
   }
