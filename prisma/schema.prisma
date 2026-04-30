@@ -12,6 +12,9 @@ model Organization {
   clients   Client[]
   users     User[]
   createdAt DateTime @default(now())
+
+  bookingAppUrl String?
+  bookingAppKey String?
 }
 
 model Client {

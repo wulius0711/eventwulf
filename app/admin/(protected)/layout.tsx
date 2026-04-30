@@ -16,6 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     include: { clients: { select: { slug: true }, orderBy: { createdAt: "asc" } } },
   });
   const slugs = org?.clients.map((c) => c.slug) ?? [];
+  const bookingAppUrl = isSuperAdmin ? null : (org?.bookingAppUrl ?? null);
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
@@ -32,7 +33,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           gap: "1.5rem",
         }}
       >
-        <span style={{ position: "absolute", left: "1.5rem", fontWeight: 700, fontSize: "0.95rem" }}>Admin</span>
+        {bookingAppUrl ? (
+          <a href={bookingAppUrl} style={{ position: "absolute", left: "1.5rem", fontSize: "0.85rem", color: "var(--muted)", textDecoration: "none" }}>
+            ← bookingwulf
+          </a>
+        ) : (
+          <span style={{ position: "absolute", left: "1.5rem", fontWeight: 700, fontSize: "0.95rem" }}>Admin</span>
+        )}
         <AdminNav isSuperAdmin={isSuperAdmin} slugs={slugs} activeSlug={session.clientSlug} />
         <div style={{ position: "absolute", right: "1.5rem" }}>
           <LogoutButton />
