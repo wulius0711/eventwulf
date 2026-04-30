@@ -22,10 +22,14 @@ export async function POST(req: NextRequest) {
 
   if (existing?.organization) {
     const org = existing.organization;
-    if (bookingAppUrl && org.bookingAppUrl !== bookingAppUrl) {
-      await prisma.organization.update({ where: { id: org.id }, data: { bookingAppUrl } });
+    const updates: Record<string, string> = {};
+    if (bookingAppUrl && org.bookingAppUrl !== bookingAppUrl) updates.bookingAppUrl = bookingAppUrl;
+    let key = org.bookingAppKey;
+    if (!key) { key = randomBytes(32).toString('hex'); updates.bookingAppKey = key; }
+    if (Object.keys(updates).length) {
+      await prisma.organization.update({ where: { id: org.id }, data: updates });
     }
-    return NextResponse.json({ orgId: org.id, bookingAppKey: org.bookingAppKey });
+    return NextResponse.json({ orgId: org.id, bookingAppKey: key });
   }
 
   const bookingAppKey = randomBytes(32).toString('hex');
