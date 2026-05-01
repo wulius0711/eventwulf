@@ -11,6 +11,7 @@ const links = [
   { href: "/admin/config",       label: "Einstellungen" },
   { href: "/admin/availability", label: "Verfügbarkeit" },
   { href: "/admin/inquiries",    label: "Anfragen" },
+  { href: "/admin/vorschau",     label: "Vorschau" },
 ];
 
 export default function AdminNav({ isSuperAdmin, slugs, activeSlug }: Props) {
@@ -71,9 +72,6 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug }: Props) {
           ))}
         </select>
       )}
-      <a href="/" target="_blank" style={{ fontSize: "0.85rem", color: "var(--muted)", textDecoration: "none" }}>
-        Vorschau ↗
-      </a>
     </>
   );
 }
