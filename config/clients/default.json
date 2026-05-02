@@ -33,6 +33,11 @@
     "Teilnehmer zahlen Nächtigung, Veranstalter zahlt Räumlichkeiten"
   ],
   "ausstattungOptions": [
+    "Bestuhlung",
+    "Tische",
+    "Beamer / Projektor",
+    "Soundanlage / Mikrofon",
+    "Außenbereich",
     "Flipchart",
     "Whiteboard",
     "Yogamatten",

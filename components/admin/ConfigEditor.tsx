@@ -324,12 +324,7 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
                 ["sprache",        "Sprache der Gruppe"],
               ]},
               { label: "Schritt 3 – Ausstattung", fields: [
-                ["bestuhlung",        "Bestuhlung"],
-                ["tische",            "Tische"],
-                ["beamer",            "Beamer / Projektor"],
-                ["soundanlage",       "Soundanlage / Mikrofon"],
-                ["aussenbereich",     "Außenbereich"],
-                ["sonstigesEquipment","Sonstiges Equipment"],
+                ["sonstigesEquipment", "Sonstiges Equipment (Freitextfeld)"],
               ]},
               { label: "Schritt 4 – Verpflegung", fields: [
                 ["verpflegung",  "Verpflegung"],
@@ -351,20 +346,22 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
                 <div key={step.label} style={{ marginBottom: "1.25rem" }}>
                   <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "0.6rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.4rem", display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
                     {step.label}
-                    {isStep3 && <span style={{ fontWeight: 400, fontSize: "0.72rem", textTransform: "none", letterSpacing: 0, color: "var(--muted)" }}>(+ unten wählbar)</span>}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.1rem 0" }}>
-                    {step.fields.map(([field, label]) => (
-                      <label key={field} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.3rem 0", cursor: "pointer", fontSize: "0.875rem", color: "var(--text)", fontWeight: 400 }}>
-                        <input type="checkbox" checked={fieldEnabled(field)} onChange={(e) => setFormField(field, e.target.checked)} style={{ width: "auto", cursor: "pointer", flexShrink: 0 }} />
-                        {label}
-                      </label>
-                    ))}
+                    {isStep3 && <span style={{ fontWeight: 400, fontSize: "0.72rem", textTransform: "none", letterSpacing: 0, color: "var(--muted)" }}>(unten wählbar)</span>}
                   </div>
                   {extraTags.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginTop: "0.6rem" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: step.fields.length > 0 ? "0.75rem" : 0 }}>
                       {extraTags.map((tag) => (
-                        <span key={tag} style={{ fontSize: "0.75rem", padding: "0.15rem 0.55rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--muted)" }}>{tag}</span>
+                        <span key={tag} style={{ fontSize: "0.85rem", padding: "0.35rem 0.85rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text)", background: "var(--bg2)" }}>{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  {step.fields.length > 0 && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.1rem 0" }}>
+                      {step.fields.map(([field, label]) => (
+                        <label key={field} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.3rem 0", cursor: "pointer", fontSize: "0.875rem", color: "var(--text)", fontWeight: 400 }}>
+                          <input type="checkbox" checked={fieldEnabled(field)} onChange={(e) => setFormField(field, e.target.checked)} style={{ width: "auto", cursor: "pointer", flexShrink: 0 }} />
+                          {label}
+                        </label>
                       ))}
                     </div>
                   )}

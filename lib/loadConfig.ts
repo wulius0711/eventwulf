@@ -5,7 +5,7 @@ import type { EventConfig } from "@/lib/types";
 const CLIENTS_DIR = path.join(process.cwd(), "config", "clients");
 
 const ARRAY_DEFAULTS: Partial<EventConfig> = {
-  ausstattungOptions: ["Flipchart", "Whiteboard", "Yogamatten", "Meditationskissen", "Moderationskoffer"],
+  ausstattungOptions: ["Bestuhlung", "Tische", "Beamer / Projektor", "Soundanlage / Mikrofon", "Außenbereich", "Flipchart", "Whiteboard", "Yogamatten", "Meditationskissen", "Moderationskoffer"],
   anreiseOptions: ["PKW", "Bahn / Öffentliche", "Bus (organisiert)", "Kombination"],
   zahlungOptions: ["Banküberweisung", "Bar", "Auf Rechnung"],
 };
