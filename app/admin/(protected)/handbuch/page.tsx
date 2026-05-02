@@ -141,7 +141,7 @@ const content: Record<string, React.ReactNode> = {
       {[
         {
           q: "Das Widget zeigt meine Änderungen nicht an.",
-          a: "Einstellungen werden erst nach dem Klick auf „Änderungen speichern" übernommen. Danach ggf. den Browser-Cache leeren (Strg+Shift+R / Cmd+Shift+R).",
+          a: 'Einstellungen werden erst nach dem Klick auf „Änderungen speichern“ übernommen. Danach ggf. den Browser-Cache leeren (Strg+Shift+R / Cmd+Shift+R).',
         },
         {
           q: "Ich bekomme keine E-Mail-Benachrichtigungen.",
