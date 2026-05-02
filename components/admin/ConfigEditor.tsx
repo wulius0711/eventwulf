@@ -332,12 +332,12 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
               ]},
               { label: "Schritt 5 – Abschluss", fields: [
                 ["wuenscheRahmenprogramm", "Wünsche Rahmenprogramm"],
-                ["abrechnung",            "Abrechnung"],
-                ["zahlung",               "Zahlung"],
-                ["anreise",               "Anreise"],
+                ["abrechnung",            "Abrechnung (Optionen unten wählbar)"],
+                ["zahlung",               "Zahlung (Optionen unten wählbar)"],
+                ["anreise",               "Anreise (Optionen unten wählbar)"],
                 ["barrierefreiheit",      "Besondere Bedürfnisse"],
-                ["budget",                "Budgetrahmen"],
-                ["quelle",                "Wie habt ihr uns gefunden?"],
+                ["budget",                "Budgetrahmen (Optionen unten wählbar)"],
+                ["quelle",                "Wie habt ihr uns gefunden? (Optionen unten wählbar)"],
               ]},
             ] as { label: string; fields: [keyof NonNullable<EventConfig["formFields"]>, string][] }[]).map((step) => {
               const isStep3 = step.label.includes("Ausstattung");
