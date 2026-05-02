@@ -47,6 +47,8 @@ export interface EventConfig {
   ausstattungOptions: string[];
   anreiseOptions: string[];
   zahlungOptions: string[];
+  budgetOptions: string[];
+  quelleOptions: string[];
   notifyEmail: string;
   formFields?: FormFields;
   showPackages?: boolean;

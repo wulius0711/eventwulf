@@ -94,7 +94,7 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
     setConfig((c) => ({ ...c, company: { ...c.company, [key]: value } }));
   }
 
-  function setListItem(field: "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions", idx: number, value: string) {
+  function setListItem(field: "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions" | "budgetOptions" | "quelleOptions", idx: number, value: string) {
     setConfig((c) => {
       const arr = [...c[field]];
       arr[idx] = value;
@@ -102,11 +102,11 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
     });
   }
 
-  function addListItem(field: "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions") {
+  function addListItem(field: "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions" | "budgetOptions" | "quelleOptions") {
     setConfig((c) => ({ ...c, [field]: [...c[field], ""] }));
   }
 
-  function removeListItem(field: "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions", idx: number) {
+  function removeListItem(field: "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions" | "budgetOptions" | "quelleOptions", idx: number) {
     setConfig((c) => ({ ...c, [field]: c[field].filter((_, i) => i !== idx) }));
   }
 
@@ -148,7 +148,7 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
     }
   }
 
-  function OptionsEditor({ field, label }: { field: "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions"; label: string }) {
+  function OptionsEditor({ field, label }: { field: "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions" | "budgetOptions" | "quelleOptions"; label: string }) {
     return (
       <div>
         <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "0.6rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.4rem" }}>{label}</div>
@@ -376,6 +376,8 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
               <OptionsEditor field="ausstattungOptions" label="Ausstattungs-Optionen" />
               <OptionsEditor field="zahlungOptions" label="Zahlungs-Optionen" />
               <OptionsEditor field="anreiseOptions" label="Anreise-Optionen" />
+              <OptionsEditor field="budgetOptions" label="Budget-Optionen" />
+              <OptionsEditor field="quelleOptions" label="Quelle-Optionen" />
             </div>
           </Section>
         </>

@@ -34,7 +34,7 @@ export function validateConfig(body: unknown): string | null {
   if (!str(c.name, 200)) return "company.name ungültig";
   if (b.formTitle !== undefined && str(b.formTitle, 200) === null) return "formTitle zu lang";
   if (b.notifyEmail !== undefined && b.notifyEmail !== "" && !isValidEmail(b.notifyEmail)) return "notifyEmail ungültig";
-  for (const key of ["verpflegungOptions", "zimmerwunschOptions", "abrechnungOptions", "ausstattungOptions", "anreiseOptions", "zahlungOptions"] as const) {
+  for (const key of ["verpflegungOptions", "zimmerwunschOptions", "abrechnungOptions", "ausstattungOptions", "anreiseOptions", "zahlungOptions", "budgetOptions", "quelleOptions"] as const) {
     if (b[key] !== undefined && !isStringArray(b[key])) return `${key} muss ein String-Array sein`;
   }
   return null;

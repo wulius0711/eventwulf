@@ -8,6 +8,8 @@ const ARRAY_DEFAULTS: Partial<EventConfig> = {
   ausstattungOptions: ["Bestuhlung", "Tische", "Beamer / Projektor", "Soundanlage / Mikrofon", "Außenbereich", "Flipchart", "Whiteboard", "Yogamatten", "Meditationskissen", "Moderationskoffer"],
   anreiseOptions: ["PKW", "Bahn / Öffentliche", "Bus (organisiert)", "Kombination"],
   zahlungOptions: ["Banküberweisung", "Bar", "Auf Rechnung"],
+  budgetOptions: ["unter 500 €", "500 – 2.000 €", "2.000 – 5.000 €", "über 5.000 €"],
+  quelleOptions: ["Google", "Instagram", "Empfehlung", "Facebook", "Messe / Veranstaltung", "Sonstiges"],
 };
 
 export async function loadConfigFromDB(slug: string): Promise<EventConfig> {
