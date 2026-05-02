@@ -14,6 +14,7 @@ const links = [
   { href: "/admin/inquiries",    label: "Anfragen" },
   { href: "/admin/invoices",     label: "Dokumente" },
   { href: "/admin/vorschau",     label: "Vorschau" },
+  { href: "/admin/handbuch",     label: "Handbuch" },
 ];
 
 export default function AdminNav({ isSuperAdmin, slugs, activeSlug }: Props) {
