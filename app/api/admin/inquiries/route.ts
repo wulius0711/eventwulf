@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id, status } = await req.json() as { id: string; status: string };
-  const allowed = ["neu", "in_pruefung", "angebot_versendet", "bestaetigt", "abgelehnt"];
+  const allowed = ["neu", "in_pruefung", "angebot_versendet", "bestaetigt", "abgelehnt", "storniert"];
   if (!allowed.includes(status)) {
     return NextResponse.json({ error: "Ungültiger Status" }, { status: 400 });
   }

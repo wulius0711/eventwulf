@@ -28,8 +28,18 @@ Mandantenfähige Buchungsplattform für Events und Retreats. Organisationen kön
 - **Angebote** – PDF-Angebote direkt aus Anfragen generieren (ANB-YYYY-XXXX)
 - **Kalender** – gesperrte Daten und Events mit Farbmarkierung
 - **E-Mail-Benachrichtigungen** – Operator-Mail + Bestätigungs-Mail an Anfragenden
+- **Automatische Erinnerungsmail** – 24h vor bestätigtem Event via Vercel Cron (täglich 8:00)
+- **iCal-Export** – "Zum Kalender hinzufügen" Button in Bestätigungsmail (Google, Apple, Outlook)
+- **Stornierung per Link** – Gäste können ohne Login stornieren, Admin wird per Email informiert
 - **Autologin** – externes System (z.B. BookingWulf) kann per HMAC-signiertem Token einloggen
 - **Dark/Light Mode** – Theme-Switcher im Sidebar, Präferenz wird in localStorage gespeichert
+
+---
+
+## Geplante Features (Backlog)
+
+- **Wiederkehrende Events** – Serienanlage mit einem Klick (z.B. monatliche Seminare); aktuell muss jeder Termin einzeln angelegt werden
+- **Teilnehmerliste / Check-in** – Druckbare Liste oder PDF aller bestätigten Teilnehmer für den Veranstaltungstag; aktuell nur über Anfragen-Export möglich
 
 ---
 

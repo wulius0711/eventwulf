@@ -18,6 +18,7 @@ const STATUS_LABELS: Record<string, string> = {
   angebot_versendet: "Angebot versendet",
   bestaetigt:        "Bestätigt",
   abgelehnt:         "Abgelehnt",
+  storniert:         "Storniert",
 };
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
@@ -26,6 +27,7 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   angebot_versendet: { bg: "#f5f3ff", color: "#6d28d9" },
   bestaetigt:        { bg: "#f0fdf4", color: "#15803d" },
   abgelehnt:         { bg: "#fef2f2", color: "#b91c1c" },
+  storniert:         { bg: "#f3f4f6", color: "#6b7280" },
 };
 
 function fmt(iso: string) {
