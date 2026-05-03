@@ -64,6 +64,7 @@ model Inquiry {
   package          Package?  @relation(fields: [packageId], references: [id])
   participantCount Int       @default(0)
   invoices         Invoice[]
+  reminderSentAt   DateTime?
   createdAt        DateTime  @default(now())
 }
 
