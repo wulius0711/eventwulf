@@ -352,24 +352,24 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
               {
                 label: "Schritt 4 – Unterkunft",
                 fields: [
-                  { key: "verpflegung" as const,  label: "Verpflegung",  hint: "Optionen ↓" },
-                  { key: "zimmerwunsch" as const,  label: "Zimmerwunsch", hint: "Optionen ↓" },
+                  { key: "verpflegung" as const,  label: "Verpflegung",  hint: "Optionen unten wählbar" },
+                  { key: "zimmerwunsch" as const,  label: "Zimmerwunsch", hint: "Optionen unten wählbar" },
                 ],
               },
               {
                 label: "Schritt 5 – Abschluss",
                 fields: [
                   { key: "wuenscheRahmenprogramm" as const, label: "Wünsche Rahmenprogramm" },
-                  { key: "abrechnung" as const,             label: "Abrechnung",                  hint: "Optionen ↓" },
-                  { key: "zahlung" as const,                label: "Zahlung",                      hint: "Optionen ↓" },
-                  { key: "anreise" as const,                label: "Anreise",                      hint: "Optionen ↓" },
+                  { key: "abrechnung" as const,             label: "Abrechnung",                  hint: "Optionen unten wählbar" },
+                  { key: "zahlung" as const,                label: "Zahlung",                      hint: "Optionen unten wählbar" },
+                  { key: "anreise" as const,                label: "Anreise",                      hint: "Optionen unten wählbar" },
                   { key: "barrierefreiheit" as const,       label: "Besondere Bedürfnisse" },
-                  { key: "budget" as const,                 label: "Budgetrahmen",                 hint: "Optionen ↓" },
-                  { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen ↓" },
+                  { key: "budget" as const,                 label: "Budgetrahmen",                 hint: "Optionen unten wählbar" },
+                  { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen unten wählbar" },
                 ],
               },
             ] as { label: string; fields: { key: keyof NonNullable<EventConfig["formFields"]>; label: string; hint?: string }[] }[]).map((step) => (
-              <div key={step.label} style={{ marginBottom: "1.5rem" }}>
+              <div key={step.label} style={{ marginBottom: "2.5rem" }}>
                 <div style={{
                   fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
                   letterSpacing: "0.07em", color: "var(--muted)",
@@ -389,7 +389,7 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
                       />
                       <span style={{ fontSize: "0.875rem", lineHeight: 1.4 }}>
                         {label}
-                        {hint && <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>{hint}</span>}
+                        {hint && <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>}
                       </span>
                     </label>
                   ))}
