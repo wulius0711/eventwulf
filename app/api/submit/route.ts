@@ -112,6 +112,38 @@ export async function POST(req: NextRequest) {
     </div>
   `;
 
+  // Save inquiry first to get the ID for the iCal link
+  let inquiryId: string | null = null;
+  try {
+    const client = await prisma.client.findUnique({ where: { slug } });
+    if (client) {
+      const participantCount = parseInt(body.personenAnzahl ?? "0") || 0;
+      const inquiry = await prisma.inquiry.create({
+        data: {
+          clientId: client.id,
+          data: JSON.stringify(body),
+          status: "neu",
+          participantCount,
+          ...(body.packageId ? { packageId: body.packageId } : {}),
+        },
+      });
+      inquiryId = inquiry.id;
+    }
+  } catch (e) {
+    console.error("Failed to save inquiry:", e);
+  }
+
+  const host = req.headers.get("host") ?? "";
+  const proto = host.startsWith("localhost") ? "http" : "https";
+  const icalLink = inquiryId
+    ? `<p style="margin-top:1.5rem"><a href="${proto}://${host}/api/ical/${inquiryId}" style="display:inline-block;padding:10px 20px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-size:0.875rem;font-weight:600">📅 Zum Kalender hinzufügen</a></p>`
+    : "";
+
+  const confirmationHtmlWithIcal = confirmationHtml.replace(
+    "</div>",
+    `${icalLink}</div>`
+  );
+
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const [operatorResult, confirmResult] = await Promise.all([
@@ -127,7 +159,7 @@ export async function POST(req: NextRequest) {
           from: `${config.company.name} <noreply@resend.dev>`,
           to: body.email,
           subject: `Anfrage bestätigt – ${sanitize(body.artTitel) || "Retreat"}`,
-          html: confirmationHtml,
+          html: confirmationHtmlWithIcal,
         })
       : Promise.resolve({ error: null }),
   ]);
@@ -138,25 +170,6 @@ export async function POST(req: NextRequest) {
   }
   if (confirmResult.error) {
     console.error("Resend confirmation error:", confirmResult.error);
-  }
-
-  // Save inquiry to DB (best-effort)
-  try {
-    const client = await prisma.client.findUnique({ where: { slug } });
-    if (client) {
-      const participantCount = parseInt(body.personenAnzahl ?? "0") || 0;
-      await prisma.inquiry.create({
-        data: {
-          clientId: client.id,
-          data: JSON.stringify(body),
-          status: "neu",
-          participantCount,
-          ...(body.packageId ? { packageId: body.packageId } : {}),
-        },
-      });
-    }
-  } catch (e) {
-    console.error("Failed to save inquiry:", e);
   }
 
   return NextResponse.json({ ok: true });
