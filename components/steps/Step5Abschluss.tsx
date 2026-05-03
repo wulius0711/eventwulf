@@ -31,27 +31,29 @@ export default function Step5Abschluss({ config }: Props) {
         </div>
       )}
 
-      {ff?.zahlung !== false && config.zahlungOptions?.length > 0 && (
-        <div>
-          <label>Zahlung</label>
-          <select value={form.zahlung} onChange={(e) => setField("zahlung", e.target.value)}>
-            <option value="">Auswählen</option>
-            {config.zahlungOptions.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </div>
-      )}
+      <div className="grid sm:grid-cols-2 gap-5">
+        {ff?.zahlung !== false && config.zahlungOptions?.length > 0 && (
+          <div>
+            <label>Zahlung</label>
+            <select value={form.zahlung} onChange={(e) => setField("zahlung", e.target.value)}>
+              <option value="">Auswählen</option>
+              {config.zahlungOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+        )}
 
-      {show(config, "anreise") && (
-        <div>
-          <label>Anreise</label>
-          <select value={form.anreise} onChange={(e) => setField("anreise", e.target.value)}>
-            <option value="">Auswählen</option>
-            {(config.anreiseOptions?.length > 0 ? config.anreiseOptions : ["PKW", "Bahn / Öffentliche", "Bus (organisiert)", "Kombination"]).map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
-        </div>
-      )}
+        {show(config, "anreise") && (
+          <div>
+            <label>Anreise</label>
+            <select value={form.anreise} onChange={(e) => setField("anreise", e.target.value)}>
+              <option value="">Auswählen</option>
+              {(config.anreiseOptions?.length > 0 ? config.anreiseOptions : ["PKW", "Bahn / Öffentliche", "Bus (organisiert)", "Kombination"]).map((o) => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
       {show(config, "barrierefreiheit") && (
         <div>
@@ -60,25 +62,27 @@ export default function Step5Abschluss({ config }: Props) {
         </div>
       )}
 
-      {show(config, "budget") && config.budgetOptions?.length > 0 && (
-        <div>
-          <label>Budgetrahmen</label>
-          <select value={form.budget} onChange={(e) => setField("budget", e.target.value)}>
-            <option value="">Auswählen</option>
-            {config.budgetOptions.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </div>
-      )}
+      <div className="grid sm:grid-cols-2 gap-5">
+        {show(config, "budget") && config.budgetOptions?.length > 0 && (
+          <div>
+            <label>Budgetrahmen</label>
+            <select value={form.budget} onChange={(e) => setField("budget", e.target.value)}>
+              <option value="">Auswählen</option>
+              {config.budgetOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+        )}
 
-      {show(config, "quelle") && config.quelleOptions?.length > 0 && (
-        <div>
-          <label>Wie habt ihr uns gefunden?</label>
-          <select value={form.quelle} onChange={(e) => setField("quelle", e.target.value)}>
-            <option value="">Auswählen</option>
-            {config.quelleOptions.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </div>
-      )}
+        {show(config, "quelle") && config.quelleOptions?.length > 0 && (
+          <div>
+            <label>Wie habt ihr uns gefunden?</label>
+            <select value={form.quelle} onChange={(e) => setField("quelle", e.target.value)}>
+              <option value="">Auswählen</option>
+              {config.quelleOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
