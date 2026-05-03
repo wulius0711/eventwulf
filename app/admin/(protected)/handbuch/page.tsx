@@ -5,6 +5,7 @@ const sections = [
   { id: "login",          title: "Login" },
   { id: "navigation",     title: "Navigation & Oberfläche" },
   { id: "einstellungen",  title: "Einstellungen" },
+  { id: "felder",         title: "Felder & Optionen" },
   { id: "anfragen",       title: "Anfragen" },
   { id: "angebote",       title: "Angebote" },
   { id: "verfuegbarkeit", title: "Verfügbarkeit" },
@@ -12,6 +13,18 @@ const sections = [
   { id: "vorschau",       title: "Vorschau" },
   { id: "faq",            title: "Häufige Fragen" },
 ];
+
+function H3({ children }: { children: React.ReactNode }) {
+  return <h3 style={{ fontSize: "0.95rem", fontWeight: 700, margin: "1.25rem 0 0.5rem", color: "var(--text)" }}>{children}</h3>;
+}
+
+function Callout({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ background: "var(--primary-tint)", border: "1px solid var(--primary-dim)", borderRadius: "var(--radius-sm)", padding: "0.6rem 0.875rem", marginTop: "0.75rem", fontSize: "0.875rem", color: "var(--text)" }}>
+      {children}
+    </div>
+  );
+}
 
 const content: Record<string, React.ReactNode> = {
   login: (
@@ -54,17 +67,61 @@ const content: Record<string, React.ReactNode> = {
     <>
       <p>Die Einstellungen sind in fünf Tabs unterteilt.</p>
       <H3>Firma</H3>
-      <p>Basisdaten deiner Organisation: Name, Tagline, Logo-URL, Primärfarbe, Hintergrundfarbe, Kontaktdaten und Benachrichtigungs-E-Mail.</p>
-      <Callout>Die <strong>Benachrichtigungs-E-Mail</strong> erhält bei jeder neuen Anfrage eine Benachrichtigungsmail.</Callout>
+      <p>Basisdaten deiner Organisation: Name, Tagline, Logo-URL, Primärfarbe, Hintergrundfarbe, Schriftarten, Kontaktdaten und Benachrichtigungs-E-Mail.</p>
+      <Callout>Die <strong>Benachrichtigungs-E-Mail</strong> erhält bei jeder neuen Anfrage automatisch eine Benachrichtigung.</Callout>
       <H3>Formular</H3>
-      <p>Wähle per Checkbox welche optionalen Felder im Buchungsformular angezeigt werden. Die Felder sind nach Schritten gruppiert (Veranstaltung, Gruppe, Ausstattung, Verpflegung, Abschluss).</p>
-      <p style={{ marginTop: "0.5rem" }}>Darunter kannst du die Dropdown-Optionen für Verpflegung, Zimmerwunsch und Abrechnung anpassen.</p>
+      <p>Hier steuerst du welche Felder und Optionen im Buchungsformular erscheinen. Mehr dazu im Abschnitt <em>Felder & Optionen</em>.</p>
       <H3>Abrechnung</H3>
       <p>Steuersatz (%) und Gültigkeitsdauer für neue Angebote in Tagen.</p>
       <H3>Einbetten</H3>
-      <p>Fertiger HTML-Code zum Einbetten des Widgets in deine Website. Einfach kopieren und in den <code>&lt;body&gt;</code> einfügen.</p>
+      <p>Fertiger HTML-Code zum Einbetten des Widgets in deine Website. Einfach kopieren und in den <code>&lt;body&gt;</code> einfügen. Das Widget passt sich automatisch in der Höhe an.</p>
       <H3>Passwort</H3>
-      <p>Aktuelles Passwort eingeben und neues Passwort (mind. 8 Zeichen) zweimal bestätigen.</p>
+      <p>Aktuelles Passwort eingeben, dann neues Passwort (mind. 8 Zeichen) vergeben.</p>
+    </>
+  ),
+  felder: (
+    <>
+      <p>Unter <strong>Einstellungen → Formular → Felder</strong> steuerst du was im Buchungsformular erscheint. Die Felder sind nach den 5 Schritten des Formulars gruppiert.</p>
+
+      <H3>Checkboxen</H3>
+      <p>Jede Checkbox aktiviert oder deaktiviert ein optionales Feld. Deaktivierte Felder werden den Gästen nicht angezeigt.</p>
+
+      <H3>Schritt 3 – Ausstattung</H3>
+      <p>In Schritt 3 wählen Gäste benötigte Ausstattung als Checkboxen. Welche Optionen erscheinen, steuerst du über die <strong>Ausstattungs-Optionen</strong> unten im gleichen Tab.</p>
+      <ul style={{ marginTop: "0.5rem", paddingLeft: "1.25rem", lineHeight: 1.9 }}>
+        <li>Optionen hinzufügen: <strong>+ Option hinzufügen</strong> klicken</li>
+        <li>Optionen bearbeiten: direkt im Textfeld ändern</li>
+        <li>Optionen entfernen: rotes × klicken</li>
+        <li>Keine Optionen = Ausstattungs-Abschnitt ausgeblendet</li>
+      </ul>
+      <Callout>Die Checkbox <strong>Sonstiges Equipment (Freitextfeld)</strong> steuert zusätzlich ob ein freies Textfeld für Sonderwünsche erscheint.</Callout>
+
+      <H3>Schritt 4 – Unterkunft</H3>
+      <p>Die zwei Checkboxen <strong>Verpflegung</strong> und <strong>Zimmerwunsch</strong> steuern ob die jeweiligen Dropdowns erscheinen. Die Auswahl-Optionen dafür pflegst du unter <strong>Verpflegung-Optionen</strong> und <strong>Zimmerwunsch-Optionen</strong>.</p>
+      <Callout>Ist eine Optionsliste leer, wird das Dropdown auch bei aktiver Checkbox nicht angezeigt.</Callout>
+
+      <H3>Schritt 5 – Abschluss</H3>
+      <p>Mehrere Felder sind über Optionslisten konfigurierbar (erkennbar am Hinweis <em>Optionen unten wählbar</em>):</p>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
+        <tbody>
+          {[
+            ["Abrechnung", "Abrechnungs-Optionen", "Wer zahlt? z.B. Veranstalter, Teilnehmer selbst"],
+            ["Zahlung", "Zahlungs-Optionen", "Zahlungsarten, z.B. Banküberweisung, Bar"],
+            ["Anreise", "Anreise-Optionen", "Anreiseart, z.B. PKW, Bahn, Bus"],
+            ["Budgetrahmen", "Budget-Optionen", "Budgetkategorien, z.B. unter 500 €, 500–2.000 €"],
+            ["Wie habt ihr uns gefunden?", "Quelle-Optionen", "Herkunftskanäle, z.B. Google, Instagram"],
+          ].map(([feld, option, bsp]) => (
+            <tr key={feld as string} style={{ borderBottom: "1px solid var(--border)" }}>
+              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500, whiteSpace: "nowrap" }}>{feld}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--primary)", fontSize: "0.82rem" }}>{option}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{bsp}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <H3>Optionen verwalten</H3>
+      <p>Alle Optionslisten befinden sich im unteren Bereich des Felder-Abschnitts. Einfach Einträge hinzufügen, bearbeiten oder löschen und anschließend <strong>Änderungen speichern</strong> klicken.</p>
     </>
   ),
   anfragen: (
@@ -108,7 +165,7 @@ const content: Record<string, React.ReactNode> = {
   verfuegbarkeit: (
     <>
       <H3>Kalenderansicht</H3>
-      <p>Der Kalender zeigt gesperrte Zeiträume und eingetragene Events. Belegte Tage sind farbig markiert.</p>
+      <p>Der Kalender zeigt gesperrte Zeiträume und eingetragene Events. Belegte Tage sind farbig markiert und im Buchungsformular nicht wählbar.</p>
       <H3>Eintrag hinzufügen</H3>
       <p>Wähle oben den Typ:</p>
       <ul style={{ marginTop: "0.5rem", paddingLeft: "1.25rem", lineHeight: 1.8 }}>
@@ -118,7 +175,7 @@ const content: Record<string, React.ReactNode> = {
       <H3>Bearbeiten / Löschen</H3>
       <p>Klicke auf einen Eintrag in der rechten Liste — er wird im Formular geladen. Mit dem roten ✕ löschen.</p>
       <H3>Kapazität</H3>
-      <p>Bei Events mit Kapazität siehst du wie viele Plätze noch frei sind. Die Kapazitätsanzeige kann im Widget aktiviert werden (Einstellungen → Formular → Widget-Features).</p>
+      <p>Bei Events mit Kapazität siehst du wie viele Plätze noch frei sind. Die Kapazitätsanzeige im Widget aktivierst du unter Einstellungen → Formular → Widget-Features.</p>
     </>
   ),
   pakete: (
@@ -134,6 +191,7 @@ const content: Record<string, React.ReactNode> = {
       <p>Die Vorschau zeigt dein Buchungswidget in einem eingebetteten iFrame — so siehst du sofort wie Änderungen wirken.</p>
       <H3>Breite anpassen</H3>
       <p>Ziehe die grauen Handles links oder rechts am iFrame, um verschiedene Bildschirmbreiten zu simulieren. Die aktuelle Breite wird in Pixel angezeigt.</p>
+      <Callout>Tipp: Ziehe auf ~390 px um eine iPhone-Ansicht zu simulieren.</Callout>
     </>
   ),
   faq: (
@@ -141,7 +199,11 @@ const content: Record<string, React.ReactNode> = {
       {[
         {
           q: "Das Widget zeigt meine Änderungen nicht an.",
-          a: 'Einstellungen werden erst nach dem Klick auf „Änderungen speichern“ übernommen. Danach ggf. den Browser-Cache leeren (Strg+Shift+R / Cmd+Shift+R).',
+          a: 'Einstellungen werden erst nach dem Klick auf „Änderungen speichern" übernommen. Danach ggf. den Browser-Cache leeren (Strg+Shift+R / Cmd+Shift+R).',
+        },
+        {
+          q: "Ein Dropdown erscheint nicht, obwohl die Checkbox aktiv ist.",
+          a: "Prüfe ob die zugehörige Optionsliste mindestens einen Eintrag enthält. Eine leere Liste blendet das Feld automatisch aus.",
         },
         {
           q: "Ich bekomme keine E-Mail-Benachrichtigungen.",
@@ -149,11 +211,15 @@ const content: Record<string, React.ReactNode> = {
         },
         {
           q: "Wie ändere ich die Farben des Widgets?",
-          a: "Unter Einstellungen → Firma → Primärfarbe kannst du den Hex-Code eintragen. Das gesamte Farbschema passt sich automatisch an.",
+          a: "Unter Einstellungen → Formular → Primärfarbe kannst du den Hex-Code eintragen. Das gesamte Farbschema passt sich automatisch an.",
         },
         {
           q: "Wie bettet man das Widget auf der Website ein?",
-          a: "Den fertigen Code findest du unter Einstellungen → Einbetten. Einfach kopieren und in den <body> deiner Website einfügen.",
+          a: "Den fertigen Code findest du unter Einstellungen → Einbetten. Einfach kopieren und in den <body> deiner Website einfügen. Das Widget passt seine Höhe automatisch an.",
+        },
+        {
+          q: "Kann ich die Ausstattungs-Optionen individuell anpassen?",
+          a: "Ja. Unter Einstellungen → Formular → Ausstattungs-Optionen kannst du beliebige Optionen hinzufügen, umbenennen oder entfernen. Was dort steht, erscheint als Checkbox im Formular.",
         },
       ].map(({ q, a }) => (
         <div key={q} style={{ marginBottom: "1.25rem", paddingBottom: "1.25rem", borderBottom: "1px solid var(--border)" }}>
@@ -165,18 +231,6 @@ const content: Record<string, React.ReactNode> = {
   ),
 };
 
-function H3({ children }: { children: React.ReactNode }) {
-  return <h3 style={{ fontSize: "0.95rem", fontWeight: 700, margin: "1.25rem 0 0.5rem", color: "var(--text)" }}>{children}</h3>;
-}
-
-function Callout({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ background: "var(--primary-tint)", border: "1px solid var(--primary-dim)", borderRadius: "var(--radius-sm)", padding: "0.6rem 0.875rem", marginTop: "0.75rem", fontSize: "0.875rem", color: "var(--text)" }}>
-      {children}
-    </div>
-  );
-}
-
 export default function HanbbuchPage() {
   const [active, setActive] = useState("login");
   const current = sections.find((s) => s.id === active)!;
@@ -184,9 +238,9 @@ export default function HanbbuchPage() {
   return (
     <div>
       <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>Handbuch</h1>
-      <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start", flexWrap: "wrap" }}>
         {/* Section nav */}
-        <div style={{ width: "200px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "0.125rem", position: "sticky", top: "1rem" }}>
+        <div style={{ width: "180px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "0.125rem", position: "sticky", top: "1rem" }}>
           {sections.map((s) => (
             <button
               key={s.id}
@@ -210,7 +264,7 @@ export default function HanbbuchPage() {
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem 2rem", lineHeight: 1.7, fontSize: "0.9rem", color: "var(--text)", minHeight: "400px" }}>
+        <div style={{ flex: 1, minWidth: "260px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem 2rem", lineHeight: 1.7, fontSize: "0.9rem", color: "var(--text)", minHeight: "400px" }}>
           <h2 style={{ fontSize: "1.05rem", fontWeight: 700, marginBottom: "1rem", color: "var(--text)" }}>{current.title}</h2>
           {content[active]}
         </div>
