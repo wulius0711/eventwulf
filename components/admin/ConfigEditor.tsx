@@ -374,7 +374,7 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
               );
             })}
 
-            <div style={{ borderTop: "1px solid var(--border)", marginTop: "1.25rem", paddingTop: "1.25rem", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(260px, 100%), 1fr))", gap: "1.25rem 2rem" }}>
+            <div className="ew-options-grid" style={{ borderTop: "1px solid var(--border)", marginTop: "1.25rem", paddingTop: "1.25rem", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(260px, 100%), 1fr))", gap: "1.25rem 2rem" }}>
               <OptionsEditor field="verpflegungOptions" label="Verpflegung-Optionen" />
               <OptionsEditor field="zimmerwunschOptions" label="Zimmerwunsch-Optionen" />
               <OptionsEditor field="abrechnungOptions" label="Abrechnungs-Optionen" />

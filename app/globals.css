@@ -380,4 +380,6 @@ button:active:not(:disabled) {
   }
 
   .ew-shell-main { padding: 1.5rem 1rem; }
+
+  .ew-options-grid { row-gap: 2.5rem !important; }
 }
