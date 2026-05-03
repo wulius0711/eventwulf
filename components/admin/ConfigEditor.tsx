@@ -28,11 +28,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function EmbedTab({ slug }: { slug: string }) {
   const [origin, setOrigin] = useState("");
+  const [copied, setCopied] = useState(false);
   useEffect(() => { setOrigin(window.location.origin); }, []);
   const src = `${origin}/?kunde=${slug}`;
 
   const snippet = `<iframe id="eventwulf-widget" src="${src}" width="100%" frameborder="0" style="border:none;display:block" scrolling="no"></iframe>
 <script>window.addEventListener('message',function(e){var f=document.getElementById('eventwulf-widget');if(!f||!e.data||e.data.type!=='eventwulf-resize')return;f.style.height=e.data.height+'px';if(e.data.scrollTop){var t=f.getBoundingClientRect().top+window.pageYOffset;window.scrollTo({top:t,behavior:'smooth'});}});<\/script>`;
+
+  function copySnippet() {
+    navigator.clipboard.writeText(snippet).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
 
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -48,10 +56,21 @@ function EmbedTab({ slug }: { slug: string }) {
       />
       <button
         type="button"
-        onClick={() => navigator.clipboard.writeText(snippet)}
-        style={{ padding: "0.65rem 1.25rem", background: "var(--primary)", color: "var(--btn-text)", border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem", width: "100%" }}
+        onClick={copySnippet}
+        style={{
+          padding: "0.65rem 1.25rem",
+          background: copied ? "#16a34a" : "var(--primary)",
+          color: "var(--btn-text)",
+          border: "none",
+          borderRadius: "var(--radius-sm)",
+          fontWeight: 600,
+          cursor: "pointer",
+          fontSize: "0.85rem",
+          width: "fit-content",
+          transition: "background 0.2s",
+        }}
       >
-        Code kopieren
+        {copied ? "✓ In der Zwischenablage" : "Code kopieren"}
       </button>
     </div>
   );
