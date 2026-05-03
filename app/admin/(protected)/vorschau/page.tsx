@@ -59,10 +59,10 @@ export default function VorschauPage() {
         <div style={{ position: "fixed", inset: 0, zIndex: 9999, cursor: "ew-resize" }} />
       )}
 
-      <div style={{ fontSize: "0.78rem", color: "#64748b" }}>{width}px</div>
+      <div className="ew-vorschau-px" style={{ fontSize: "0.78rem", color: "#64748b" }}>{width}px</div>
 
-      <div style={{ position: "relative", width }}>
-        <div style={handleStyle("left")} onMouseDown={startDrag("left")}>
+      <div className="ew-vorschau-device" style={{ position: "relative", width }}>
+        <div className="ew-vorschau-handle" style={handleStyle("left")} onMouseDown={startDrag("left")}>
           <div style={{ width: "2px", height: "20px", background: "#94a3b8", borderRadius: "1px", boxShadow: "3px 0 0 #94a3b8" }} />
         </div>
 
@@ -74,7 +74,7 @@ export default function VorschauPage() {
           />
         </div>
 
-        <div style={handleStyle("right")} onMouseDown={startDrag("right")}>
+        <div className="ew-vorschau-handle" style={handleStyle("right")} onMouseDown={startDrag("right")}>
           <div style={{ width: "2px", height: "20px", background: "#94a3b8", borderRadius: "1px", boxShadow: "3px 0 0 #94a3b8" }} />
         </div>
       </div>

@@ -176,7 +176,7 @@ export default function ClientsEditor() {
       {/* Create new org */}
       <form onSubmit={handleCreate} style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: "1rem" }}>
         <h2 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>Neuen Kunden anlegen</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(180px, 100%), 1fr))", gap: "1rem" }}>
           <div>
             <label>Erster Slug (URL-Kennung)</label>
             <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="mein-retreat" required pattern="[a-z0-9-]+" />

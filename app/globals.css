@@ -307,6 +307,19 @@ button:active:not(:disabled) {
 /* Config tabs style override */
 .admin-shell .config-tabs { flex-wrap: wrap; }
 
+/* Handbuch nav: desktop sidebar visible, mobile pill nav hidden */
+.ew-help-mobile-nav { display: none; }
+.ew-help-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  position: sticky;
+  top: 1rem;
+  align-self: flex-start;
+}
+
 /* Mobile topbar + hamburger (hidden on desktop) */
 .ew-topbar { display: none; }
 .ew-hamburger { display: none; }
@@ -382,4 +395,22 @@ button:active:not(:disabled) {
   .ew-shell-main { padding: 1.5rem 1rem; }
 
   .ew-options-grid { row-gap: 2.5rem !important; }
+
+  /* Handbuch: show pill nav, hide sidebar */
+  .ew-help-mobile-nav {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ew-help-mobile-nav::-webkit-scrollbar { display: none; }
+  .ew-help-sidebar { display: none !important; }
+
+  /* Vorschau: full width, hide handles */
+  .ew-vorschau-device { width: 100% !important; }
+  .ew-vorschau-handle { display: none !important; }
+  .ew-vorschau-px { display: none !important; }
 }

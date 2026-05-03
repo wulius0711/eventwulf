@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const sections = [
   { id: "login",          title: "Login" },
@@ -233,18 +233,54 @@ const content: Record<string, React.ReactNode> = {
 
 export default function HanbbuchPage() {
   const [active, setActive] = useState("login");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
   const current = sections.find((s) => s.id === active)!;
+
+  function navigate(id: string) {
+    setActive(id);
+    setTimeout(() => {
+      const target = mobileNavRef.current ?? contentRef.current;
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  }
 
   return (
     <div>
-      <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>Handbuch</h1>
-      <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start", flexWrap: "wrap" }}>
-        {/* Section nav */}
-        <div style={{ width: "180px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "0.125rem", position: "sticky", top: "1rem" }}>
+      <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.25rem" }}>Handbuch</h1>
+
+      {/* Mobile: horizontal scrollable pill nav */}
+      <div className="ew-help-mobile-nav" ref={mobileNavRef}>
+        {sections.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => navigate(s.id)}
+            style={{
+              flexShrink: 0,
+              padding: "6px 14px",
+              borderRadius: 999,
+              border: `1px solid ${active === s.id ? "var(--primary)" : "var(--border)"}`,
+              background: active === s.id ? "var(--primary)" : "var(--surface)",
+              color: active === s.id ? "var(--btn-text)" : "var(--muted)",
+              fontWeight: active === s.id ? 600 : 400,
+              fontSize: "0.82rem",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              fontFamily: "inherit",
+            }}
+          >
+            {s.title}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start" }}>
+        {/* Desktop: sidebar nav */}
+        <nav className="ew-help-sidebar">
           {sections.map((s) => (
             <button
               key={s.id}
-              onClick={() => setActive(s.id)}
+              onClick={() => navigate(s.id)}
               style={{
                 textAlign: "left",
                 padding: "0.45rem 0.75rem",
@@ -256,15 +292,18 @@ export default function HanbbuchPage() {
                 fontSize: "0.875rem",
                 cursor: "pointer",
                 transition: "background 0.12s, color 0.12s",
+                display: "block",
+                width: "100%",
+                fontFamily: "inherit",
               }}
             >
               {s.title}
             </button>
           ))}
-        </div>
+        </nav>
 
         {/* Content */}
-        <div style={{ flex: 1, minWidth: "260px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem 2rem", lineHeight: 1.7, fontSize: "0.9rem", color: "var(--text)", minHeight: "400px" }}>
+        <div ref={contentRef} style={{ flex: 1, minWidth: 0, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem 2rem", lineHeight: 1.7, fontSize: "0.9rem", color: "var(--text)", minHeight: "400px" }}>
           <h2 style={{ fontSize: "1.05rem", fontWeight: 700, marginBottom: "1rem", color: "var(--text)" }}>{current.title}</h2>
           {content[active]}
         </div>
