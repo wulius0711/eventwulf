@@ -62,8 +62,9 @@ User
 └── id, email, password (bcrypt)
 
 Inquiry
-└── id, data (JSON), status: neu | in_pruefung | angebot_versendet | bestaetigt | abgelehnt
-    packageId? → Package, participantCount
+└── id, data (JSON), status: neu | in_pruefung | angebot_versendet | bestaetigt | abgelehnt | storniert
+    packageId? → Package, participantCount,
+    reminderSentAt?, cancelToken? (unique), cancelledAt?
 
 Package
 └── id, name, description, pricePerPerson, minParticipants, maxParticipants,
@@ -113,6 +114,9 @@ Counter
 | `POST /api/submit` | öffentlich | Formular-Einreichung |
 | `GET /api/availability` | öffentlich | Kalendereinträge inkl. Kapazität für einen Slug |
 | `GET /api/packages` | öffentlich | Aktive Seminarpakete für einen Slug |
+| `GET /api/ical/[id]` | öffentlich | iCal-Datei (.ics) für eine Anfrage |
+| `GET /api/cancel/[token]` | öffentlich | Anfrage per Token stornieren |
+| `GET /api/cron/reminders` | Cron-Secret | 24h-Erinnerungsmail (Vercel Cron, täglich 8:00) |
 | `GET /api/autologin` | HMAC-signiert | Autologin von externem System |
 | `POST /api/provision` | Secret | Neue Organisation anlegen |
 | `GET/POST /api/admin/invoices` | Session | Angebote laden / erstellen |

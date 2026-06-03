@@ -115,8 +115,17 @@ Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum. Jede Anfr
 | **Angebot versendet** | Ein Angebot wurde erstellt und verschickt |
 | **Bestätigt** | Buchung ist bestätigt |
 | **Abgelehnt** | Anfrage wurde abgelehnt |
+| **Storniert** | Anfrage wurde storniert (durch Gast per Link oder manuell) |
 
-Den Status änderst du direkt im Anfragen-Detail über das Dropdown.
+Den Status änderst du direkt im Anfragen-Detail über die Status-Buttons. Stornierte Anfragen werden grau dargestellt.
+
+### Automatische Erinnerungsmail
+
+Wenn eine Anfrage auf **Bestätigt** gesetzt wird, verschickt das System automatisch 24 Stunden vor dem Veranstaltungsdatum eine Erinnerungsmail an deine Benachrichtigungs-E-Mail (aus den Einstellungen). Das passiert täglich um 8:00 Uhr, ohne dass du etwas tun musst.
+
+### Stornierung durch den Gast
+
+Jede Bestätigungsmail an den Anfragenden enthält einen **„Anfrage stornieren"**-Link. Klickt der Gast darauf, wird die Anfrage automatisch auf **Storniert** gesetzt und du erhältst eine Benachrichtigungs-E-Mail mit den Veranstaltungsdetails.
 
 ### Anfrage öffnen
 
@@ -224,8 +233,8 @@ Einstellungen werden erst nach dem Klick auf **Änderungen speichern** übernomm
 **Ich bekomme keine E-Mail-Benachrichtigungen.**
 Prüfe unter Einstellungen → Firma die **Benachrichtigungs-E-Mail**. Schaue auch im Spam-Ordner nach.
 
-**Eine Anfrage kann ich nicht mehr bearbeiten.**
-Bestätigte oder abgelehnte Anfragen können noch eingesehen, aber nicht mehr statusmäßig zurückgesetzt werden. Wende dich an den Support.
+**Eine Anfrage hat den Status „Storniert" – was jetzt?**
+Der Gast hat die Anfrage über seinen Stornierungslink selbst storniert. Du hast per E-Mail eine Benachrichtigung erhalten. Den Status kannst du bei Bedarf manuell wieder ändern (z.B. auf „Neu" setzen, falls die Stornierung irrtümlich war).
 
 **Wie ändere ich die Farben des Widgets?**
 Unter Einstellungen → Firma → Primärfarbe kannst du den Hex-Code der Hauptfarbe eintragen. Das gesamte Farbschema des Widgets passt sich automatisch an.

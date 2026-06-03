@@ -27,7 +27,12 @@ EventWulf ist eine mandantenfähige Buchungsplattform für Events und Retreats. 
 - Multi-Tenant: eine Instanz, beliebig viele Organisationen
 - Admin-Dashboard pro Organisation
 - Kalender mit gesperrten Daten / Events
+- Angebotssystem (PDF-Angebote direkt aus Anfragen, ANB-YYYY-XXXX)
 - E-Mail-Benachrichtigungen via Resend
+- Automatische Erinnerungsmail 24h vor bestätigtem Event (Vercel Cron)
+- iCal-Export: "Zum Kalender hinzufügen"-Button in Bestätigungsmail
+- Stornierung per Link: Gäste können ohne Login stornieren, Admin wird per E-Mail informiert
+- Dark/Light Mode im Admin mit Theme-Switcher
 
 ---
 
@@ -54,6 +59,9 @@ eventwulf/
 ├── app/
 │   ├── page.tsx                        # Öffentliches Formular
 │   ├── layout.tsx
+│   ├── storniert/
+│   │   ├── page.tsx                    # Server wrapper
+│   │   └── StornierenContent.tsx       # Stornierungsbestätigung (ok/already/invalid)
 │   ├── admin/
 │   │   ├── login/page.tsx
 │   │   └── (protected)/
@@ -62,13 +70,20 @@ eventwulf/
 │   │       ├── config/page.tsx
 │   │       ├── inquiries/page.tsx
 │   │       ├── availability/page.tsx
+│   │       ├── packages/page.tsx
+│   │       ├── invoices/page.tsx
 │   │       ├── clients/page.tsx
 │   │       └── vorschau/page.tsx
 │   └── api/
 │       ├── submit/route.ts             # Formular-Einreichung (öffentlich)
 │       ├── availability/route.ts       # Gesperrte Daten (öffentlich)
+│       ├── packages/route.ts           # Aktive Seminarpakete (öffentlich)
+│       ├── ical/[id]/route.ts          # iCal-Download für Anfrage (öffentlich)
+│       ├── cancel/[token]/route.ts     # Stornierung per Token (öffentlich)
 │       ├── autologin/route.ts          # HMAC-basierter Auto-Login
 │       ├── provision/route.ts          # Neue Organisation anlegen
+│       ├── cron/
+│       │   └── reminders/route.ts      # Vercel Cron: 24h-Erinnerungsmails
 │       └── admin/
 │           ├── login/route.ts
 │           ├── logout/route.ts
@@ -76,7 +91,12 @@ eventwulf/
 │           ├── config/route.ts
 │           ├── clients/route.ts
 │           ├── inquiries/route.ts
+│           ├── inquiries/[id]/participants/route.ts
 │           ├── availability/route.ts
+│           ├── packages/route.ts
+│           ├── invoices/route.ts
+│           ├── invoices/[id]/route.ts
+│           ├── invoices/[id]/html/route.ts
 │           ├── slugs/route.ts
 │           ├── switch-slug/route.ts
 │           └── orgs/[id]/clients/route.ts
@@ -91,11 +111,13 @@ eventwulf/
 │   │   ├── Step4Verpflegung.tsx
 │   │   └── Step5Abschluss.tsx
 │   └── admin/
-│       ├── AdminNav.tsx
+│       ├── AdminShell.tsx
+│       ├── ThemeToggle.tsx
 │       ├── AvailabilityEditor.tsx
 │       ├── ClientsEditor.tsx
 │       ├── ConfigEditor.tsx
 │       ├── InquiryInbox.tsx
+│       ├── InvoicePanel.tsx
 │       └── LogoutButton.tsx
 ├── lib/
 │   ├── auth.ts
@@ -108,6 +130,7 @@ eventwulf/
 ├── config/
 │   └── clients/
 │       └── default.json
+├── vercel.json                         # Cron-Job-Konfiguration
 └── prisma/
     └── schema.prisma
 ```
@@ -155,6 +178,8 @@ Relationen: hat viele `BlockedDate`, hat viele `Inquiry`
 | label | String | Anzeigename |
 | type | String | `"blocked"` oder `"event"` |
 | color | String | Hex-Farbe für Kalender |
+| maxCapacity | Int? | Maximale Teilnehmerzahl (nur bei type=event) |
+| bookedCount | Int | Bereits gebuchte Plätze (Standard: 0) |
 
 ### Inquiry
 | Feld | Typ | Beschreibung |
@@ -162,8 +187,52 @@ Relationen: hat viele `BlockedDate`, hat viele `Inquiry`
 | id | cuid | |
 | clientId | String | FK zu Client |
 | data | String | JSON-serialisiertes `InquiryFormData` |
-| status | String | `neu` / `in_pruefung` / `bestaetigt` / `abgelehnt` |
+| status | String | `neu` / `in_pruefung` / `angebot_versendet` / `bestaetigt` / `abgelehnt` / `storniert` |
+| participantCount | Int | Teilnehmerzahl (für Kapazitätsverwaltung) |
+| packageId | String? | FK zu Package |
+| reminderSentAt | DateTime? | Zeitstempel der gesendeten 24h-Erinnerungsmail |
+| cancelToken | String? (unique) | Sicherer Token für Stornierung per Link |
+| cancelledAt | DateTime? | Zeitstempel der Stornierung durch Gast |
 | createdAt | DateTime | |
+
+### Package
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| id | cuid | |
+| clientId | String | FK zu Client |
+| name | String | Paketname |
+| description | String? | Beschreibung |
+| pricePerPerson | Float? | Preis pro Person |
+| minParticipants | Int? | Mindestteilnehmerzahl |
+| maxParticipants | Int? | Maximalteilnehmerzahl |
+| durationDays | Int? | Dauer in Tagen |
+| isActive | Boolean | Sichtbar im Widget |
+| sortOrder | Int | Reihenfolge |
+
+### Invoice
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| id | cuid | |
+| clientId | String | FK zu Client |
+| number | String | `ANB-YYYY-XXXX` |
+| status | String | `offen` / `storniert` |
+| issuedAt | DateTime | Ausstellungsdatum |
+| validUntil | DateTime | Gültig bis |
+| lineItems | String | JSON-Array mit Positionen |
+| taxRate | Float | Steuersatz in % |
+| recipientName | String | Empfängername |
+| recipientEmail | String? | Empfänger-E-Mail |
+| eventTitle | String? | Veranstaltungstitel |
+| notes | String? | Freitext-Notizen |
+| inquiryId | String? | FK zu Inquiry |
+
+### Counter
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| key | String (unique) | Schlüssel (z.B. `invoice`) |
+| value | Int | Aktueller Zählerstand |
+
+Atomarer Zähler für Angebotsnummern (race-condition-sicher via `increment`).
 
 ---
 
@@ -219,19 +288,36 @@ Externes System (z.B. BookingWulf) kann einen signierten Token erzeugen:
 |-------|---------|--------------|------------|
 | `/api/submit` | POST | Formular-Einreichung, speichert Inquiry + sendet E-Mails | 5 / 10 Min |
 | `/api/availability` | GET | Gesperrte Daten und Events für einen Slug | 30 / Min |
+| `/api/packages` | GET | Aktive Seminarpakete für einen Slug | – |
+| `/api/ical/[id]` | GET | iCal-Datei (.ics) für eine Anfrage | – |
+| `/api/cancel/[token]` | GET | Anfrage per Token stornieren; Redirect zu `/storniert?status=…` | – |
 | `/api/autologin` | GET | HMAC-Autologin von externem System | – |
 | `/api/provision` | POST | Neue Organisation anlegen (geschützt per `PROVISIONING_SECRET`) | – |
+
+### Cron-Endpunkte
+
+| Route | Methode | Beschreibung |
+|-------|---------|--------------|
+| `/api/cron/reminders` | GET | Sendet 24h-Erinnerungsmail für bestätigte Events (täglich 8:00 UTC via Vercel Cron) |
+
+Schutz: `x-cron-secret` Header muss `CRON_SECRET` Env-Var entsprechen.
 
 ### Admin-Endpunkte (alle erfordern gültige Session)
 
 | Route | Methode | Beschreibung |
 |-------|---------|--------------|
-| `/api/admin/login` | POST | Login, setzt Cookie | Rate Limit: 5 / 15 Min |
+| `/api/admin/login` | POST | Login, setzt Cookie (Rate Limit: 5 / 15 Min) |
 | `/api/admin/logout` | POST | Löscht Cookie |
 | `/api/admin/account` | PUT | Passwort ändern |
 | `/api/admin/config` | GET / PUT | Konfiguration lesen/schreiben |
 | `/api/admin/inquiries` | GET / PATCH / DELETE | Anfragen verwalten |
+| `/api/admin/inquiries/[id]/participants` | GET / POST | Teilnehmer einer Anfrage |
+| `/api/admin/participants/[id]` | PATCH / DELETE | Einzelnen Teilnehmer bearbeiten |
 | `/api/admin/availability` | GET / POST / DELETE | Gesperrte Daten verwalten |
+| `/api/admin/packages` | GET / POST / PATCH / DELETE | Seminarpakete verwalten |
+| `/api/admin/invoices` | GET / POST | Angebote laden / erstellen |
+| `/api/admin/invoices/[id]` | PATCH / DELETE | Angebot bearbeiten / stornieren |
+| `/api/admin/invoices/[id]/html` | GET | Angebot als HTML (für PDF-Druck) |
 | `/api/admin/slugs` | GET | Alle Slugs der eigenen Organisation |
 | `/api/admin/switch-slug` | POST | Aktiven Client wechseln |
 | `/api/admin/clients` | GET / POST / DELETE | Clients verwalten (nur Superadmin) |
@@ -314,17 +400,26 @@ Der aktive Slug wird per URL-Parameter `?slug=` übergeben.
 | Seite | Pfad | Beschreibung |
 |-------|------|--------------|
 | Dashboard | `/admin` | Übersicht, Kurzlinks |
-| Posteingang | `/admin/inquiries` | Anfragen mit Status-Workflow |
+| Posteingang | `/admin/inquiries` | Anfragen mit Status-Workflow + Angebots-Panel |
 | Verfügbarkeit | `/admin/availability` | Gesperrte Daten und Events im Kalender |
-| Einstellungen | `/admin/config` | Firmeninfos, Farben, Formularfelder |
-| Vorschau | `/admin/vorschau` | Live-Vorschau des Widgets |
+| Einstellungen | `/admin/config` | Firmeninfos, Farben, Formularfelder, Angebotseinstellungen |
+| Vorschau | `/admin/vorschau` | Live-Vorschau des Widgets (drag-to-resize iFrame) |
+| Seminarpakete | `/admin/packages` | Pakete verwalten |
+| Angebote | `/admin/invoices` | Angebots-Archiv mit Filterung |
 | Clients | `/admin/clients` | Superadmin: alle Organisationen verwalten |
 
 ### Status-Workflow (Inquiries)
 
-`neu` → `in_pruefung` → `bestaetigt` / `abgelehnt`
+`neu` → `in_pruefung` → `angebot_versendet` → `bestaetigt` / `abgelehnt` / `storniert`
 
-Erlaubte Statuswerte werden serverseitig validiert.
+Erlaubte Statuswerte werden serverseitig validiert. `storniert` kann auch automatisch durch den Gast via Cancel-Link gesetzt werden.
+
+### Dark/Light Mode
+
+- Umschaltbar über `ThemeToggle`-Button in der Sidebar (Mond/Sonne-Icon)
+- Präferenz wird in `localStorage` gespeichert
+- Theme wird per Inline-Script beim Laden sofort angewendet (kein FOUC)
+- Alle Farben über CSS Custom Properties (`.admin-shell` / `.admin-shell[data-theme="dark"]`)
 
 ---
 
@@ -342,6 +437,17 @@ Erlaubte Statuswerte werden serverseitig validiert.
 2. Bestätigungs-Mail an Anfragenden (wenn E-Mail angegeben)
    - Subject: `Anfrage bestätigt – {artTitel}`
    - Body: Zusammenfassung der Anfrage + Firmenkontaktdaten
+   - Buttons: "📅 Zum Kalender hinzufügen" (`/api/ical/[id]`) + "Anfrage stornieren" (`/api/cancel/[token]`)
+
+**24h-Erinnerung (`/api/cron/reminders`, täglich 8:00 UTC):**
+- Findet alle `bestaetigt`-Anfragen, deren `datumVon` = morgen ist und `reminderSentAt` null ist
+- Sendet Erinnerungsmail an `notifyEmail`
+- Setzt `reminderSentAt` auf aktuellen Zeitstempel
+
+**Stornierung durch Gast (`/api/cancel/[token]`):**
+- Setzt Anfrage auf `storniert`, `cancelledAt` auf aktuellen Zeitstempel
+- Sendet Admin-Benachrichtigung mit Veranstaltungsdetails
+- Redirect zu `/storniert?status=ok|already|invalid`
 
 **Absender:** `{company.name} <noreply@resend.dev>`
 
@@ -394,6 +500,7 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 | `JWT_SECRET` | ✅ | JWT-Signing-Secret (min. 32 Zeichen empfohlen) |
 | `DATABASE_URL` | ✅ | PostgreSQL Connection String (Neon) |
 | `RESEND_API_KEY` | ✅ | API-Key für Resend E-Mail-Service |
+| `CRON_SECRET` | – | Schützt `/api/cron/reminders` (Header `x-cron-secret`) |
 | `NOTIFY_EMAIL` | – | Fallback-Empfänger für Anfragen |
 | `PROVISIONING_SECRET` | – | Secret für `/api/provision` Endpunkt |
 | `SUPERADMIN_SLUG` | – | Slug des Superadmins (Standard: `"admin"`) |
@@ -429,3 +536,14 @@ npm run seed                # Initialdaten
 - `JWT_SECRET` muss bei jedem Deployment gesetzt sein — fehlt er, startet die App nicht.
 - Die Security Headers in `next.config.ts` enthalten `unsafe-inline` und `unsafe-eval` für Scripts — bei Bedarf für strengeres CSP anpassen.
 - Rate Limiting ist In-Memory und gilt pro Serverinstanz.
+- Cron Jobs via `vercel.json` laufen nur auf Vercel (nicht lokal). Zum lokalen Testen Endpunkt direkt mit `x-cron-secret` Header aufrufen.
+
+### Cron-Konfiguration (`vercel.json`)
+
+```json
+{
+  "crons": [{ "path": "/api/cron/reminders", "schedule": "0 7 * * *" }]
+}
+```
+
+Vercel ruft den Endpunkt täglich um 7:00 UTC auf (entspricht 8:00 MEZ / 9:00 MESZ). Der Endpunkt prüft `x-cron-secret` Header gegen `CRON_SECRET` Env-Var.
