@@ -243,8 +243,8 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                     if (isEnd) return `linear-gradient(to left, transparent 50%, var(--primary-dim) 50%)`;
                     if (between) return "var(--primary-dim)";
                     // hover state (only one date selected)
-                    if (!selEnd && hover) {
-                      const lo = toDay(selStart!);
+                    if (!selEnd && hover && selStart) {
+                      const lo = toDay(selStart);
                       const hi = toDay(hover);
                       const d = toDay(cell.date);
                       const [a, b] = lo <= hi ? [lo, hi] : [hi, lo];
