@@ -72,9 +72,9 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
         </div>
       )}
 
-      <div>
+      <div className="ew-field">
+        <input type="text" placeholder=" " value={form.artTitel} onChange={(e) => setField("artTitel", e.target.value)} autoFocus />
         <label>Art / Titel der Veranstaltung *</label>
-        <input type="text" value={form.artTitel} onChange={(e) => setField("artTitel", e.target.value)} placeholder="z.B. Yoga-Retreat, Teambuilding, Meditation-Wochenende" autoFocus />
       </div>
 
       <div>
@@ -95,19 +95,19 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
 
       {showUhrzeiten && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(180px, 100%), 1fr))", gap: "1rem" }}>
-          <div>
-            <label>Veranstaltungsbeginn (Uhrzeit)</label>
+          <div className={`ew-field${form.zeitVon ? " has-value" : ""}`}>
             <select value={form.zeitVon} onChange={(e) => setField("zeitVon", e.target.value)}>
-              <option value="">Uhrzeit wählen</option>
+              <option value=""></option>
               {HOURS.map((h) => <option key={h} value={h}>{h} Uhr</option>)}
             </select>
+            <label>Veranstaltungsbeginn (Uhrzeit)</label>
           </div>
-          <div>
-            <label>Veranstaltungsende (Uhrzeit)</label>
+          <div className={`ew-field${form.zeitBis ? " has-value" : ""}`}>
             <select value={form.zeitBis} onChange={(e) => setField("zeitBis", e.target.value)}>
-              <option value="">Uhrzeit wählen</option>
+              <option value=""></option>
               {HOURS.map((h) => <option key={h} value={h}>{h} Uhr</option>)}
             </select>
+            <label>Veranstaltungsende (Uhrzeit)</label>
           </div>
         </div>
       )}

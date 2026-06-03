@@ -26,8 +26,10 @@ export default function Step3Ausstattung({ config }: Props) {
       )}
       {showEquipment && (
         <div>
-          <label>Sonstiges Equipment</label>
-          <textarea rows={4} placeholder="bspw. Sonderwünsche, besondere Anforderungen …" value={form.sonstigesEquipment} onChange={(e) => setField("sonstigesEquipment", e.target.value)} style={{ resize: "vertical" }} />
+          <div className="ew-field">
+            <textarea rows={4} placeholder=" " value={form.sonstigesEquipment} onChange={(e) => setField("sonstigesEquipment", e.target.value)} style={{ resize: "vertical" }} />
+            <label>Sonstiges Equipment</label>
+          </div>
         </div>
       )}
     </div>

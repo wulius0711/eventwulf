@@ -10,76 +10,73 @@ function show(config: EventConfig, field: keyof NonNullable<EventConfig["formFie
 
 export default function Step5Abschluss({ config }: Props) {
   const { form, setField } = useFormStore();
-
   const ff = config.formFields;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {ff?.wuenscheRahmenprogramm !== false && (
-        <div>
+        <div className="ew-field">
+          <textarea rows={4} placeholder=" " value={form.wuenscheRahmenprogramm} onChange={(e) => setField("wuenscheRahmenprogramm", e.target.value)} style={{ resize: "vertical" }} autoFocus />
           <label>Wünsche für Rahmenprogramm</label>
-          <textarea rows={4} placeholder="Angebot für Wanderung, Backkurs, Yoga, Meditation, ..." value={form.wuenscheRahmenprogramm} onChange={(e) => setField("wuenscheRahmenprogramm", e.target.value)} style={{ resize: "vertical" }} autoFocus />
         </div>
       )}
       {ff?.abrechnung !== false && config.abrechnungOptions?.length > 0 && (
-        <div>
-          <label>Abrechnung</label>
+        <div className={`ew-field${form.abrechnung ? " has-value" : ""}`}>
           <select value={form.abrechnung} onChange={(e) => setField("abrechnung", e.target.value)}>
-            <option value="">Auswählen</option>
+            <option value=""></option>
             {config.abrechnungOptions.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
+          <label>Abrechnung</label>
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(180px, 100%), 1fr))", gap: "1rem" }}>
         {ff?.zahlung !== false && config.zahlungOptions?.length > 0 && (
-          <div>
-            <label>Zahlung</label>
+          <div className={`ew-field${form.zahlung ? " has-value" : ""}`}>
             <select value={form.zahlung} onChange={(e) => setField("zahlung", e.target.value)}>
-              <option value="">Auswählen</option>
+              <option value=""></option>
               {config.zahlungOptions.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
+            <label>Zahlung</label>
           </div>
         )}
-
         {show(config, "anreise") && (
-          <div>
-            <label>Anreise</label>
+          <div className={`ew-field${form.anreise ? " has-value" : ""}`}>
             <select value={form.anreise} onChange={(e) => setField("anreise", e.target.value)}>
-              <option value="">Auswählen</option>
+              <option value=""></option>
               {(config.anreiseOptions?.length > 0 ? config.anreiseOptions : ["PKW", "Bahn / Öffentliche", "Bus (organisiert)", "Kombination"]).map((o) => (
                 <option key={o} value={o}>{o}</option>
               ))}
             </select>
+            <label>Anreise</label>
           </div>
         )}
       </div>
 
       {show(config, "barrierefreiheit") && (
-        <div>
+        <div className="ew-field">
+          <textarea rows={3} placeholder=" " value={form.barrierefreiheit} onChange={(e) => setField("barrierefreiheit", e.target.value)} style={{ resize: "vertical" }} />
           <label>Besondere Bedürfnisse / Barrierefreiheit</label>
-          <textarea rows={3} placeholder="z.B. Rollstuhlzugang, Allergien, sonstige Anforderungen …" value={form.barrierefreiheit} onChange={(e) => setField("barrierefreiheit", e.target.value)} style={{ resize: "vertical" }} />
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(180px, 100%), 1fr))", gap: "1rem" }}>
         {show(config, "budget") && config.budgetOptions?.length > 0 && (
-          <div>
-            <label>Budgetrahmen</label>
+          <div className={`ew-field${form.budget ? " has-value" : ""}`}>
             <select value={form.budget} onChange={(e) => setField("budget", e.target.value)}>
-              <option value="">Auswählen</option>
+              <option value=""></option>
               {config.budgetOptions.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
+            <label>Budgetrahmen</label>
           </div>
         )}
-
         {show(config, "quelle") && config.quelleOptions?.length > 0 && (
-          <div>
-            <label>Wie habt ihr uns gefunden?</label>
+          <div className={`ew-field${form.quelle ? " has-value" : ""}`}>
             <select value={form.quelle} onChange={(e) => setField("quelle", e.target.value)}>
-              <option value="">Auswählen</option>
+              <option value=""></option>
               {config.quelleOptions.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
+            <label>Wie habt ihr uns gefunden?</label>
           </div>
         )}
       </div>

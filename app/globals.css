@@ -82,6 +82,49 @@ label {
   margin-bottom: 0.35rem;
 }
 
+/* Floating label – outlined */
+.ew-field {
+  position: relative;
+}
+.ew-field input,
+.ew-field textarea,
+.ew-field select {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: 1rem;
+  border-radius: var(--radius-sm);
+}
+.ew-field > label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  pointer-events: none;
+  transition: top 0.15s ease, transform 0.15s ease, font-size 0.15s ease, color 0.15s ease;
+  margin: 0;
+  background: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 1.5rem);
+}
+.ew-field input:focus + label,
+.ew-field input:not(:placeholder-shown) + label,
+.ew-field textarea:focus + label,
+.ew-field textarea:not(:placeholder-shown) + label,
+.ew-field select:focus + label,
+.ew-field.has-value > label {
+  top: -0.55rem;
+  transform: translateY(0);
+  font-size: 0.68rem;
+  color: var(--primary-text);
+  background: var(--surface);
+  padding: 0 0.25rem;
+  left: 0.75rem;
+}
+
 button {
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
