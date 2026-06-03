@@ -8,6 +8,7 @@ interface FormStore {
   setField: <K extends keyof InquiryFormData>(key: K, value: InquiryFormData[K]) => void;
   nextStep: () => void;
   prevStep: () => void;
+  goToStep: (n: number) => void;
   reset: () => void;
 }
 
@@ -51,5 +52,6 @@ export const useFormStore = create<FormStore>((set) => ({
     set((s) => ({ form: { ...s.form, [key]: value } })),
   nextStep: () => set((s) => ({ step: Math.min(s.step + 1, TOTAL_STEPS) })),
   prevStep: () => set((s) => ({ step: Math.max(s.step - 1, 1) })),
+  goToStep: (n) => set((s) => ({ step: Math.max(1, Math.min(n, TOTAL_STEPS)) })),
   reset: () => set({ form: { ...initialForm }, step: 1 }),
 }));

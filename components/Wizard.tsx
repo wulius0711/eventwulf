@@ -17,17 +17,31 @@ interface Props {
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function validate(step: number, form: import("@/lib/types").InquiryFormData): string {
   if (step === 1 && !form.artTitel.trim()) return "Bitte Veranstaltungstitel eingeben.";
   if (step === 2 && !form.nameGruppenleitung.trim()) return "Bitte Name der Gruppenleitung eingeben.";
   if (step === 2 && !form.email.trim()) return "Bitte E-Mail-Adresse eingeben.";
+  if (step === 2 && form.email.trim() && !EMAIL_RE.test(form.email)) return "Bitte gültige E-Mail-Adresse eingeben.";
   return "";
 }
 
 export default function Wizard({ config, slug }: Props) {
-  const { form, step, nextStep, prevStep, reset } = useFormStore();
+  const { form, step, nextStep, prevStep, goToStep, reset } = useFormStore();
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
+
+  function handleStepClick(n: number) {
+    if (n === step) return;
+    if (n < step) { setError(""); goToStep(n); return; }
+    for (let i = 1; i < n; i++) {
+      const err = validate(i, form);
+      if (err) { setError(err); goToStep(i); return; }
+    }
+    setError("");
+    goToStep(n);
+  }
 
   function handleNext() {
     const err = validate(step, form);
@@ -95,7 +109,10 @@ export default function Wizard({ config, slug }: Props) {
           const active = n === step;
           return (
             <div key={n} style={{ display: "flex", alignItems: "center", flex: n < TOTAL_STEPS ? 1 : undefined }}>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem" }}>
+              <div
+                onClick={() => handleStepClick(n)}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem", cursor: active ? "default" : "pointer" }}
+              >
                 <div style={{
                   width: "2rem", height: "2rem", borderRadius: "50%",
                   display: "flex", alignItems: "center", justifyContent: "center",
