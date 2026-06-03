@@ -32,12 +32,22 @@ export default function Wizard({ config, slug }: Props) {
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
 
+  function isStepNavigable(n: number): boolean {
+    if (n <= step) return true;
+    for (let i = 1; i < n; i++) {
+      if (validate(i, form)) return false;
+    }
+    return true;
+  }
+
   function handleStepClick(n: number) {
     if (n === step) return;
-    if (n < step) { setError(""); goToStep(n); return; }
-    for (let i = 1; i < n; i++) {
-      const err = validate(i, form);
-      if (err) { setError(err); goToStep(i); return; }
+    if (!isStepNavigable(n)) {
+      for (let i = 1; i < n; i++) {
+        const err = validate(i, form);
+        if (err) { setError(err); goToStep(i); return; }
+      }
+      return;
     }
     setError("");
     goToStep(n);
@@ -111,7 +121,7 @@ export default function Wizard({ config, slug }: Props) {
             <div key={n} style={{ display: "flex", alignItems: "center", flex: n < TOTAL_STEPS ? 1 : undefined }}>
               <div
                 onClick={() => handleStepClick(n)}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem", cursor: active ? "default" : "pointer" }}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem", cursor: active ? "default" : isStepNavigable(n) ? "pointer" : "not-allowed", opacity: !active && !done && !isStepNavigable(n) ? 0.5 : 1 }}
               >
                 <div style={{
                   width: "2rem", height: "2rem", borderRadius: "50%",
