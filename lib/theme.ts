@@ -27,6 +27,18 @@ function luminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+function ensureTextContrast(hex: string): string {
+  let current = hex;
+  let amount = 0;
+  while (amount <= 0.9) {
+    const lum = luminance(current);
+    if ((1.05) / (lum + 0.05) >= 4.5) return current;
+    amount += 0.1;
+    current = darken(hex, amount);
+  }
+  return "#111111";
+}
+
 export function buildThemeVars(primary: string): Record<string, string> {
   const btnText = luminance(primary) > 0.35 ? "#111111" : "#ffffff";
   return {
@@ -34,6 +46,7 @@ export function buildThemeVars(primary: string): Record<string, string> {
     "--primary-dark": darken(primary, 0.2),
     "--primary-tint": rgba(primary, 0.10),
     "--primary-dim":  rgba(primary, 0.18),
+    "--primary-text": ensureTextContrast(primary),
     "--btn-text":     btnText,
     "--blocked-bg":   primary,
     "--blocked-text": btnText,

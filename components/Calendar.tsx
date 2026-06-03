@@ -191,7 +191,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
         <button onClick={nextMonth} style={{ padding: "0.3rem 0.6rem", border: "none", background: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1.1rem" }}>›</button>
         <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{MONTHS[month]} {year}</span>
         {selStart && (
-          <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--primary)", fontWeight: 500 }}>
+          <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--primary-text)", fontWeight: 500 }}>
             {selStart.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" })}
             {selEnd ? ` – ${selEnd.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" })}` : " →"}
           </span>
