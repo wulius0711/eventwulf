@@ -23,6 +23,23 @@
   --radius:    8px;
   --radius-sm: 6px;
   --radius-lg: 12px;
+
+  --shadow-card:    0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-tooltip: 0 2px 8px rgba(0,0,0,0.25);
+  --overlay-sm:     rgba(0,0,0,0.25);
+
+  --badge-new-bg:        #eff6ff;
+  --badge-new-text:      #1d4ed8;
+  --badge-pending-bg:    #fefce8;
+  --badge-pending-text:  #a16207;
+  --badge-offer-bg:      #f5f3ff;
+  --badge-offer-text:    #6d28d9;
+  --badge-confirmed-bg:  #f0fdf4;
+  --badge-confirmed-text:#15803d;
+  --badge-cancelled-bg:  #fef2f2;
+  --badge-cancelled-text:#b91c1c;
+  --badge-neutral-bg:    #f3f4f6;
+  --badge-neutral-text:  #6b7280;
 }
 
 @theme inline {

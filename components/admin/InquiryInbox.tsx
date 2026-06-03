@@ -22,12 +22,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  neu:               { bg: "#eff6ff", color: "#1d4ed8" },
-  in_pruefung:       { bg: "#fefce8", color: "#a16207" },
-  angebot_versendet: { bg: "#f5f3ff", color: "#6d28d9" },
-  bestaetigt:        { bg: "#f0fdf4", color: "#15803d" },
-  abgelehnt:         { bg: "#fef2f2", color: "#b91c1c" },
-  storniert:         { bg: "#f3f4f6", color: "#6b7280" },
+  neu:               { bg: "var(--badge-new-bg)",       color: "var(--badge-new-text)" },
+  in_pruefung:       { bg: "var(--badge-pending-bg)",   color: "var(--badge-pending-text)" },
+  angebot_versendet: { bg: "var(--badge-offer-bg)",     color: "var(--badge-offer-text)" },
+  bestaetigt:        { bg: "var(--badge-confirmed-bg)", color: "var(--badge-confirmed-text)" },
+  abgelehnt:         { bg: "var(--badge-cancelled-bg)", color: "var(--badge-cancelled-text)" },
+  storniert:         { bg: "var(--badge-neutral-bg)",   color: "var(--badge-neutral-text)" },
 };
 
 function fmt(iso: string) {

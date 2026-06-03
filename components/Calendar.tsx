@@ -190,7 +190,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
       borderRadius: "var(--radius)",
       background: "var(--surface)",
       userSelect: "none",
-      boxShadow: "0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
+      boxShadow: "var(--shadow-card)",
     }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1rem", borderBottom: "1px solid var(--border)" }}>
@@ -351,7 +351,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                         {showCapacity && ev.maxCapacity != null && (
                           <span style={{
                             flexShrink: 0,
-                            background: "rgba(0,0,0,0.25)",
+                            background: "var(--overlay-sm)",
                             borderRadius: "3px",
                             padding: "0 0.3rem",
                             fontSize: "0.62rem",
@@ -384,7 +384,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
           pointerEvents: "none",
           zIndex: 9999,
           whiteSpace: "nowrap",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+          boxShadow: "var(--shadow-tooltip)",
         }}>
           <strong>{tooltip.label}</strong><br />
           {new Date(tooltip.start + "T12:00:00").toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" })}

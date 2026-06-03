@@ -13,8 +13,8 @@ interface Props {
 
 const STATUS_LABELS: Record<string, string> = { offen: "Offen", storniert: "Storniert" };
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  offen:     { bg: "#fefce8", color: "#a16207" },
-  storniert: { bg: "#fef2f2", color: "#b91c1c" },
+  offen:     { bg: "var(--badge-pending-bg)",   color: "var(--badge-pending-text)" },
+  storniert: { bg: "var(--badge-cancelled-bg)", color: "var(--badge-cancelled-text)" },
 };
 
 function emptyItem(): InvoiceLineItem {
