@@ -174,7 +174,7 @@ export default function Wizard({ config, slug }: Props) {
 
       {/* Error */}
       {error && (
-        <p style={{ color: "#dc2626", fontSize: "0.85rem", marginTop: "1rem" }}>{error}</p>
+        <p style={{ color: "var(--error)", fontSize: "0.85rem", marginTop: "1rem" }}>{error}</p>
       )}
 
       {/* Navigation */}

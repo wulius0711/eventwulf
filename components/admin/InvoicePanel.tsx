@@ -126,7 +126,7 @@ export default function InvoicePanel({ inquiryId, participantCount, packageName,
             <div style={{ marginLeft: "auto", display: "flex", gap: "0.35rem" }}>
               <button style={btnBase} onClick={() => window.open(`/api/admin/invoices/${inv.id}/html`, "_blank")}>Vorschau</button>
               {inv.status !== "storniert" && (
-                <button style={{ ...btnBase, color: "#dc2626" }} onClick={() => updateStatus(inv.id, "storniert")}>Stornieren</button>
+                <button style={{ ...btnBase, color: "var(--error)" }} onClick={() => updateStatus(inv.id, "storniert")}>Stornieren</button>
               )}
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function InvoicePanel({ inquiryId, participantCount, packageName,
                   style={{ fontSize: "0.82rem" }}
                 />
                 <button onClick={() => removeItem(idx)} disabled={lineItems.length === 1}
-                  style={{ ...btnBase, color: "#dc2626", opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
+                  style={{ ...btnBase, color: "var(--error)", opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
               </div>
             ))}
             <button onClick={addItem} style={{ ...btnBase, color: "var(--muted)", alignSelf: "flex-start" }}>+ Position</button>
@@ -187,7 +187,7 @@ export default function InvoicePanel({ inquiryId, participantCount, packageName,
             Per E-Mail an Anfragenden senden
           </label>
 
-          {error && <p style={{ color: "#dc2626", fontSize: "0.8rem", margin: 0 }}>{error}</p>}
+          {error && <p style={{ color: "var(--error)", fontSize: "0.8rem", margin: 0 }}>{error}</p>}
 
           <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
             <button style={{ ...btnBase, color: "var(--muted)" }} onClick={() => setCreating(false)}>Abbrechen</button>

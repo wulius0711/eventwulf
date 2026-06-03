@@ -14,7 +14,7 @@ const btnDanger = {
   border: "1px solid #fca5a5",
   borderRadius: "4px",
   background: "none",
-  color: "#dc2626",
+  color: "var(--error)",
   fontSize: "0.75rem",
   cursor: "pointer",
 } as const;
@@ -147,7 +147,7 @@ export default function ClientsEditor() {
             <p style={{ margin: "0 0 1.25rem", fontSize: "0.85rem", color: "var(--muted)" }}>
               Alle Slugs, Anfragen und Verfügbarkeiten dieses Kunden werden unwiderruflich gelöscht.
             </p>
-            {deleteError && <p style={{ color: "#dc2626", fontSize: "0.82rem", marginBottom: "0.75rem" }}>{deleteError}</p>}
+            {deleteError && <p style={{ color: "var(--error)", fontSize: "0.82rem", marginBottom: "0.75rem" }}>{deleteError}</p>}
             <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
               <button style={btnGhost} onClick={() => { setDeleteOrgConfirm(null); setDeleteError(""); }}>Abbrechen</button>
               <button style={{ ...btnDanger, padding: "0.5rem 1.25rem", fontWeight: 600 }} onClick={() => handleDeleteOrg(deleteOrgConfirm)}>Endgültig löschen</button>
@@ -164,7 +164,7 @@ export default function ClientsEditor() {
             <p style={{ margin: "0 0 1.25rem", fontSize: "0.85rem", color: "var(--muted)" }}>
               Alle Anfragen und Verfügbarkeiten dieses Slugs werden unwiderruflich gelöscht.
             </p>
-            {deleteError && <p style={{ color: "#dc2626", fontSize: "0.82rem", marginBottom: "0.75rem" }}>{deleteError}</p>}
+            {deleteError && <p style={{ color: "var(--error)", fontSize: "0.82rem", marginBottom: "0.75rem" }}>{deleteError}</p>}
             <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
               <button style={btnGhost} onClick={() => { setDeleteSlugConfirm(null); setDeleteError(""); }}>Abbrechen</button>
               <button style={{ ...btnDanger, padding: "0.5rem 1.25rem", fontWeight: 600 }} onClick={() => handleDeleteSlug(deleteSlugConfirm.orgId, deleteSlugConfirm.slug)}>Endgültig löschen</button>
@@ -190,7 +190,7 @@ export default function ClientsEditor() {
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
           </div>
         </div>
-        {error && <p style={{ color: "#dc2626", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: "var(--error)", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
         <button type="submit" disabled={loading} style={{ padding: "0.65rem 1.5rem", background: "var(--primary)", color: "var(--btn-text)", border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", alignSelf: "flex-start" }}>
           {loading ? "Anlegen…" : "Kunde anlegen"}
         </button>
@@ -219,7 +219,7 @@ export default function ClientsEditor() {
                       <a href={`/?kunde=${c.slug}`} target="_blank" style={{ fontSize: "0.72rem", color: "var(--primary)", textDecoration: "none" }}>↗</a>
                       {org.clients.length > 1 && (
                         <button
-                          style={{ border: "none", background: "none", color: "#dc2626", cursor: "pointer", fontSize: "0.85rem", lineHeight: 1, padding: "0 0.1rem" }}
+                          style={{ border: "none", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.85rem", lineHeight: 1, padding: "0 0.1rem" }}
                           onClick={() => { setDeleteSlugConfirm({ orgId: org.id, slug: c.slug }); setDeleteError(""); }}
                           title="Slug löschen"
                         >×</button>
@@ -233,7 +233,7 @@ export default function ClientsEditor() {
                         {addSlugLoading ? "…" : "OK"}
                       </button>
                       <button type="button" onClick={() => { setAddSlugOrgId(null); setNewSlug(""); setAddSlugError(""); }} style={btnGhost}>×</button>
-                      {addSlugError && <span style={{ fontSize: "0.78rem", color: "#dc2626" }}>{addSlugError}</span>}
+                      {addSlugError && <span style={{ fontSize: "0.78rem", color: "var(--error)" }}>{addSlugError}</span>}
                     </div>
                   ) : (
                     <button type="button" onClick={() => { setAddSlugOrgId(org.id); setAddSlugError(""); }} style={{ padding: "0.25rem 0.6rem", border: "1px dashed var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "var(--muted)", fontSize: "0.78rem", cursor: "pointer" }}>

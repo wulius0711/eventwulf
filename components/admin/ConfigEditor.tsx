@@ -188,7 +188,7 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
                 border: "1px solid var(--border)",
                 borderRadius: "var(--radius-sm)",
                 background: "none",
-                color: "#dc2626",
+                color: "var(--error)",
                 cursor: "pointer",
                 fontSize: "0.85rem",
               }}
@@ -455,7 +455,7 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
             <Field label="Neues Passwort">
               <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} required autoComplete="new-password" minLength={8} />
             </Field>
-            {pwMsg && <p style={{ color: pwMsg.includes("Fehler") || pwMsg.includes("falsch") ? "#dc2626" : "#16a34a", fontSize: "0.85rem", margin: 0 }}>{pwMsg}</p>}
+            {pwMsg && <p style={{ color: pwMsg.includes("Fehler") || pwMsg.includes("falsch") ? "var(--error)" : "#16a34a", fontSize: "0.85rem", margin: 0 }}>{pwMsg}</p>}
             <button type="submit" style={{ padding: "0.65rem 1.5rem", background: "var(--primary)", color: "var(--btn-text)", border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600, cursor: "pointer", alignSelf: "flex-start" }}>
               Speichern
             </button>
@@ -467,7 +467,7 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
       {tab !== "passwort" && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
           {saved && <span style={{ color: "#16a34a", fontSize: "0.85rem" }}>Gespeichert ✓</span>}
-          {saveError && <span style={{ color: "#dc2626", fontSize: "0.85rem" }}>{saveError}</span>}
+          {saveError && <span style={{ color: "var(--error)", fontSize: "0.85rem" }}>{saveError}</span>}
           <button
             onClick={handleSave}
             disabled={saving}

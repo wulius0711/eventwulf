@@ -22,13 +22,13 @@ export default function StornierenContent() {
       icon: "✕",
       title: "Link ungültig",
       text: "Dieser Stornierungslink ist ungültig oder abgelaufen.",
-      color: "#dc2626",
+      color: "var(--error)",
     },
   }[status ?? "invalid"] ?? {
     icon: "✕",
     title: "Fehler",
     text: "Ein unbekannter Fehler ist aufgetreten.",
-    color: "#dc2626",
+    color: "var(--error)",
   };
 
   return (

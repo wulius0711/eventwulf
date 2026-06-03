@@ -192,7 +192,7 @@ export default function AvailabilityEditor() {
           </>
         )}
 
-        {error && <p style={{ color: "#dc2626", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: "var(--error)", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
           {editingId && (
@@ -247,7 +247,7 @@ export default function AvailabilityEditor() {
                 {entry.type === "event" && entry.maxCapacity != null && (
                   <span style={{
                     marginLeft: "0.6rem", fontSize: "0.75rem", fontWeight: 500,
-                    color: entry.bookedCount! >= entry.maxCapacity ? "#dc2626" : "#16a34a",
+                    color: entry.bookedCount! >= entry.maxCapacity ? "var(--error)" : "#16a34a",
                   }}>
                     {entry.bookedCount}/{entry.maxCapacity} Plätze belegt
                   </span>
@@ -264,7 +264,7 @@ export default function AvailabilityEditor() {
                 <button onClick={() => handleDelete(entry.id)} style={{
                   padding: "0.28rem 0.65rem", border: "1px solid var(--border)",
                   borderRadius: "var(--radius-sm)", background: "none",
-                  color: "#dc2626", cursor: "pointer", fontSize: "0.78rem",
+                  color: "var(--error)", cursor: "pointer", fontSize: "0.78rem",
                 }}>
                   Löschen
                 </button>

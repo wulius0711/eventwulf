@@ -84,7 +84,7 @@ export default function InvoiceArchive() {
                 </button>
                 {inv.status !== "storniert" && (
                   <button onClick={() => updateStatus(inv.id, "storniert")}
-                    style={{ padding: "0.28rem 0.65rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "#dc2626", cursor: "pointer", fontSize: "0.78rem" }}>
+                    style={{ padding: "0.28rem 0.65rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.78rem" }}>
                     Stornieren
                   </button>
                 )}

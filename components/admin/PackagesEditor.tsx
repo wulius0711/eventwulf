@@ -177,7 +177,7 @@ export default function PackagesEditor() {
           </div>
         </div>
 
-        {error && <p style={{ color: "#dc2626", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
+        {error && <p style={{ color: "var(--error)", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
           {editingId && (
@@ -238,7 +238,7 @@ export default function PackagesEditor() {
               <button onClick={() => toggleActive(pkg)} style={{
                 padding: "0.28rem 0.65rem", border: "1px solid var(--border)",
                 borderRadius: "var(--radius-sm)", background: "none",
-                color: pkg.isActive ? "#dc2626" : "var(--text)", cursor: "pointer", fontSize: "0.78rem",
+                color: pkg.isActive ? "var(--error)" : "var(--text)", cursor: "pointer", fontSize: "0.78rem",
               }}>
                 {pkg.isActive ? "Deaktivieren" : "Aktivieren"}
               </button>
@@ -252,7 +252,7 @@ export default function PackagesEditor() {
               <button onClick={() => handleDelete(pkg.id)} style={{
                 padding: "0.28rem 0.65rem", border: "1px solid var(--border)",
                 borderRadius: "var(--radius-sm)", background: "none",
-                color: "#dc2626", cursor: "pointer", fontSize: "0.78rem",
+                color: "var(--error)", cursor: "pointer", fontSize: "0.78rem",
               }}>
                 Löschen
               </button>
