@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
 
   const [operatorResult, confirmResult] = await Promise.all([
     resend.emails.send({
-      from: `${config.company.name} <noreply@resend.dev>`,
+      from: `${config.company.name} <onboarding@resend.dev>`,
       to: notifyEmail,
       replyTo: body.email ? sanitize(body.email) : undefined,
       subject: `Neue Anfrage: ${sanitize(body.artTitel) || "Retreat"} – ${sanitize(body.nameGruppenleitung)}`,
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
     }),
     body.email
       ? resend.emails.send({
-          from: `${config.company.name} <noreply@resend.dev>`,
+          from: `${config.company.name} <onboarding@resend.dev>`,
           to: body.email,
           subject: `Anfrage bestätigt – ${sanitize(body.artTitel) || "Retreat"}`,
           html: confirmationHtmlWithIcal,
