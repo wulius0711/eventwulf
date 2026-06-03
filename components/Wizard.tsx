@@ -116,43 +116,27 @@ export default function Wizard({ config, slug }: Props) {
   return (
     <div>
       {/* Step indicator */}
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "2.5rem" }}>
+      <div className="ew-step-bar">
         {Array.from({ length: TOTAL_STEPS }, (_, i) => {
           const n = i + 1;
           const done = n < step;
           const active = n === step;
           return (
-            <div key={n} style={{ display: "flex", alignItems: "center", flex: n < TOTAL_STEPS ? 1 : undefined }}>
+            <div key={n} className="ew-step-item">
               <div
                 onClick={() => handleStepClick(n)}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem", cursor: n !== step && n <= maxStep ? "pointer" : "default", opacity: n <= maxStep ? 1 : 0.4 }}
+                className="ew-step-btn"
+                data-reachable={n <= maxStep ? "" : undefined}
+                data-clickable={n !== step && n <= maxStep ? "" : undefined}
               >
-                <div style={{
-                  width: "2.5rem", height: "2.5rem", borderRadius: "50%",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "0.8rem", fontWeight: 700,
-                  background: done || active ? "var(--primary)" : "var(--bg2)",
-                  color: done || active ? "var(--btn-text)" : "var(--muted)",
-                  border: `2px solid ${done || active ? "var(--primary)" : "var(--border)"}`,
-                  transition: "all 0.2s",
-                }}>
+                <div className="ew-step-circle" data-state={done ? "done" : active ? "active" : "future"}>
                   {done ? "✓" : n}
                 </div>
-                <span className="step-label" style={{
-                  fontSize: "0.7rem", whiteSpace: "nowrap",
-                  color: active ? "var(--primary-text)" : "var(--muted)",
-                  fontWeight: active ? 600 : 400,
-                }}>
+                <span className="step-label" data-active={active ? "" : undefined}>
                   {STEP_LABELS[i]}
                 </span>
               </div>
-              {n < TOTAL_STEPS && (
-                <div className="step-conn" style={{
-                  flex: 1, height: "2px", margin: "0 0.25rem", marginBottom: "1.2rem",
-                  background: done ? "var(--primary)" : "var(--border)",
-                  transition: "background 0.2s",
-                }} />
-              )}
+              {n < TOTAL_STEPS && <div className="step-conn" data-done={done ? "" : undefined} />}
             </div>
           );
         })}

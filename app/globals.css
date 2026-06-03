@@ -156,6 +156,31 @@ button:active:not(:disabled) {
   box-shadow: none;
 }
 
+/* Step indicator */
+.ew-step-bar { display: flex; align-items: center; margin-bottom: 2.5rem; }
+.ew-step-item { display: flex; align-items: center; }
+.ew-step-item:not(:last-child) { flex: 1; }
+
+.ew-step-btn { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: default; opacity: 0.4; }
+.ew-step-btn[data-reachable] { opacity: 1; }
+.ew-step-btn[data-clickable] { cursor: pointer; }
+
+.ew-step-circle {
+  width: 2.5rem; height: 2.5rem; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700;
+  background: var(--bg2); color: var(--muted); border: 2px solid var(--border);
+  transition: all 0.2s;
+}
+.ew-step-circle[data-state="done"],
+.ew-step-circle[data-state="active"] { background: var(--primary); color: var(--btn-text); border-color: var(--primary); }
+
+.step-label { font-size: 0.7rem; white-space: nowrap; color: var(--muted); font-weight: 400; }
+.step-label[data-active] { color: var(--primary-text); font-weight: 600; }
+
+.step-conn { flex: 1; height: 2px; margin: 0 0.25rem 1.2rem; background: var(--border); transition: background 0.2s; }
+.step-conn[data-done] { background: var(--primary); }
+
 /* Calendar animations */
 @keyframes cal-slide-next {
   from { opacity: 0; transform: translateX(12px) scale(0.98); }
