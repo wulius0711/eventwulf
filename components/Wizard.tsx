@@ -75,6 +75,8 @@ export default function Wizard({ config, slug }: Props) {
       }
       setSubmitState("success");
       reset();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.parent.postMessage({ type: "eventwulf-resize", height: document.body.offsetHeight, scrollTop: true }, "*");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unbekannter Fehler");
       setSubmitState("error");
