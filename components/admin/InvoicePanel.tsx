@@ -72,7 +72,7 @@ export default function InvoicePanel({ inquiryId, participantCount, packageName,
     if (res.ok) {
       const inv = await res.json() as InvoiceEntry;
       setInvoices((prev) => [inv, ...prev]);
-      onStatusChange?.("angebot_versendet");
+      if (sendEmail) onStatusChange?.("angebot_versendet");
       setCreating(false);
     } else {
       const d = await res.json().catch(() => ({})) as { error?: string };
