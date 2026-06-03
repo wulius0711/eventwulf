@@ -62,6 +62,16 @@ function isBlocked(date: Date, blocked: BlockedDateEntry[]) {
   });
 }
 
+function hasBlockedBetween(a: Date, b: Date, blocked: BlockedDateEntry[]) {
+  const lo = Math.min(a.getTime(), b.getTime());
+  const hi = Math.max(a.getTime(), b.getTime());
+  return blocked.some((bl) => {
+    const s = new Date(bl.startDate).setHours(0, 0, 0, 0);
+    const e = new Date(bl.endDate).setHours(23, 59, 59, 999);
+    return s <= hi && e >= lo;
+  });
+}
+
 function inRange(date: Date, start: Date | null, end: Date | null, hover: Date | null) {
   if (!start) return false;
   const lo = toDay(start);
@@ -159,8 +169,13 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
     } else {
       const s = toDay(selStart);
       if (d.getTime() === s.getTime()) { newStart = null; newEnd = null; }
-      else if (d < s) { newStart = d; newEnd = s; }
-      else { newEnd = d; }
+      else if (d < s) {
+        if (hasBlockedBetween(d, s, blocked)) return;
+        newStart = d; newEnd = s;
+      } else {
+        if (hasBlockedBetween(s, d, blocked)) return;
+        newEnd = d;
+      }
     }
 
     if (onRangeChange) { onRangeChange(newStart, newEnd); }
@@ -247,7 +262,12 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                     <div
                       key={di}
                       onClick={() => handleDayClick(cell.date)}
-                      onMouseEnter={() => selStart && !selEnd && setHover(cell.date)}
+                      onMouseEnter={() => {
+                        if (selStart && !selEnd && !hasBlockedBetween(toDay(selStart), toDay(cell.date), blocked))
+                          setHover(cell.date);
+                        else if (selStart && !selEnd)
+                          setHover(null);
+                      }}
                       onMouseLeave={() => setHover(null)}
                       style={{
                         padding: "0.4rem 0.3rem 0.3rem",
