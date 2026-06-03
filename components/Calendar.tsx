@@ -232,7 +232,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                       minHeight: "3rem",
                       cursor: blocked_ ? "not-allowed" : "pointer",
                       opacity: cell.inMonth ? 1 : 0.3,
-                      background: between ? "var(--primary-dim)" : "transparent",
+                      background: (between || edge) ? "var(--primary-dim)" : "transparent",
                       borderRadius: isStart ? "6px 0 0 6px" : isEnd ? "0 6px 6px 0" : undefined,
                       transition: "background 0.1s",
                     }}
