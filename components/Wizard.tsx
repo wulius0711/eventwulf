@@ -28,7 +28,7 @@ function validate(step: number, form: import("@/lib/types").InquiryFormData): st
 }
 
 export default function Wizard({ config, slug }: Props) {
-  const { form, step, nextStep, prevStep, goToStep, reset } = useFormStore();
+  const { form, step, maxStep, nextStep, prevStep, goToStep, reset } = useFormStore();
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const isFirst = useRef(true);
@@ -43,7 +43,7 @@ export default function Wizard({ config, slug }: Props) {
   }, [step]);
 
   function handleStepClick(n: number) {
-    if (n >= step) return;
+    if (n === step || n > maxStep) return;
     setError("");
     goToStep(n);
   }
@@ -118,7 +118,7 @@ export default function Wizard({ config, slug }: Props) {
             <div key={n} style={{ display: "flex", alignItems: "center", flex: n < TOTAL_STEPS ? 1 : undefined }}>
               <div
                 onClick={() => handleStepClick(n)}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem", cursor: done ? "pointer" : "default", opacity: done || active ? 1 : 0.4 }}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem", cursor: n !== step && n <= maxStep ? "pointer" : "default", opacity: n <= maxStep ? 1 : 0.4 }}
               >
                 <div style={{
                   width: "2rem", height: "2rem", borderRadius: "50%",
