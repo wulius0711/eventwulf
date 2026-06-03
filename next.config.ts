@@ -43,12 +43,20 @@ const adminHeaders = [
   },
 ];
 
+const submitHeaders = [
+  ...commonHeaders,
+  { key: "Access-Control-Allow-Origin", value: "*" },
+  { key: "Access-Control-Allow-Methods", value: "POST, OPTIONS" },
+  { key: "Access-Control-Allow-Headers", value: "Content-Type" },
+];
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
-      { source: "/",         headers: widgetHeaders },
-      { source: "/admin/(.*)", headers: adminHeaders },
-      { source: "/api/(.*)",   headers: adminHeaders },
+      { source: "/",               headers: widgetHeaders },
+      { source: "/admin/(.*)",     headers: adminHeaders },
+      { source: "/api/submit",     headers: submitHeaders },
+      { source: "/api/(.*)",       headers: adminHeaders },
     ];
   },
 };
