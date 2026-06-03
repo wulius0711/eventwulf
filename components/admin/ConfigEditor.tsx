@@ -34,7 +34,7 @@ function EmbedTab({ slug }: { slug: string }) {
   const src = `${origin}/?kunde=${slug}`;
 
   const snippet = `<iframe id="eventwulf-widget" src="${src}" width="100%" frameborder="0" style="border:none;display:block" scrolling="no"></iframe>
-<script>window.addEventListener('message',function(e){var f=document.getElementById('eventwulf-widget');if(!f||!e.data||e.data.type!=='eventwulf-resize')return;f.style.height=e.data.height+'px';if(e.data.scrollTop){var t=f.getBoundingClientRect().top+window.pageYOffset;window.scrollTo({top:t,behavior:'smooth'});}});<\/script>`;
+<script src="${origin}/embed.js"><\/script>`;
 
   function copySnippet() {
     navigator.clipboard.writeText(snippet).then(() => {
