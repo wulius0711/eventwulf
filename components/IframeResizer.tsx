@@ -26,7 +26,7 @@ export default function IframeResizer() {
       window.removeEventListener("resize", onResize);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [step]);
+  }, []);
 
   return null;
 }
