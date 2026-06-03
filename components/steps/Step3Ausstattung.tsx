@@ -16,7 +16,8 @@ export default function Step3Ausstattung({ config }: Props) {
           {config.ausstattungOptions.map((opt) => {
             const checked = form.ausstattungExtra.includes(opt);
             return (
-              <label key={opt} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", border: `1px solid ${checked ? "var(--primary)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", background: checked ? "var(--primary-tint)" : "var(--surface)", cursor: "pointer", fontSize: "0.9rem", fontWeight: checked ? 500 : 400 }} onClick={() => { const next = checked ? form.ausstattungExtra.filter((x) => x !== opt) : [...form.ausstattungExtra, opt]; setField("ausstattungExtra", next); }}>
+              <label key={opt} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", border: `1px solid ${checked ? "var(--primary)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", background: checked ? "var(--primary-tint)" : "var(--surface)", cursor: "pointer", fontSize: "0.9rem", fontWeight: checked ? 500 : 400 }}>
+                <input type="checkbox" checked={checked} onChange={() => { const next = checked ? form.ausstattungExtra.filter((x) => x !== opt) : [...form.ausstattungExtra, opt]; setField("ausstattungExtra", next); }} style={{ width: "auto" }} />
                 {opt}
               </label>
             );
