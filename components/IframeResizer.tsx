@@ -1,12 +1,8 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { useFormStore } from "@/store/form";
 
 export default function IframeResizer() {
-  const { step } = useFormStore();
-  const prevStep = useRef(step);
   const rafRef = useRef<number>(0);
-  const scrollTopPending = useRef(false);
 
   useEffect(() => {
     const send = () => {
@@ -14,19 +10,10 @@ export default function IframeResizer() {
       rafRef.current = requestAnimationFrame(() => {
         const root = document.getElementById("embed-root");
         const height = root ? root.offsetHeight : document.body.offsetHeight;
-        const scrollTop = scrollTopPending.current;
-        scrollTopPending.current = false;
-        window.parent.postMessage({ type: "eventwulf-resize", height, scrollTop }, "*");
+        window.parent.postMessage({ type: "eventwulf-resize", height, scrollTop: false }, "*");
       });
     };
 
-    const stepChanged = step !== prevStep.current;
-    prevStep.current = step;
-
-    if (stepChanged) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      scrollTopPending.current = true;
-    }
     send();
 
     const mutation = new MutationObserver(() => send());

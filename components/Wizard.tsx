@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFormStore, TOTAL_STEPS } from "@/store/form";
 import type { EventConfig } from "@/lib/types";
 import Step1Veranstaltung from "@/components/steps/Step1Veranstaltung";
@@ -31,6 +31,16 @@ export default function Wizard({ config, slug }: Props) {
   const { form, step, nextStep, prevStep, goToStep, reset } = useFormStore();
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const isFirst = useRef(true);
+
+  useEffect(() => {
+    if (isFirst.current) { isFirst.current = false; return; }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    requestAnimationFrame(() => {
+      const h = document.getElementById("embed-root")?.offsetHeight ?? document.body.offsetHeight;
+      window.parent.postMessage({ type: "eventwulf-resize", height: h, scrollTop: true }, "*");
+    });
+  }, [step]);
 
   function isStepNavigable(n: number): boolean {
     if (n <= step) return true;
