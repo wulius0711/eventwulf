@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
       ? resend.emails.send({
           from: `${config.company.name} <onboarding@resend.dev>`,
           to: body.email,
-          subject: `Anfrage bestätigt – ${sanitize(body.artTitel) || "Retreat"}`,
+          subject: `Anfrage erhalten – ${sanitize(body.artTitel) || "Retreat"}`,
           html: confirmationHtmlWithIcal,
         })
       : Promise.resolve({ error: null }),
