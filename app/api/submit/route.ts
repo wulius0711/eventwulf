@@ -136,6 +136,8 @@ export async function POST(req: NextRequest) {
     }
   } catch (e) {
     console.error("Failed to save inquiry:", e);
+    // Guard: emails must not be sent if the inquiry was not persisted
+    return NextResponse.json({ error: "Anfrage konnte nicht gespeichert werden" }, { status: 500 });
   }
 
   const host = req.headers.get("host") ?? "";

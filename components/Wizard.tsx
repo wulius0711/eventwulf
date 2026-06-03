@@ -230,8 +230,8 @@ export default function Wizard({ config, slug }: Props) {
             disabled={submitState === "loading"}
             style={{
               padding: "0.65rem 1.75rem",
-              background: submitState === "loading" ? "var(--muted)" : "var(--text)",
-              color: "#fff",
+              background: submitState === "loading" ? "var(--muted)" : "var(--primary)",
+              color: "var(--btn-text)",
               border: "none",
               borderRadius: "var(--radius-sm)",
               fontWeight: 600,
