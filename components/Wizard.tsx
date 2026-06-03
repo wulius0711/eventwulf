@@ -87,26 +87,11 @@ export default function Wizard({ config, slug }: Props) {
 
   if (submitState === "success") {
     return (
-      <div style={{ textAlign: "center", padding: "3rem 2rem" }}>
-        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✓</div>
-        <h2 style={{ fontSize: "1.4rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-          Anfrage gesendet!
-        </h2>
-        <p style={{ color: "var(--muted)", marginBottom: "1.5rem" }}>
-          Vielen Dank! Wir melden uns so bald wie möglich bei dir.
-        </p>
-        <button
-          onClick={() => setSubmitState("idle")}
-          style={{
-            padding: "0.65rem 1.75rem",
-            background: "var(--primary)",
-            color: "var(--btn-text)",
-            border: "none",
-            borderRadius: "var(--radius-sm)",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
+      <div className="ew-success">
+        <div className="ew-success-icon">✓</div>
+        <h2 className="ew-success-title">Anfrage gesendet!</h2>
+        <p className="ew-success-msg">Vielen Dank! Wir melden uns so bald wie möglich bei dir.</p>
+        <button onClick={() => setSubmitState("idle")} className="ew-btn-primary">
           Neue Anfrage
         </button>
       </div>
@@ -143,12 +128,10 @@ export default function Wizard({ config, slug }: Props) {
       </div>
 
       {/* Step title */}
-      <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "1.5rem" }}>
-        {STEP_LABELS[step - 1]}
-      </h2>
+      <h2 className="ew-step-title">{STEP_LABELS[step - 1]}</h2>
 
       {/* Step content */}
-      <div key={stepKey.current} className={stepClass} onAnimationEnd={() => setStepClass("")} style={{ minHeight: "200px" }}>
+      <div key={stepKey.current} className={`ew-step-content${stepClass ? ` ${stepClass}` : ""}`} onAnimationEnd={() => setStepClass("")}>
         {step === 1 && <Step1Veranstaltung slug={slug} config={config} />}
         {step === 2 && <Step2Gruppe config={config} />}
         {step === 3 && <Step3Ausstattung config={config} />}
@@ -157,70 +140,22 @@ export default function Wizard({ config, slug }: Props) {
       </div>
 
       {/* Error */}
-      {error && (
-        <p style={{ color: "var(--error)", fontSize: "0.85rem", marginTop: "1rem" }}>{error}</p>
-      )}
+      {error && <p className="ew-form-error">{error}</p>}
 
       {/* Navigation */}
-      <div
-        className="ew-wizard-nav"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: "2rem",
-          paddingTop: "1.25rem",
-          borderTop: "1px solid var(--border)",
-        }}
-      >
-        <button
-          onClick={prevStep}
-          disabled={step === 1}
-          style={{
-            padding: "0.65rem 1.5rem",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius-sm)",
-            background: "var(--surface)",
-            color: step === 1 ? "var(--border)" : "var(--text)",
-            cursor: step === 1 ? "not-allowed" : "pointer",
-            fontWeight: 500,
-          }}
-        >
+      <div className="ew-wizard-nav">
+        <button onClick={prevStep} disabled={step === 1} className="ew-btn-secondary">
           ← Zurück
         </button>
-
-        <span className="ew-step-counter" style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-          {step} / {TOTAL_STEPS}
-        </span>
-
+        <span className="ew-step-counter">{step} / {TOTAL_STEPS}</span>
         {step < TOTAL_STEPS ? (
-          <button
-            onClick={handleNext}
-            style={{
-              padding: "0.65rem 1.5rem",
-              background: "var(--primary)",
-              color: "var(--btn-text)",
-              border: "none",
-              borderRadius: "var(--radius-sm)",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Weiter →
-          </button>
+          <button onClick={handleNext} className="ew-btn-primary">Weiter →</button>
         ) : (
           <button
             onClick={handleSubmit}
             disabled={submitState === "loading"}
-            style={{
-              padding: "0.65rem 1.75rem",
-              background: submitState === "loading" ? "var(--muted)" : "var(--primary)",
-              color: "var(--btn-text)",
-              border: "none",
-              borderRadius: "var(--radius-sm)",
-              fontWeight: 600,
-              cursor: submitState === "loading" ? "not-allowed" : "pointer",
-            }}
+            className="ew-btn-primary"
+            data-loading={submitState === "loading" ? "" : undefined}
           >
             {submitState === "loading" ? "Wird gesendet…" : "Anfragen"}
           </button>
