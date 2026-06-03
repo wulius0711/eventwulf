@@ -137,6 +137,18 @@ button:active:not(:disabled) {
   box-shadow: none;
 }
 
+/* Calendar animations */
+@keyframes cal-slide-next {
+  from { opacity: 0; transform: translateX(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes cal-slide-prev {
+  from { opacity: 0; transform: translateX(-12px) scale(0.98); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+.cal-slide-next { animation: cal-slide-next 0.25s ease; }
+.cal-slide-prev { animation: cal-slide-prev 0.25s ease; }
+
 /* Responsive helpers (widget) */
 @media (max-width: 440px) {
   .step-label { display: none !important; }

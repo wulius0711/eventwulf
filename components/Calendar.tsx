@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { BlockedDateEntry } from "@/lib/types";
 
 const DAYS = ["MO", "DI", "MI", "DO", "FR", "SA", "SO"];
@@ -119,9 +119,10 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
   const [month, setMonth] = useState(() => new Date().getMonth());
   const [blocked, setBlocked] = useState<BlockedDateEntry[]>([]);
   const [hover, setHover] = useState<Date | null>(null);
-  // local selection when used standalone (no onRangeChange)
   const [localStart, setLocalStart] = useState<Date | null>(selectedStart ?? null);
   const [localEnd, setLocalEnd] = useState<Date | null>(selectedEnd ?? null);
+  const [slideClass, setSlideClass] = useState("");
+  const gridKey = useRef(0);
 
   const selStart = onRangeChange ? (selectedStart ?? null) : localStart;
   const selEnd = onRangeChange ? (selectedEnd ?? null) : localEnd;
@@ -135,60 +136,56 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
       .then((r) => r.json()).then(setBlocked).catch(() => {});
   }, [slug]);
 
+  function navigate(dir: "prev" | "next") {
+    gridKey.current += 1;
+    setSlideClass(dir === "next" ? "cal-slide-next" : "cal-slide-prev");
+    if (dir === "next") {
+      if (month === 11) { setMonth(0); setYear(y => y + 1); }
+      else setMonth(m => m + 1);
+    } else {
+      if (month === 0) { setMonth(11); setYear(y => y - 1); }
+      else setMonth(m => m - 1);
+    }
+  }
+
   function handleDayClick(date: Date) {
     if (isBlocked(date, blocked)) return;
     const d = toDay(date);
-
     let newStart = selStart;
     let newEnd = selEnd;
 
     if (!selStart || (selStart && selEnd)) {
-      // fresh start
-      newStart = d;
-      newEnd = null;
+      newStart = d; newEnd = null;
     } else {
-      // second click
       const s = toDay(selStart);
-      if (d.getTime() === s.getTime()) {
-        newStart = null;
-        newEnd = null;
-      } else if (d < s) {
-        newStart = d;
-        newEnd = s;
-      } else {
-        newEnd = d;
-      }
+      if (d.getTime() === s.getTime()) { newStart = null; newEnd = null; }
+      else if (d < s) { newStart = d; newEnd = s; }
+      else { newEnd = d; }
     }
 
-    if (onRangeChange) {
-      onRangeChange(newStart, newEnd);
-    } else {
-      setLocalStart(newStart);
-      setLocalEnd(newEnd);
-    }
-  }
-
-  function prevMonth() {
-    if (month === 0) { setMonth(11); setYear(y => y - 1); }
-    else setMonth(m => m - 1);
-  }
-  function nextMonth() {
-    if (month === 11) { setMonth(0); setYear(y => y + 1); }
-    else setMonth(m => m + 1);
+    if (onRangeChange) { onRangeChange(newStart, newEnd); }
+    else { setLocalStart(newStart); setLocalEnd(newEnd); }
   }
 
   const weeks = buildGrid(year, month);
+  const hasRange = selStart && selEnd;
 
   return (
-    <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", background: "var(--surface)", overflow: "hidden", userSelect: "none" }}>
+    <div style={{
+      borderRadius: "var(--radius)",
+      background: "var(--surface)",
+      userSelect: "none",
+      boxShadow: "0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
+    }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1rem", borderBottom: "1px solid var(--border)" }}>
-        <button onClick={() => { if (today) { setMonth(today.getMonth()); setYear(today.getFullYear()); } }}
+        <button
+          onClick={() => { if (today) { const dir = (today.getFullYear() * 12 + today.getMonth()) < (year * 12 + month) ? "prev" : "next"; navigate(dir); setMonth(today.getMonth()); setYear(today.getFullYear()); } }}
           style={{ padding: "0.3rem 0.8rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", cursor: "pointer", fontSize: "0.82rem", fontWeight: 500 }}>
           Heute
         </button>
-        <button onClick={prevMonth} style={{ padding: "0.3rem 0.6rem", border: "none", background: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1.1rem" }}>‹</button>
-        <button onClick={nextMonth} style={{ padding: "0.3rem 0.6rem", border: "none", background: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1.1rem" }}>›</button>
+        <button onClick={() => navigate("prev")} style={{ padding: "0.3rem 0.6rem", border: "none", background: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1.1rem" }}>‹</button>
+        <button onClick={() => navigate("next")} style={{ padding: "0.3rem 0.6rem", border: "none", background: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1.1rem" }}>›</button>
         <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{MONTHS[month]} {year}</span>
         {selStart && (
           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--primary-text)", fontWeight: 500 }}>
@@ -206,91 +203,95 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
       </div>
 
       {/* Weeks */}
-      {weeks.map((week, wi) => {
-        const blockedRange = weekBlockedRange(week, blocked);
-        const events = weekEvents(week, blocked);
-        return (
-          <div key={wi} style={{ borderBottom: "1px solid var(--border)" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
-              {week.map((cell, di) => {
-                const isToday = today !== null && cell.date.getTime() === today.getTime();
-                const blocked_ = isBlocked(cell.date, blocked);
-                const edge = isRangeEdge(cell.date, selStart, selEnd, hover);
-                const between = inRange(cell.date, selStart, selEnd, hover);
-                const isStart = selStart && toDay(cell.date).getTime() === toDay(selStart).getTime();
-                const isEnd = selEnd && toDay(cell.date).getTime() === toDay(selEnd).getTime();
+      <div key={gridKey.current} className={slideClass} onAnimationEnd={() => setSlideClass("")}>
+        {weeks.map((week, wi) => {
+          const blockedRange = weekBlockedRange(week, blocked);
+          const events = weekEvents(week, blocked);
+          return (
+            <div key={wi} style={{ borderBottom: "1px solid var(--border)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
+                {week.map((cell, di) => {
+                  const isToday = today !== null && cell.date.getTime() === today.getTime();
+                  const blocked_ = isBlocked(cell.date, blocked);
+                  const edge = isRangeEdge(cell.date, selStart, selEnd, hover);
+                  const between = inRange(cell.date, selStart, selEnd, hover);
+                  const isStart = !!(selStart && toDay(cell.date).getTime() === toDay(selStart).getTime());
+                  const isEnd = !!(selEnd && toDay(cell.date).getTime() === toDay(selEnd).getTime());
 
+                  // Pill-Range background
+                  const pillBg = (() => {
+                    if (!hasRange && !hover) {
+                      return "transparent";
+                    }
+                    if (isStart && isEnd) return "transparent";
+                    if (isStart) return `linear-gradient(to right, transparent 50%, var(--primary-dim) 50%)`;
+                    if (isEnd) return `linear-gradient(to left, transparent 50%, var(--primary-dim) 50%)`;
+                    if (between) return "var(--primary-dim)";
+                    // hover state (only one date selected)
+                    if (!selEnd && hover) {
+                      const lo = toDay(selStart!);
+                      const hi = toDay(hover);
+                      const d = toDay(cell.date);
+                      const [a, b] = lo <= hi ? [lo, hi] : [hi, lo];
+                      const isHoverStart = d.getTime() === a.getTime();
+                      const isHoverEnd = d.getTime() === b.getTime();
+                      const isHoverBetween = d > a && d < b;
+                      if (isHoverStart) return `linear-gradient(to right, transparent 50%, var(--primary-dim) 50%)`;
+                      if (isHoverEnd) return `linear-gradient(to left, transparent 50%, var(--primary-dim) 50%)`;
+                      if (isHoverBetween) return "var(--primary-dim)";
+                    }
+                    return "transparent";
+                  })();
 
-                return (
-                  <div
-                    key={di}
-                    onClick={() => handleDayClick(cell.date)}
-                    onMouseEnter={() => selStart && !selEnd && setHover(cell.date)}
-                    onMouseLeave={() => setHover(null)}
-                    style={{
-                      padding: "0.4rem 0.3rem 0.3rem",
-                      minHeight: "3rem",
-                      cursor: blocked_ ? "not-allowed" : "pointer",
-                      opacity: cell.inMonth ? 1 : 0.3,
-                      background: (between || edge) ? "var(--primary-dim)" : "transparent",
-                      borderRadius: isStart ? "6px 0 0 6px" : isEnd ? "0 6px 6px 0" : undefined,
-                      transition: "background 0.1s",
-                    }}
-                  >
-                    <span style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "1.7rem",
-                      height: "1.7rem",
-                      borderRadius: "50%",
-                      fontSize: "0.82rem",
-                      fontWeight: isToday ? 700 : 400,
-                      background: edge ? "var(--primary)" : isToday ? "var(--text)" : "transparent",
-                      color: edge ? "var(--btn-text)" : isToday ? "#fff" : blocked_ ? "var(--muted)" : "var(--text)",
-                      textDecoration: blocked_ ? "line-through" : "none",
-                    }}>
-                      {cell.date.getDate()}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Blocked banner */}
-            {(blockedRange || events.length > 0) && (
-              <div style={{ padding: "0 0 0.35rem", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                {blockedRange && (
-                  <div style={{ position: "relative", height: "1.2rem" }}>
-                    <div style={{
-                      position: "absolute",
-                      left: `calc(${blockedRange.start} * (100% / 7))`,
-                      width: `calc(${blockedRange.end - blockedRange.start + 1} * (100% / 7))`,
-                      background: "var(--primary)",
-                      color: "var(--btn-text)",
-                      fontSize: "0.68rem",
-                      fontWeight: 500,
-                      padding: "0.15rem 0.5rem",
-                      borderRadius: "3px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}>
-                      nicht verfügbar
-                    </div>
-                  </div>
-                )}
-                {events.map((ev, ei) => (
-                  <div key={ei} style={{ position: "relative", height: "1.2rem" }}>
+                  return (
                     <div
-                      onMouseEnter={(e) => setTooltip({ label: ev.label, start: ev.startDate, end: ev.endDate, x: e.clientX, y: e.clientY })}
-                      onMouseLeave={() => setTooltip(null)}
+                      key={di}
+                      onClick={() => handleDayClick(cell.date)}
+                      onMouseEnter={() => selStart && !selEnd && setHover(cell.date)}
+                      onMouseLeave={() => setHover(null)}
                       style={{
+                        padding: "0.4rem 0.3rem 0.3rem",
+                        minHeight: "3rem",
+                        cursor: blocked_ ? "not-allowed" : "pointer",
+                        opacity: cell.inMonth ? 1 : 0.3,
+                        background: pillBg,
+                        transition: "background 0.1s",
+                        display: "flex",
+                        alignItems: "flex-start",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "1.7rem",
+                        height: "1.7rem",
+                        borderRadius: "50%",
+                        fontSize: "0.82rem",
+                        fontWeight: isToday ? 700 : 400,
+                        background: edge ? "var(--primary)" : isToday ? "var(--text)" : "transparent",
+                        color: edge ? "var(--btn-text)" : isToday ? "#fff" : blocked_ ? "var(--muted)" : "var(--text)",
+                        textDecoration: blocked_ ? "line-through" : "none",
+                      }}>
+                        {cell.date.getDate()}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Blocked / event banners */}
+              {(blockedRange || events.length > 0) && (
+                <div style={{ padding: "0 0 0.35rem", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                  {blockedRange && (
+                    <div style={{ position: "relative", height: "1.2rem" }}>
+                      <div style={{
                         position: "absolute",
-                        left: `calc(${ev.start} * (100% / 7))`,
-                        width: `calc(${ev.end - ev.start + 1} * (100% / 7))`,
-                        background: ev.color,
-                        color: "#fff",
+                        left: `calc(${blockedRange.start} * (100% / 7))`,
+                        width: `calc(${blockedRange.end - blockedRange.start + 1} * (100% / 7))`,
+                        background: "var(--primary)",
+                        color: "var(--btn-text)",
                         fontSize: "0.68rem",
                         fontWeight: 500,
                         padding: "0.15rem 0.5rem",
@@ -298,33 +299,57 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
-                        cursor: "default",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.3rem",
                       }}>
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{ev.label}</span>
-                      {showCapacity && ev.maxCapacity != null && (
-                        <span style={{
-                          flexShrink: 0,
-                          background: "rgba(0,0,0,0.25)",
-                          borderRadius: "3px",
-                          padding: "0 0.3rem",
-                          fontSize: "0.62rem",
-                        }}>
-                          {ev.maxCapacity - ev.bookedCount} frei
-                        </span>
-                      )}
+                        nicht verfügbar
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
+                  )}
+                  {events.map((ev, ei) => (
+                    <div key={ei} style={{ position: "relative", height: "1.2rem" }}>
+                      <div
+                        onMouseEnter={(e) => setTooltip({ label: ev.label, start: ev.startDate, end: ev.endDate, x: e.clientX, y: e.clientY })}
+                        onMouseLeave={() => setTooltip(null)}
+                        style={{
+                          position: "absolute",
+                          left: `calc(${ev.start} * (100% / 7))`,
+                          width: `calc(${ev.end - ev.start + 1} * (100% / 7))`,
+                          background: ev.color,
+                          color: "#fff",
+                          fontSize: "0.68rem",
+                          fontWeight: 500,
+                          padding: "0.15rem 0.5rem",
+                          borderRadius: "3px",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          cursor: "default",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.3rem",
+                        }}>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{ev.label}</span>
+                        {showCapacity && ev.maxCapacity != null && (
+                          <span style={{
+                            flexShrink: 0,
+                            background: "rgba(0,0,0,0.25)",
+                            borderRadius: "3px",
+                            padding: "0 0.3rem",
+                            fontSize: "0.62rem",
+                          }}>
+                            {ev.maxCapacity - ev.bookedCount} frei
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-      {/* Event tooltip */}
+      {/* Tooltip */}
       {tooltip && (
         <div style={{
           position: "fixed",
