@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import type { EventConfig } from "@/lib/types";
+import Toggle from "@/components/admin/Toggle";
 
 interface Props {
   initialConfig: EventConfig;
@@ -324,15 +325,15 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
               Diese Features sind standardmäßig ausgeblendet und müssen explizit aktiviert werden.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-              <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", cursor: "pointer", fontSize: "0.88rem" }}>
-                <input type="checkbox" checked={config.showPackages === true} onChange={(e) => set("showPackages", e.target.checked)} style={{ width: "auto", cursor: "pointer", marginTop: "0.1rem", flexShrink: 0 }} />
+              <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
+                <Toggle checked={config.showPackages === true} onChange={(v) => set("showPackages", v)} />
                 <span>
                   <strong>Seminarpakete anzeigen</strong>
                   <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Zeigt eine Paketauswahl in Schritt 1 des Buchungsformulars</span>
                 </span>
               </label>
-              <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", cursor: "pointer", fontSize: "0.88rem" }}>
-                <input type="checkbox" checked={config.showCapacity === true} onChange={(e) => set("showCapacity", e.target.checked)} style={{ width: "auto", cursor: "pointer", marginTop: "0.1rem", flexShrink: 0 }} />
+              <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
+                <Toggle checked={config.showCapacity === true} onChange={(v) => set("showCapacity", v)} />
                 <span>
                   <strong>Verfügbare Plätze anzeigen</strong>
                   <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Zeigt verbleibende Kapazität im Kalender (erfordert konfigurierte Kapazitäten)</span>
@@ -399,13 +400,8 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, 100%), 1fr))", gap: "0.5rem 1.5rem" }}>
                   {step.fields.map(({ key, label, hint }) => (
-                    <label key={key} style={{ display: "flex", alignItems: "flex-start", gap: "0.55rem", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={fieldEnabled(key)}
-                        onChange={(e) => setFormField(key, e.target.checked)}
-                        style={{ width: "auto", cursor: "pointer", flexShrink: 0, marginTop: "0.2rem" }}
-                      />
+                    <label key={key} style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
+                      <Toggle checked={fieldEnabled(key)} onChange={(v) => setFormField(key, v)} />
                       <span style={{ fontSize: "0.875rem", lineHeight: 1.4 }}>
                         {label}
                         {hint && <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>}

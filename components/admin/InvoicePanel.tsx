@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import type { InvoiceEntry, InvoiceLineItem } from "@/lib/types";
+import Toggle from "@/components/admin/Toggle";
 
 interface Props {
   inquiryId: string;
@@ -181,8 +182,8 @@ export default function InvoicePanel({ inquiryId, participantCount, packageName,
             />
           </div>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem", cursor: "pointer" }}>
-            <input type="checkbox" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} style={{ width: "auto" }} />
+          <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.82rem", cursor: "pointer" }}>
+            <Toggle checked={sendEmail} onChange={setSendEmail} />
             Per E-Mail an Anfragenden senden
           </label>
 
