@@ -115,57 +115,47 @@ export default function Wizard({ config, slug }: Props) {
 
   return (
     <div>
-      {/* Step indicator – segmented bar */}
-      <div style={{ marginBottom: "2rem" }}>
-        <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.5rem" }}>
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => {
-            const n = i + 1;
-            const done = n < step;
-            const active = n === step;
-            return (
+      {/* Step indicator */}
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "2.5rem" }}>
+        {Array.from({ length: TOTAL_STEPS }, (_, i) => {
+          const n = i + 1;
+          const done = n < step;
+          const active = n === step;
+          return (
+            <div key={n} style={{ display: "flex", alignItems: "center", flex: n < TOTAL_STEPS ? 1 : undefined }}>
               <div
-                key={n}
                 onClick={() => handleStepClick(n)}
-                style={{
-                  flex: 1,
-                  height: "3px",
-                  borderRadius: "99px",
-                  background: done || active ? "var(--primary)" : "var(--border)",
-                  cursor: n !== step && n <= maxStep ? "pointer" : "default",
-                  transition: "background 0.3s ease",
-                  opacity: n <= maxStep || active ? 1 : 0.4,
-                }}
-              />
-            );
-          })}
-        </div>
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => {
-            const n = i + 1;
-            const active = n === step;
-            return (
-              <div
-                key={n}
-                onClick={() => handleStepClick(n)}
-                style={{
-                  flex: 1,
-                  fontSize: "0.8rem",
-                  fontWeight: active ? 600 : 400,
-                  color: n <= step ? "var(--primary-text)" : "var(--muted)",
-                  cursor: n !== step && n <= maxStep ? "pointer" : "default",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  textAlign: "center",
-                  transition: "color 0.2s",
-                }}
-                className="step-label"
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem", cursor: n !== step && n <= maxStep ? "pointer" : "default", opacity: n <= maxStep ? 1 : 0.4 }}
               >
-                {n}. {STEP_LABELS[i]}
+                <div style={{
+                  width: "2rem", height: "2rem", borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "0.8rem", fontWeight: 700,
+                  background: done || active ? "var(--primary)" : "var(--bg2)",
+                  color: done || active ? "var(--btn-text)" : "var(--muted)",
+                  border: `2px solid ${done || active ? "var(--primary)" : "var(--border)"}`,
+                  transition: "all 0.2s",
+                }}>
+                  {done ? "✓" : n}
+                </div>
+                <span className="step-label" style={{
+                  fontSize: "0.7rem", whiteSpace: "nowrap",
+                  color: active ? "var(--primary-text)" : "var(--muted)",
+                  fontWeight: active ? 600 : 400,
+                }}>
+                  {STEP_LABELS[i]}
+                </span>
               </div>
-            );
-          })}
-        </div>
+              {n < TOTAL_STEPS && (
+                <div className="step-conn" style={{
+                  flex: 1, height: "2px", margin: "0 0.25rem", marginBottom: "1.2rem",
+                  background: done ? "var(--primary)" : "var(--border)",
+                  transition: "background 0.2s",
+                }} />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Step title */}
