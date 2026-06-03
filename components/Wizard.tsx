@@ -32,9 +32,16 @@ export default function Wizard({ config, slug }: Props) {
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const isFirst = useRef(true);
+  const prevStepRef = useRef(step);
+  const [stepClass, setStepClass] = useState("");
+  const stepKey = useRef(0);
 
   useEffect(() => {
-    if (isFirst.current) { isFirst.current = false; return; }
+    if (isFirst.current) { isFirst.current = false; prevStepRef.current = step; return; }
+    const dir = step > prevStepRef.current ? "cal-slide-next" : "cal-slide-prev";
+    prevStepRef.current = step;
+    stepKey.current += 1;
+    setStepClass(dir);
     window.scrollTo({ top: 0, behavior: "smooth" });
     requestAnimationFrame(() => {
       const h = document.getElementById("embed-root")?.offsetHeight ?? document.body.offsetHeight;
@@ -157,7 +164,7 @@ export default function Wizard({ config, slug }: Props) {
       </h2>
 
       {/* Step content */}
-      <div style={{ minHeight: "200px" }}>
+      <div key={stepKey.current} className={stepClass} onAnimationEnd={() => setStepClass("")} style={{ minHeight: "200px" }}>
         {step === 1 && <Step1Veranstaltung slug={slug} config={config} />}
         {step === 2 && <Step2Gruppe config={config} />}
         {step === 3 && <Step3Ausstattung config={config} />}
