@@ -128,7 +128,7 @@ export default function Wizard({ config, slug }: Props) {
                 style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem", cursor: n !== step && n <= maxStep ? "pointer" : "default", opacity: n <= maxStep ? 1 : 0.4 }}
               >
                 <div style={{
-                  width: "2rem", height: "2rem", borderRadius: "50%",
+                  width: "2.5rem", height: "2.5rem", borderRadius: "50%",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "0.8rem", fontWeight: 700,
                   background: done || active ? "var(--primary)" : "var(--bg2)",
