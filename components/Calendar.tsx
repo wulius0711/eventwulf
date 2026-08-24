@@ -183,10 +183,14 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
     let newEnd = selEnd;
 
     if (!selStart || (selStart && selEnd)) {
-      newStart = d; newEnd = null;
+      if (selStart && selEnd && toDay(selStart).getTime() === d.getTime() && toDay(selEnd).getTime() === d.getTime()) {
+        newStart = null; newEnd = null;
+      } else {
+        newStart = d; newEnd = null;
+      }
     } else {
       const s = toDay(selStart);
-      if (d.getTime() === s.getTime()) { newStart = null; newEnd = null; }
+      if (d.getTime() === s.getTime()) { newEnd = s; }
       else if (d < s) {
         if (hasBlockedBetween(d, s, blocked)) return;
         newStart = d; newEnd = s;
