@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import DOMPurify from "isomorphic-dompurify";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
+
+function sanitizeDescription(html: string): string {
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ["p", "strong", "em", "ul", "ol", "li", "br"], ALLOWED_ATTR: [] });
+}
 
 function serialize(e: {
   id: string; name: string; description: string; image: string;
@@ -97,7 +102,7 @@ export async function POST(req: NextRequest) {
       data: {
         clientId,
         name: name.trim(),
-        description: description ?? "",
+        description: description ? sanitizeDescription(description) : "",
         image: image ?? "",
         startDate: new Date(startDate),
         endDate: new Date(endDate),
@@ -159,7 +164,7 @@ export async function PATCH(req: NextRequest) {
       where: { id },
       data: {
         name: name?.trim() ?? existing.name,
-        description: description ?? existing.description,
+        description: description !== undefined ? sanitizeDescription(description) : existing.description,
         image: newImage,
         startDate: newStartDate,
         endDate: newEndDate,

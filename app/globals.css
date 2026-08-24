@@ -583,3 +583,16 @@ button:active:not(:disabled) {
   .ew-vorschau-handle { display: none !important; }
   .ew-vorschau-px { display: none !important; }
 }
+
+.ew-rich-editor .ProseMirror {
+  padding: 0.75rem 1rem;
+  min-height: 5rem;
+  outline: none;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+.ew-rich-editor .ProseMirror ul,
+.ew-rich-editor .ProseMirror ol {
+  padding-left: 1.25rem;
+}

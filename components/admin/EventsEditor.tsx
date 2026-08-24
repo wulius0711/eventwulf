@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { EventEntry } from "@/lib/types";
 import Toggle from "./Toggle";
+import RichTextEditor from "./RichTextEditor";
 
 const EVENT_COLORS = [
   { label: "Grün",   value: "#16a34a" },
@@ -260,7 +261,7 @@ export default function EventsEditor() {
 
         <div>
           <label>Beschreibung</label>
-          <textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={3} style={{ width: "100%", resize: "vertical" }} />
+          <RichTextEditor value={form.description} onChange={(html) => set("description", html)} />
         </div>
 
         <div>
