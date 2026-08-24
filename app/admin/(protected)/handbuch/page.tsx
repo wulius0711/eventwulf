@@ -87,6 +87,12 @@ const content: Record<string, React.ReactNode> = {
       <H3>Checkboxen</H3>
       <p>Jede Checkbox aktiviert oder deaktiviert ein optionales Feld. Deaktivierte Felder werden den Gästen nicht angezeigt.</p>
 
+      <H3>Schritt 1 – Veranstaltung</H3>
+      <p>Nur eine Checkbox: <strong>Uhrzeiten</strong> — blendet die Felder für Beginn- und Endzeit im ersten Schritt ein oder aus. Titel, Zeitraum (Kalender) und ggf. Event-Auswahl erscheinen immer.</p>
+
+      <H3>Schritt 2 – Gruppe</H3>
+      <p>Vier Checkboxen: <strong>Teilnehmerzahl</strong>, <strong>Leiter:innen</strong>, <strong>Telefon</strong> und <strong>Sprache</strong>. Jede blendet das jeweilige Feld ein oder aus, keine weiteren Optionslisten nötig.</p>
+
       <H3>Schritt 3 – Ausstattung</H3>
       <p>In Schritt 3 wählen Gäste benötigte Ausstattung als Checkboxen. Welche Optionen erscheinen, steuerst du über die <strong>Ausstattungs-Optionen</strong> unten im gleichen Tab.</p>
       <ul style={{ marginTop: "0.5rem", paddingLeft: "1.25rem", lineHeight: 1.9 }}>
