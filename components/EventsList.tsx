@@ -196,7 +196,7 @@ export default function EventsList({ slug }: Props) {
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: "1.25rem" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: "1.25rem", alignItems: "start" }}>
       {events.map((ev) => (
         <EventCard
           key={ev.id}
