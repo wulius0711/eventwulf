@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
 
 function sanitizeDescription(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ["p", "strong", "em", "ul", "ol", "li", "br", "a"],
-    ALLOWED_ATTR: ["href", "target", "rel"],
+  return sanitizeHtml(html, {
+    allowedTags: ["p", "strong", "em", "ul", "ol", "li", "br", "a"],
+    allowedAttributes: { a: ["href", "target", "rel"] },
+    allowedSchemes: ["http", "https", "mailto", "tel"],
   });
 }
 

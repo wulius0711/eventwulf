@@ -1,7 +1,6 @@
 "use client";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
 
 interface Props {
   value: string;
@@ -32,10 +31,9 @@ function ToolbarButton({ active, onClick, children }: { active: boolean; onClick
 export default function RichTextEditor({ value, onChange }: Props) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: false, blockquote: false, codeBlock: false, horizontalRule: false }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: { target: "_blank", rel: "noopener noreferrer nofollow" },
+      StarterKit.configure({
+        heading: false, blockquote: false, codeBlock: false, horizontalRule: false,
+        link: { openOnClick: false, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer nofollow" } },
       }),
     ],
     content: value,
