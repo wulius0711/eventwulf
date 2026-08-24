@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import type { EventEntry } from "@/lib/types";
+import Toggle from "./Toggle";
 
 const EVENT_COLORS = [
   { label: "Grün",   value: "#16a34a" },
@@ -317,14 +318,20 @@ export default function EventsEditor() {
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-            <input type="checkbox" checked={form.intern} onChange={(e) => set("intern", e.target.checked)} />
-            Intern — sperrt den allgemeinen Kalender für andere Anfragen im selben Zeitraum
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
+            <Toggle checked={form.intern} onChange={(v) => set("intern", v)} />
+            <span>
+              <strong>Intern</strong>
+              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Sperrt den allgemeinen Kalender für andere Anfragen im selben Zeitraum</span>
+            </span>
           </label>
-          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-            <input type="checkbox" checked={form.isActive} onChange={(e) => set("isActive", e.target.checked)} />
-            Aktiv — nur aktive Events erscheinen im Buchungswidget
+          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
+            <Toggle checked={form.isActive} onChange={(v) => set("isActive", v)} />
+            <span>
+              <strong>Aktiv</strong>
+              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Nur aktive Events erscheinen im Buchungswidget</span>
+            </span>
           </label>
         </div>
 
