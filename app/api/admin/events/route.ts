@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { releaseEventImage } from "@/lib/bunny";
 
 function serialize(e: {
   id: string; name: string; description: string; image: string;
@@ -151,13 +152,15 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: `Es sind bereits ${existing.bookedCount} Plätze belegt — Max. Teilnehmer kann nicht darunter gesetzt werden` }, { status: 400 });
   }
 
+  const newImage = image ?? existing.image;
+
   try {
     const updated = await prisma.event.update({
       where: { id },
       data: {
         name: name?.trim() ?? existing.name,
         description: description ?? existing.description,
-        image: image ?? existing.image,
+        image: newImage,
         startDate: newStartDate,
         endDate: newEndDate,
         color: color ?? existing.color,
@@ -169,6 +172,9 @@ export async function PATCH(req: NextRequest) {
         sortOrder: sortOrder !== undefined ? Number(sortOrder) : existing.sortOrder,
       },
     });
+    if (existing.image && existing.image !== newImage) {
+      await releaseEventImage(existing.image, clientId, id);
+    }
     return NextResponse.json(serialize(updated));
   } catch {
     return NextResponse.json({ error: "Speichern fehlgeschlagen" }, { status: 400 });
@@ -183,7 +189,13 @@ export async function DELETE(req: NextRequest) {
   if (!clientId) return NextResponse.json({ error: "Client nicht gefunden" }, { status: 404 });
 
   const { id } = await req.json();
-  await prisma.event.deleteMany({ where: { id, clientId } });
+  const existing = await prisma.event.findFirst({ where: { id, clientId } });
+  if (!existing) return NextResponse.json({ ok: true }); // already gone
+
+  await prisma.event.delete({ where: { id } });
+  if (existing.image) {
+    await releaseEventImage(existing.image, clientId, id);
+  }
 
   return NextResponse.json({ ok: true });
 }
