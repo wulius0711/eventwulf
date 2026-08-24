@@ -34,13 +34,15 @@ Gegen die echte Bunny-API end-to-end verifiziert: Upload (201), öffentlicher CD
 
 ## 4. Admin-UI
 
-- [ ] `AvailabilityEditor` + `PackagesEditor` zu einem Event-Editor zusammenführen
-- [ ] Formularfelder: Name, Beschreibung, Bild-Upload, Zeitraum, Preis, Min/Max, Farbe, Intern/Extern-Toggle, Aktiv
-- [ ] Liste gruppieren: Bevorstehend (Standard sichtbar) / Vergangen (einklappbar)
-- [ ] Status-Badges (Aktiv / Ausgebucht / Vergangen / Inaktiv) im Stil von `InquiryInbox`
-- [ ] "Duplizieren"-Aktion pro Event (für wiederkehrende Retreats)
-- [ ] Teilnehmerliste pro Event (Expand-Zeile: wer hat mit wie vielen Personen gebucht)
-- [ ] `/admin/packages`-Seite entfernen, `AdminNav.tsx` anpassen
+- [x] Neuer eigener Event-Editor (`EventsEditor.tsx` + `/admin/events`) statt Zusammenführung — `PackagesEditor` war schon in Phase 2 entfernt worden, `AvailabilityEditor` bleibt jetzt bewusst nur noch für reine Sperrzeiten (kein Tab mehr)
+- [x] Formularfelder: Name, Beschreibung, Bild-Upload, Zeitraum, Preis, Min/Max, Farbe, Intern/Extern-Toggle, Aktiv
+- [x] Liste gruppieren: Bevorstehend (Standard sichtbar) / Vergangen (einklappbar)
+- [x] Status-Badges (Aktiv / Ausgebucht / Vergangen / Inaktiv) im Stil von `InquiryInbox`
+- [x] "Duplizieren"-Aktion pro Event (für wiederkehrende Retreats)
+- [x] Teilnehmerliste pro Event (Expand-Zeile, wiederverwendet `/api/admin/inquiries`, clientseitig nach `eventId` gefiltert)
+- [x] `/admin/packages`-Seite entfernt (Phase 2), `AdminNav.tsx` um "Events" ergänzt
+
+API-seitig end-to-end mit signiertem Test-Token gegen den Dev-Branch verifiziert (Create/Update/Delete, Min>Max-Validierung, Max<bookedCount-Schutz). **Visuelle UI-Prüfung im Browser noch offen** — kein Browser-Tool in dieser Session verfügbar, bitte einmal manuell durchklicken.
 
 ## 5. Frontend — neuer Events-Embed
 
