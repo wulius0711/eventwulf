@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import type { BlockedDateEntry } from "@/lib/types";
 
 const DAYS = ["MO", "DI", "MI", "DO", "FR", "SA", "SO"];
@@ -144,6 +144,17 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
   const selEnd = onRangeChange ? (selectedEnd ?? null) : localEnd;
 
   const [tooltip, setTooltip] = useState<{ label: string; start: string; end: string; x: number; y: number } | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!tooltip || !tooltipRef.current) return;
+    const el = tooltipRef.current;
+    const margin = 8;
+    const overflowRight = el.getBoundingClientRect().right - (window.innerWidth - margin);
+    if (overflowRight > 0) {
+      el.style.left = `${el.getBoundingClientRect().left - overflowRight}px`;
+    }
+  }, [tooltip]);
 
   useEffect(() => { setToday(toDay(new Date())); }, []);
 
@@ -380,7 +391,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
 
       {/* Tooltip */}
       {tooltip && (
-        <div style={{
+        <div ref={tooltipRef} style={{
           position: "fixed",
           top: tooltip.y + 14,
           left: tooltip.x + 10,
