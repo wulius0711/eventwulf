@@ -29,7 +29,11 @@ const btnGhost = {
   cursor: "pointer",
 } as const;
 
-export default function ClientsEditor() {
+interface Props {
+  superadminSlug: string;
+}
+
+export default function ClientsEditor({ superadminSlug }: Props) {
   const [orgs, setOrgs] = useState<OrgEntry[]>([]);
   const [slug, setSlug] = useState("");
   const [email, setEmail] = useState("");
@@ -203,21 +207,25 @@ export default function ClientsEditor() {
           <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>Noch keine Kunden.</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {orgs.map((org) => (
+            {orgs.map((org) => {
+              const isSuperadminOrg = org.clients.some((c) => c.slug === superadminSlug);
+              return (
               <div key={org.id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
                 <div style={{ padding: "0.75rem 1rem", background: "var(--bg2)", display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>{org.name}</span>
                   <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{org.users[0]?.email}</span>
-                  <button style={{ ...btnDanger, marginLeft: "auto" }} onClick={() => { setDeleteOrgConfirm(org.id); setDeleteError(""); }}>
-                    Kunde löschen
-                  </button>
+                  {!isSuperadminOrg && (
+                    <button style={{ ...btnDanger, marginLeft: "auto" }} onClick={() => { setDeleteOrgConfirm(org.id); setDeleteError(""); }}>
+                      Kunde löschen
+                    </button>
+                  )}
                 </div>
                 <div style={{ padding: "0.5rem 1rem", display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
                   {org.clients.map((c) => (
                     <div key={c.slug} style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "var(--bg2)", borderRadius: "4px", padding: "0.2rem 0.4rem 0.2rem 0.5rem" }}>
                       <code style={{ fontSize: "0.82rem" }}>{c.slug}</code>
                       <a href={`/?kunde=${c.slug}`} target="_blank" style={{ fontSize: "0.72rem", color: "var(--primary)", textDecoration: "none" }}>↗</a>
-                      {org.clients.length > 1 && (
+                      {org.clients.length > 1 && c.slug !== superadminSlug && (
                         <button
                           style={{ border: "none", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.85rem", lineHeight: 1, padding: "0 0.1rem" }}
                           onClick={() => { setDeleteSlugConfirm({ orgId: org.id, slug: c.slug }); setDeleteError(""); }}
@@ -242,7 +250,8 @@ export default function ClientsEditor() {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

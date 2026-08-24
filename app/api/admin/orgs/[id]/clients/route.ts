@@ -41,6 +41,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const client = await prisma.client.findFirst({ where: { slug, organizationId: id } });
   if (!client) return NextResponse.json({ error: "Nicht gefunden" }, { status: 404 });
 
+  if (slug === SUPERADMIN) {
+    return NextResponse.json({ error: "Superadmin-Slug kann nicht gelöscht werden" }, { status: 400 });
+  }
+
   // Prevent deleting the last slug of an org
   const count = await prisma.client.count({ where: { organizationId: id } });
   if (count <= 1) return NextResponse.json({ error: "Letzter Slug kann nicht gelöscht werden" }, { status: 400 });

@@ -12,7 +12,7 @@ export default async function ClientsPage() {
       <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
         Kunden verwalten
       </h1>
-      <ClientsEditor />
+      <ClientsEditor superadminSlug={SUPERADMIN} />
     </div>
   );
 }

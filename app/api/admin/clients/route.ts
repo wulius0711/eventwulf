@@ -62,7 +62,10 @@ export async function DELETE(req: NextRequest) {
 
   // Delete inquiries (cascades to their invoices) + blockedDates explicitly, then clients
   // (DB-level onDelete: Cascade removes each client's events automatically), then users, org
-  const clients = await prisma.client.findMany({ where: { organizationId: id }, select: { id: true } });
+  const clients = await prisma.client.findMany({ where: { organizationId: id }, select: { id: true, slug: true } });
+  if (clients.some((c) => c.slug === SUPERADMIN)) {
+    return NextResponse.json({ error: "Superadmin-Konto kann nicht gelöscht werden" }, { status: 400 });
+  }
   const clientIds = clients.map((c) => c.id);
 
   await prisma.inquiry.deleteMany({ where: { clientId: { in: clientIds } } });
