@@ -72,6 +72,10 @@ export async function DELETE(req: NextRequest) {
   const inquiry = await prisma.inquiry.findFirst({ where: { id, clientId: client.id } });
   if (!inquiry) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  if (inquiry.eventId && inquiry.participantCount > 0 && isHeld(inquiry.status)) {
+    await releaseEventCapacity(inquiry.eventId, inquiry.participantCount);
+  }
+
   await prisma.inquiry.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

@@ -160,7 +160,7 @@ export default function InquiryInbox() {
                 {/* Status + delete controls */}
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", borderTop: "1px solid var(--border)", paddingTop: "0.9rem" }}>
                   <span style={{ fontSize: "0.82rem", color: "var(--muted)", marginRight: "0.25rem" }}>Status:</span>
-                  {Object.entries(STATUS_LABELS).map(([key, label]) => (
+                  {Object.entries(STATUS_LABELS).filter(([key]) => key !== "abgelaufen").map(([key, label]) => (
                     <button
                       key={key}
                       onClick={() => setStatus(inq.id, key)}
