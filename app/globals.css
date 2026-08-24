@@ -593,6 +593,13 @@ button:active:not(:disabled) {
   color: var(--text);
 }
 .ew-rich-editor .ProseMirror ul,
-.ew-rich-editor .ProseMirror ol {
+.ew-rich-editor .ProseMirror ol,
+.ew-desc ul,
+.ew-desc ol {
   padding-left: 1.25rem;
+}
+.ew-rich-editor .ProseMirror a,
+.ew-desc a {
+  color: var(--primary-text, var(--primary));
+  text-decoration: underline;
 }

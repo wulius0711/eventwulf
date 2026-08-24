@@ -1,6 +1,7 @@
 "use client";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 
 interface Props {
   value: string;
@@ -30,7 +31,13 @@ function ToolbarButton({ active, onClick, children }: { active: boolean; onClick
 
 export default function RichTextEditor({ value, onChange }: Props) {
   const editor = useEditor({
-    extensions: [StarterKit.configure({ heading: false, blockquote: false, codeBlock: false, horizontalRule: false })],
+    extensions: [
+      StarterKit.configure({ heading: false, blockquote: false, codeBlock: false, horizontalRule: false }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: { target: "_blank", rel: "noopener noreferrer nofollow" },
+      }),
+    ],
     content: value,
     immediatelyRender: false,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -38,17 +45,34 @@ export default function RichTextEditor({ value, onChange }: Props) {
 
   if (!editor) return null;
 
+  function setLink() {
+    const previousUrl = editor!.getAttributes("link").href;
+    const url = window.prompt("Link-URL:", previousUrl || "https://");
+    if (url === null) return;
+    if (url === "") {
+      editor!.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+    editor!.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  }
+
   return (
     <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
       <div style={{ display: "flex", gap: "0.4rem", padding: "0.4rem", borderBottom: "1px solid var(--border)", background: "var(--bg2)" }}>
         <ToolbarButton active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}>
           Fett
         </ToolbarButton>
+        <ToolbarButton active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}>
+          Kursiv
+        </ToolbarButton>
         <ToolbarButton active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}>
           • Liste
         </ToolbarButton>
         <ToolbarButton active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
           1. Liste
+        </ToolbarButton>
+        <ToolbarButton active={editor.isActive("link")} onClick={setLink}>
+          Link
         </ToolbarButton>
       </div>
       <EditorContent editor={editor} className="ew-rich-editor" />

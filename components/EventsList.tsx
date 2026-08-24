@@ -135,6 +135,7 @@ function EventCard({ event, slug, expanded, onToggle }: { event: EventItem; slug
           <div ref={bodyRef} style={{ padding: "0 1.25rem 1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
             {event.description && (
               <div
+                className="ew-desc"
                 style={{ margin: 0, fontSize: "0.88rem", color: "var(--text)", lineHeight: 1.5 }}
                 dangerouslySetInnerHTML={{ __html: event.description }}
               />

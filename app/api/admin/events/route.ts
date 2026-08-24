@@ -5,7 +5,10 @@ import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
 
 function sanitizeDescription(html: string): string {
-  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ["p", "strong", "em", "ul", "ol", "li", "br"], ALLOWED_ATTR: [] });
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["p", "strong", "em", "ul", "ol", "li", "br", "a"],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  });
 }
 
 function serialize(e: {
