@@ -63,13 +63,13 @@ End-to-end gegen den Dev-Branch getestet: Seite lädt (200, korrekte CSP inkl. B
 
 ## 7. Testing
 
-- [ ] Lokaler Build + manueller Test gegen localhost vor Deploy
-- [ ] Race-Condition-Test: gleichzeitige Buchungen auf letzte Plätze
-- [ ] Min/Max-Validierung testen
-- [ ] Storno-Flow testen (Platz wird korrekt wieder frei)
-- [ ] Ablauf-Frist-Mechanismus testen
-- [ ] Schmale iFrame-Breite testen (1-spaltiges Grid, Accordion-Verhalten, Resize)
-- [ ] E-Mail-Versand testen (Bestätigung, Storno, Betreiber-Benachrichtigung)
+- [x] Lokaler Build gegen localhost getestet (jede Phase einzeln, siehe oben)
+- [x] Race-Condition-Test: 15 echte parallele Requests (unterschiedliche IPs, um das Rate-Limit realistisch zu umgehen) gegen ein Event mit `maxParticipants: 10` — exakt 10 erfolgreich, 5 korrekt abgelehnt, `bookedCount` landete exakt bei 10. Kein Overselling unter echter Nebenläufigkeit.
+- [x] Min/Max-Validierung getestet (Phase 2 + 4)
+- [x] Storno-Flow getestet: echten Cancel-Token-Link aufgerufen, `bookedCount` korrekt von 10 auf 9 reduziert
+- [x] Ablauf-Frist-Mechanismus getestet (Phase 2, Cronjob-Lauf)
+- [ ] Schmale iFrame-Breite — **nicht testbar in dieser Session**, kein Browser-Tool verfügbar. Bitte manuell prüfen (Accordion-Verhalten, Grid-Umbruch auf 1 Spalte, Resize-Verhalten in einem echten schmalen iFrame).
+- [x] E-Mail-Versand: mehrere echte Sends über den vollständigen Flow ausgelöst (Bestätigung inkl. Event-Name/Storno-Link, Betreiber-Benachrichtigung, Storno-Benachrichtigung), keine Resend-Fehler
 
 ## 8. Rollout
 
