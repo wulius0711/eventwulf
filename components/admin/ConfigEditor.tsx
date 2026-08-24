@@ -307,12 +307,29 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
               </Field>
               <Field label="Hintergrundfarbe (leer = transparent)">
                 <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                  <input type="color" value={config.formBgColor || "#f5f0e8"} onChange={(e) => set("formBgColor", e.target.value)} style={{ width: "3rem", height: "2.5rem", padding: "0.2rem", cursor: "pointer" }} />
-                  <input type="text" value={config.formBgColor ?? ""} onChange={(e) => set("formBgColor", e.target.value)} placeholder="transparent" style={{ flex: 1 }} />
-                  {config.formBgColor && (
-                    <button type="button" onClick={() => set("formBgColor", "")} style={{ padding: "0.5rem 0.75rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "var(--muted)", cursor: "pointer", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                      ×
-                    </button>
+                  {config.formBgColor ? (
+                    <>
+                      <input type="color" value={config.formBgColor} onChange={(e) => set("formBgColor", e.target.value)} style={{ width: "3rem", height: "2.5rem", padding: "0.2rem", cursor: "pointer" }} />
+                      <input type="text" value={config.formBgColor} onChange={(e) => set("formBgColor", e.target.value)} placeholder="transparent" style={{ flex: 1 }} />
+                      <button type="button" onClick={() => set("formBgColor", "")} style={{ padding: "0.5rem 0.75rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "var(--muted)", cursor: "pointer", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => set("formBgColor", "#f5f0e8")}
+                        title="Farbe wählen"
+                        style={{
+                          width: "3rem", height: "2.5rem", borderRadius: "4px", cursor: "pointer",
+                          border: "1px dashed var(--border)",
+                          backgroundImage: "repeating-conic-gradient(var(--bg2) 0% 25%, transparent 0% 50%)",
+                          backgroundSize: "10px 10px",
+                        }}
+                      />
+                      <input type="text" value="" onChange={(e) => e.target.value && set("formBgColor", e.target.value)} placeholder="transparent" style={{ flex: 1 }} />
+                    </>
                   )}
                 </div>
               </Field>
