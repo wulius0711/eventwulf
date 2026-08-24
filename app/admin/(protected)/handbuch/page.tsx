@@ -6,10 +6,10 @@ const sections = [
   { id: "navigation",     title: "Navigation & Oberfläche" },
   { id: "einstellungen",  title: "Einstellungen" },
   { id: "felder",         title: "Felder & Optionen" },
+  { id: "events",         title: "Events" },
+  { id: "verfuegbarkeit", title: "Verfügbarkeit" },
   { id: "anfragen",       title: "Anfragen" },
   { id: "angebote",       title: "Angebote" },
-  { id: "verfuegbarkeit", title: "Verfügbarkeit" },
-  { id: "events",         title: "Events" },
   { id: "vorschau",       title: "Vorschau" },
   { id: "faq",            title: "Häufige Fragen" },
 ];

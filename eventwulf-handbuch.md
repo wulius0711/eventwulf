@@ -7,10 +7,10 @@
 1. [Login](#1-login)
 2. [Navigation & Oberfläche](#2-navigation--oberfläche)
 3. [Einstellungen](#3-einstellungen)
-4. [Anfragen](#4-anfragen)
-5. [Angebote](#5-angebote)
-6. [Verfügbarkeit & Kalender](#6-verfügbarkeit--kalender)
-7. [Events](#7-events)
+4. [Events](#4-events)
+5. [Verfügbarkeit & Kalender](#5-verfügbarkeit--kalender)
+6. [Anfragen](#6-anfragen)
+7. [Angebote](#7-angebote)
 8. [Vorschau](#8-vorschau)
 9. [Passwort ändern](#9-passwort-ändern)
 
@@ -88,7 +88,7 @@ Deaktivierte Felder werden im Widget nicht angezeigt.
 
 Hier findest du den fertigen HTML-Code zum Einbetten des Widgets in deine Website. Einfach kopieren und in den `<body>` deiner Seite einfügen.
 
-Es gibt zwei getrennte Embed-Codes: das **Anfrageformular** (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die **Event-Liste** (zeigt deine terminierten Events zum direkten Buchen, siehe [Events](#7-events)). Beide lassen sich unabhängig voneinander einbetten, z.B. auf verschiedenen Seiten.
+Es gibt zwei getrennte Embed-Codes: das **Anfrageformular** (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die **Event-Liste** (zeigt deine terminierten Events zum direkten Buchen, siehe [Events](#4-events)). Beide lassen sich unabhängig voneinander einbetten, z.B. auf verschiedenen Seiten.
 
 #### Einbetten in Framer
 
@@ -160,7 +160,58 @@ Aktuelles Passwort eingeben und neues Passwort (mind. 8 Zeichen) zweimal bestät
 
 ---
 
-## 4. Anfragen
+## 4. Events
+
+Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe [Einbetten](#einbetten)), getrennt vom normalen Anfrageformular.
+
+### Event anlegen
+
+Unter **Events** klickst du auf **Event anlegen** und füllst die Felder aus:
+
+| Feld | Beschreibung |
+|------|-------------|
+| Event-Name | Bezeichnung des Events |
+| Beschreibung | Ausführlicher Text (erscheint beim Aufklappen der Karte im Widget) |
+| Bild | Optional, JPEG/PNG/WebP, max. 5MB |
+| Von / Bis | Zeitraum des Events |
+| Preis pro Person | In Euro |
+| Min. Teilnehmer | Mindestgruppengröße |
+| Max. Teilnehmer | Maximale Gruppengröße, leer lassen für unbegrenzt |
+| Farbe | Für die Anzeige im Kalender |
+| Intern | Sperrt zusätzlich den allgemeinen Kalender für andere Anfragen im selben Zeitraum. Lass das aus, wenn das Event nicht exklusiv ist und normale Buchungen parallel weiterlaufen sollen. |
+| Aktiv | Nur aktive Events erscheinen im Buchungswidget |
+
+Das **Startdatum** darf nicht in der Vergangenheit liegen — beim Anlegen eines neuen Events blockiert das System das automatisch. Beim Bearbeiten eines bereits vergangenen Events kannst du weiterhin andere Felder (z.B. den Namen) anpassen, ohne das Datum ändern zu müssen.
+
+### Buchungen & Kapazität
+
+Sobald sich jemand über das Events-Widget anmeldet, wird der Platz sofort reserviert — die Anzeige „X von Y Plätzen frei" aktualisiert sich entsprechend. Lehnst du eine Anfrage ab oder storniert der Gast selbst, wird der Platz automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab und geben den Platz ebenfalls frei.
+
+### Liste, Duplizieren & Teilnehmer
+
+Events werden nach **Bevorstehend** und **Vergangen** (einklappbar) gruppiert. Über **Duplizieren** legst du schnell eine Wiederholung eines Events an (z.B. dasselbe Retreat im nächsten Quartal) — alle Felder außer dem Zeitraum werden übernommen. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.
+
+---
+
+## 5. Verfügbarkeit & Kalender
+
+### Ansicht
+
+Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine **internen** Events (siehe [Events](#4-events)) als „nicht verfügbar". **Externe** Events blockieren den Kalender nicht, sie erscheinen nur als informativer, farbiger Banner — Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.
+
+### Eintrag hinzufügen
+
+Unter **Verfügbarkeit** trägst du nur noch reine Sperrzeiten ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf **Zeitraum sperren**, um den Eintrag zu speichern.
+
+Events werden nicht mehr hier, sondern unter **Events** angelegt.
+
+### Eintrag bearbeiten / löschen
+
+Klicke auf einen bestehenden Eintrag in der Liste – er wird im Formular zum Bearbeiten geladen. Mit dem roten ✕-Button löschen.
+
+---
+
+## 6. Anfragen
 
 ### Übersicht
 
@@ -207,7 +258,7 @@ Klick auf eine Anfrage öffnet die Detailansicht mit allen Formulardaten. Im rec
 
 ---
 
-## 5. Angebote
+## 7. Angebote
 
 ### Angebot erstellen
 
@@ -233,57 +284,6 @@ Unter **Dokumente** findest du alle Angebote mit Filterung nach Status:
 ### Status
 
 Angebote können nur storniert, nicht gelöscht werden (Aufbewahrungspflicht).
-
----
-
-## 6. Verfügbarkeit & Kalender
-
-### Ansicht
-
-Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine **internen** Events (siehe [Events](#7-events)) als „nicht verfügbar". **Externe** Events blockieren den Kalender nicht, sie erscheinen nur als informativer, farbiger Banner — Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.
-
-### Eintrag hinzufügen
-
-Unter **Verfügbarkeit** trägst du nur noch reine Sperrzeiten ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf **Zeitraum sperren**, um den Eintrag zu speichern.
-
-Events werden nicht mehr hier, sondern unter **Events** angelegt.
-
-### Eintrag bearbeiten / löschen
-
-Klicke auf einen bestehenden Eintrag in der Liste – er wird im Formular zum Bearbeiten geladen. Mit dem roten ✕-Button löschen.
-
----
-
-## 7. Events
-
-Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe [Einbetten](#einbetten)), getrennt vom normalen Anfrageformular.
-
-### Event anlegen
-
-Unter **Events** klickst du auf **Event anlegen** und füllst die Felder aus:
-
-| Feld | Beschreibung |
-|------|-------------|
-| Event-Name | Bezeichnung des Events |
-| Beschreibung | Ausführlicher Text (erscheint beim Aufklappen der Karte im Widget) |
-| Bild | Optional, JPEG/PNG/WebP, max. 5MB |
-| Von / Bis | Zeitraum des Events |
-| Preis pro Person | In Euro |
-| Min. Teilnehmer | Mindestgruppengröße |
-| Max. Teilnehmer | Maximale Gruppengröße, leer lassen für unbegrenzt |
-| Farbe | Für die Anzeige im Kalender |
-| Intern | Sperrt zusätzlich den allgemeinen Kalender für andere Anfragen im selben Zeitraum. Lass das aus, wenn das Event nicht exklusiv ist und normale Buchungen parallel weiterlaufen sollen. |
-| Aktiv | Nur aktive Events erscheinen im Buchungswidget |
-
-Das **Startdatum** darf nicht in der Vergangenheit liegen — beim Anlegen eines neuen Events blockiert das System das automatisch. Beim Bearbeiten eines bereits vergangenen Events kannst du weiterhin andere Felder (z.B. den Namen) anpassen, ohne das Datum ändern zu müssen.
-
-### Buchungen & Kapazität
-
-Sobald sich jemand über das Events-Widget anmeldet, wird der Platz sofort reserviert — die Anzeige „X von Y Plätzen frei" aktualisiert sich entsprechend. Lehnst du eine Anfrage ab oder storniert der Gast selbst, wird der Platz automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab und geben den Platz ebenfalls frei.
-
-### Liste, Duplizieren & Teilnehmer
-
-Events werden nach **Bevorstehend** und **Vergangen** (einklappbar) gruppiert. Über **Duplizieren** legst du schnell eine Wiederholung eines Events an (z.B. dasselbe Retreat im nächsten Quartal) — alle Felder außer dem Zeitraum werden übernommen. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.
 
 ---
 
