@@ -25,10 +25,12 @@ Umbau von "Pakete" (reine Preisvorlage) zu "Events" (terminierte, buchbare Hotel
 
 ## 3. Bunny.net Bild-Upload
 
-- [ ] Storage-Zone + Access Key bereitstellen (User)
-- [ ] Admin-Upload-Endpunkt (PUT an Bunny Storage API, kein SDK nötig)
-- [ ] CSP in `next.config.ts` um Bunny-CDN-Domain im `img-src` erweitern
-- [ ] Env Vars setzen (`BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_KEY`, `BUNNY_CDN_HOST`)
+- [x] Storage-Zone (`eventwulf-events`, Frankfurt) + Access Key bereitgestellt, Pull Zone `eventwulf-zone.b-cdn.net` verbunden
+- [x] Admin-Upload-Endpunkt (`/api/admin/events/upload`, PUT an Bunny Storage API, kein SDK) — JPEG/PNG/WebP, max. 5MB
+- [x] CSP in `next.config.ts` um Bunny-CDN-Domain im `img-src` erweitert (Widget + Admin)
+- [x] Env Vars gesetzt (`BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_KEY`, `BUNNY_CDN_HOST`) in `.env.local`. **Offen für Rollout:** dieselben Vars müssen noch in Vercel gesetzt werden.
+
+Gegen die echte Bunny-API end-to-end verifiziert: Upload (201), öffentlicher CDN-Abruf (200, korrekter Content-Type), Löschen (200).
 
 ## 4. Admin-UI
 
