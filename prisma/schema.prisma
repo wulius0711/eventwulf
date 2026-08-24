@@ -20,12 +20,12 @@ model Organization {
 model Client {
   id             String        @id @default(cuid())
   slug           String        @unique
-  config         String        // JSON string (EventConfig)
+  config         String // JSON string (EventConfig)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
   blockedDates   BlockedDate[]
   inquiries      Inquiry[]
-  packages       Package[]
+  events         Event[]
   invoices       Invoice[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -34,35 +34,32 @@ model Client {
 model User {
   id             String        @id @default(cuid())
   email          String        @unique
-  password       String        // bcrypt hash
+  password       String // bcrypt hash
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
   createdAt      DateTime      @default(now())
 }
 
 model BlockedDate {
-  id           String   @id @default(cuid())
-  clientId     String
-  client       Client   @relation(fields: [clientId], references: [id])
-  startDate    DateTime
-  endDate      DateTime
-  label        String   @default("nicht verfügbar")
-  type         String   @default("blocked") // "blocked" | "event"
-  color        String   @default("")
-  maxCapacity  Int?
-  bookedCount  Int      @default(0)
-  createdAt    DateTime @default(now())
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  startDate DateTime
+  endDate   DateTime
+  label     String   @default("nicht verfügbar")
+  createdAt DateTime @default(now())
 }
 
 model Inquiry {
   id               String    @id @default(cuid())
   clientId         String
   client           Client    @relation(fields: [clientId], references: [id])
-  data             String    // JSON string of InquiryFormData
+  data             String // JSON string of InquiryFormData
   status           String    @default("neu")
-  packageId        String?
-  package          Package?  @relation(fields: [packageId], references: [id])
+  eventId          String?
+  event            Event?    @relation(fields: [eventId], references: [id])
   participantCount Int       @default(0)
+  holdExpiresAt    DateTime? // capacity hold on an Event inquiry expires if left unanswered
   invoices         Invoice[]
   reminderSentAt   DateTime?
   cancelToken      String?   @unique
@@ -71,39 +68,44 @@ model Inquiry {
 }
 
 model Invoice {
-  id          String    @id @default(cuid())
-  clientId    String
-  client      Client    @relation(fields: [clientId], references: [id])
-  inquiryId   String
-  inquiry     Inquiry   @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
-  type        String    // "angebot" | "rechnung"
-  number      String    @unique
-  status      String    @default("offen") // "offen" | "bezahlt" | "storniert"
-  lineItems   String    // JSON: [{description, quantity, unitPrice}]
-  taxRate     Float     @default(0.20)
-  validUntil  DateTime?
-  dueDate     DateTime?
-  notes       String    @default("")
-  sentAt      DateTime?
-  issuedAt    DateTime  @default(now())
-  createdAt   DateTime  @default(now())
+  id         String    @id @default(cuid())
+  clientId   String
+  client     Client    @relation(fields: [clientId], references: [id])
+  inquiryId  String
+  inquiry    Inquiry   @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  type       String // "angebot" | "rechnung"
+  number     String    @unique
+  status     String    @default("offen") // "offen" | "bezahlt" | "storniert"
+  lineItems  String // JSON: [{description, quantity, unitPrice}]
+  taxRate    Float     @default(0.20)
+  validUntil DateTime?
+  dueDate    DateTime?
+  notes      String    @default("")
+  sentAt     DateTime?
+  issuedAt   DateTime  @default(now())
+  createdAt  DateTime  @default(now())
 }
 
 model InvoiceCounter {
-  id      String @id  // e.g. "angebot-2026"
+  id      String @id // e.g. "angebot-2026"
   counter Int    @default(0)
 }
 
-model Package {
+model Event {
   id              String    @id @default(cuid())
   clientId        String
   client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   name            String
   description     String    @default("")
+  image           String    @default("")
+  startDate       DateTime
+  endDate         DateTime
+  color           String    @default("")
+  intern          Boolean   @default(false) // true = blocks the general calendar like a Sperrzeit
   pricePerPerson  Float     @default(0)
   minParticipants Int       @default(1)
-  maxParticipants Int       @default(50)
-  durationDays    Int       @default(1)
+  maxParticipants Int? // null = unbegrenzt
+  bookedCount     Int       @default(0)
   isActive        Boolean   @default(true)
   sortOrder       Int       @default(0)
   inquiries       Inquiry[]
