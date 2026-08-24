@@ -73,7 +73,13 @@ End-to-end gegen den Dev-Branch getestet: Seite lädt (200, korrekte CSP inkl. B
 
 ## 8. Rollout
 
-- [ ] Produktions-Migration mit vorherigem Backup
-- [ ] Deploy via `vercel --prod` (kein Auto-Deploy)
-- [ ] Neuen Embed-Code an Hotels kommunizieren
-- [ ] `eventwulf-handbuch.md` aktualisieren (Abschnitt 7 "Seminarpakete" → "Events")
+- [x] `eventwulf-handbuch.md` aktualisiert (Abschnitt 7 "Seminarpakete" → "Events", Verfügbarkeit/Kalender + Einbetten-Abschnitt angepasst)
+- [ ] **Braucht explizites Go, laut Anweisung nicht eigenständig auszuführen:**
+  - [ ] Backup der Produktions-DB
+  - [ ] Produktions-Migration (`prisma migrate deploy` gegen die echte `DATABASE_URL`)
+  - [ ] `BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_KEY`, `BUNNY_CDN_HOST` in Vercel setzen
+  - [ ] `CRON_SECRET` in Vercel setzen + externen Scheduler für `/api/cron/event-holds` einrichten (analog zum bestehenden Reminder-Cron)
+  - [ ] `git push`
+  - [ ] Deploy via `vercel --prod`
+- [ ] Neuen Events-Embed-Code an Hotels kommunizieren (nach erfolgreichem Deploy)
+- [ ] Neon-Dev-Branch `dev-events-feature` kann nach erfolgreichem Rollout gelöscht werden (läuft sonst automatisch nach 7 Tagen ab)
