@@ -18,22 +18,21 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
   }
 
   return (
-    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <div>
-        <h3 style={{ margin: "0 0 0.3rem", fontSize: "0.95rem", fontWeight: 600 }}>{title}</h3>
-        <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>{description}</p>
-      </div>
+    <details style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
+      <summary style={{ cursor: "pointer", fontSize: "0.95rem", fontWeight: 600 }}>{title}</summary>
+      <p style={{ margin: "0.75rem 0", fontSize: "0.85rem", color: "var(--muted)" }}>{description}</p>
       <textarea
         readOnly
         value={snippet}
         rows={6}
         onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-        style={{ fontFamily: "monospace", fontSize: "0.78rem", resize: "vertical", background: "var(--bg2)", color: "var(--text)", wordBreak: "break-all", overflowWrap: "break-word" }}
+        style={{ width: "100%", fontFamily: "monospace", fontSize: "0.78rem", resize: "vertical", background: "var(--bg2)", color: "var(--text)", wordBreak: "break-all", overflowWrap: "break-word" }}
       />
       <button
         type="button"
         onClick={copySnippet}
         style={{
+          marginTop: "1rem",
           padding: "0.65rem 1.25rem",
           background: copied ? "#16a34a" : "var(--primary)",
           color: "var(--btn-text)",
@@ -48,7 +47,7 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
       >
         {copied ? "✓ In der Zwischenablage" : "Code kopieren"}
       </button>
-    </div>
+    </details>
   );
 }
 
@@ -119,7 +118,7 @@ addPropertyControls(EventwulfWidget, {
     <details style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
       <summary style={{ cursor: "pointer", fontSize: "0.95rem", fontWeight: 600 }}>Einbetten in Framer</summary>
       <p style={{ margin: "0.75rem 0", fontSize: "0.85rem", color: "var(--muted)" }}>
-        Framer verpackt den HTML-Code oben in ein eigenes iFrame, wodurch die automatische Höhenanpassung dort nicht funktioniert. Lege stattdessen eine <strong>Code Component</strong> an (Assets → Code → + → New Code File), füge diesen Code ein und ziehe die Component danach aus dem Insert-Panel auf deine Seite:
+        Framer verpackt den HTML-Code oben in ein eigenes iFrame, wodurch die automatische Höhenanpassung dort nicht funktioniert. Lege stattdessen eine <strong>Code Component</strong> an (Assets → Code → + → New Code File), füge diesen Code ein und ziehe die Component danach aus dem Insert-Panel auf deine Seite. Die Component musst du nur <strong>einmal</strong> anlegen — willst du Formular und Events auf derselben oder auf getrennten Seiten zeigen, ziehst du sie einfach zweimal auf die Seite(n) und stellst bei der zweiten Instanz die Property „Widget" auf „Events":
       </p>
       <textarea
         readOnly
