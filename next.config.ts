@@ -51,6 +51,10 @@ const submitHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // sharp ships native binaries per platform — must be traced as a true external
+  // package so its .node/.so files are copied into the deployed function output
+  // instead of getting dropped by the bundler.
+  serverExternalPackages: ["sharp"],
   async headers() {
     return [
       { source: "/",               headers: widgetHeaders },
