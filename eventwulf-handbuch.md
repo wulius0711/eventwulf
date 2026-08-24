@@ -10,7 +10,7 @@
 4. [Anfragen](#4-anfragen)
 5. [Angebote](#5-angebote)
 6. [Verfügbarkeit & Kalender](#6-verfügbarkeit--kalender)
-7. [Seminarpakete](#7-seminarpakete)
+7. [Events](#7-events)
 8. [Vorschau](#8-vorschau)
 9. [Passwort ändern](#9-passwort-ändern)
 
@@ -31,8 +31,8 @@ Die Sidebar links enthält alle Bereiche:
 | Menüpunkt | Beschreibung |
 |-----------|-------------|
 | Einstellungen | Firmendaten, Formular, Abrechnung, Einbetten, Passwort |
-| Pakete | Seminarpakete anlegen und verwalten |
-| Verfügbarkeit | Kalender mit gesperrten Daten und Events |
+| Events | Terminierte Angebote mit Preis und Kapazität anlegen und verwalten |
+| Verfügbarkeit | Kalender mit gesperrten Zeiträumen |
 | Anfragen | Eingehende Anfragen bearbeiten |
 | Dokumente | Angebots-Archiv |
 | Vorschau | Live-Vorschau des Buchungswidgets |
@@ -77,7 +77,6 @@ Deaktivierte Felder werden im Widget nicht angezeigt.
 **Schriftarten:** Separate Auswahl für Überschrift und Fließtext.
 
 **Widget-Features:**
-- *Paketauswahl anzeigen* – Zeigt eine Paketauswahl in Schritt 1 (nur wenn Pakete angelegt sind)
 - *Kapazitätsanzeige* – Zeigt verfügbare Plätze im Kalender
 
 ### Abrechnung
@@ -88,6 +87,8 @@ Deaktivierte Felder werden im Widget nicht angezeigt.
 ### Einbetten
 
 Hier findest du den fertigen HTML-Code zum Einbetten des Widgets in deine Website. Einfach kopieren und in den `<body>` deiner Seite einfügen.
+
+Es gibt zwei getrennte Embed-Codes: das **Anfrageformular** (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die **Event-Liste** (zeigt deine terminierten Events zum direkten Buchen, siehe [Events](#7-events)). Beide lassen sich unabhängig voneinander einbetten, z.B. auf verschiedenen Seiten.
 
 ### Passwort
 
@@ -166,48 +167,48 @@ Angebote können nur storniert, nicht gelöscht werden (Aufbewahrungspflicht).
 
 ### Ansicht
 
-Der Kalender zeigt gesperrte Zeiträume und eingetragene Events. Belegte Tage sind farbig markiert.
+Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine **internen** Events (siehe [Events](#7-events)) als „nicht verfügbar". **Externe** Events blockieren den Kalender nicht, sie erscheinen nur als informativer, farbiger Banner — Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.
 
 ### Eintrag hinzufügen
 
-Oben links wähle den Typ:
+Unter **Verfügbarkeit** trägst du nur noch reine Sperrzeiten ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf **Zeitraum sperren**, um den Eintrag zu speichern.
 
-- **Gesperrter Zeitraum** – Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub")
-- **Event** – Datum, Bezeichnung, Farbe und optional maximale Kapazität
-
-Klicke auf **Eintragen**, um den Eintrag zu speichern.
+Events werden nicht mehr hier, sondern unter **Events** angelegt.
 
 ### Eintrag bearbeiten / löschen
 
-Klicke auf einen bestehenden Eintrag in der Liste rechts – er wird im Formular zum Bearbeiten geladen. Mit dem roten ✕-Button löschen.
-
-### Kapazität
-
-Bei Events mit Kapazität siehst du in der Liste wie viele Plätze noch frei sind. Die Kapazitätsanzeige kann im Widget aktiviert werden (Einstellungen → Formular → Widget-Features).
+Klicke auf einen bestehenden Eintrag in der Liste – er wird im Formular zum Bearbeiten geladen. Mit dem roten ✕-Button löschen.
 
 ---
 
-## 7. Seminarpakete
+## 7. Events
 
-Pakete werden in Schritt 1 des Buchungsformulars angezeigt (wenn die Paketauswahl in den Einstellungen aktiviert ist).
+Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe [Einbetten](#einbetten)), getrennt vom normalen Anfrageformular.
 
-### Paket anlegen
+### Event anlegen
 
-Klicke auf **+ Neues Paket** und fülle die Felder aus:
+Unter **Events** klickst du auf **Event anlegen** und füllst die Felder aus:
 
 | Feld | Beschreibung |
 |------|-------------|
-| Name | Bezeichnung des Pakets |
-| Beschreibung | Kurzbeschreibung (wird im Widget angezeigt) |
+| Event-Name | Bezeichnung des Events |
+| Beschreibung | Ausführlicher Text (erscheint beim Aufklappen der Karte im Widget) |
+| Bild | Optional, JPEG/PNG/WebP, max. 5MB |
+| Von / Bis | Zeitraum des Events |
 | Preis pro Person | In Euro |
 | Min. Teilnehmer | Mindestgruppengröße |
-| Max. Teilnehmer | Maximale Gruppengröße |
-| Dauer (Tage) | Anzahl Tage |
-| Aktiv | Nur aktive Pakete erscheinen im Widget |
+| Max. Teilnehmer | Maximale Gruppengröße, leer lassen für unbegrenzt |
+| Farbe | Für die Anzeige im Kalender |
+| Intern | Sperrt zusätzlich den allgemeinen Kalender für andere Anfragen im selben Zeitraum. Lass das aus, wenn das Event nicht exklusiv ist und normale Buchungen parallel weiterlaufen sollen. |
+| Aktiv | Nur aktive Events erscheinen im Buchungswidget |
 
-### Reihenfolge
+### Buchungen & Kapazität
 
-Die Reihenfolge der Pakete im Widget entspricht der Sortierreihenfolge (Feld „Reihenfolge").
+Sobald sich jemand über das Events-Widget anmeldet, wird der Platz sofort reserviert — die Anzeige „X von Y Plätzen frei" aktualisiert sich entsprechend. Lehnst du eine Anfrage ab oder storniert der Gast selbst, wird der Platz automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab und geben den Platz ebenfalls frei.
+
+### Liste, Duplizieren & Teilnehmer
+
+Events werden nach **Bevorstehend** und **Vergangen** (einklappbar) gruppiert. Über **Duplizieren** legst du schnell eine Wiederholung eines Events an (z.B. dasselbe Retreat im nächsten Quartal) — alle Felder außer dem Zeitraum werden übernommen. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.
 
 ---
 

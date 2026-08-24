@@ -51,7 +51,6 @@ export interface EventConfig {
   quelleOptions: string[];
   notifyEmail: string;
   formFields?: FormFields;
-  showPackages?: boolean;
   showCapacity?: boolean;
   billing?: {
     taxRate?: number;

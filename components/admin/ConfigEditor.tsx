@@ -326,13 +326,6 @@ export default function ConfigEditor({ initialConfig, slug }: Props) {
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
               <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
-                <Toggle checked={config.showPackages === true} onChange={(v) => set("showPackages", v)} />
-                <span>
-                  <strong>Seminarpakete anzeigen</strong>
-                  <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Zeigt eine Paketauswahl in Schritt 1 des Buchungsformulars</span>
-                </span>
-              </label>
-              <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
                 <Toggle checked={config.showCapacity === true} onChange={(v) => set("showCapacity", v)} />
                 <span>
                   <strong>Verfügbare Plätze anzeigen</strong>
