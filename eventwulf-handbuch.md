@@ -178,7 +178,7 @@ Unter **Events** klickst du auf **Event anlegen** und füllst die Felder aus:
 | Min. Teilnehmer | Mindestgruppengröße |
 | Max. Teilnehmer | Maximale Gruppengröße, leer lassen für unbegrenzt |
 | Farbe | Für die Anzeige im Kalender |
-| Intern | Sperrt zusätzlich den allgemeinen Kalender für andere Anfragen im selben Zeitraum. Lass das aus, wenn das Event nicht exklusiv ist und normale Buchungen parallel weiterlaufen sollen. |
+| Intern | Sperrt zusätzlich den Zeitraum im allgemeinen Kalender für andere Anfragen. Lass das aus, wenn das Event nicht exklusiv ist und normale Buchungen parallel weiterlaufen sollen. |
 | Aktiv | Nur aktive Events erscheinen im Buchungswidget |
 
 Das **Startdatum** darf nicht in der Vergangenheit liegen — beim Anlegen eines neuen Events blockiert das System das automatisch. Beim Bearbeiten eines bereits vergangenen Events kannst du weiterhin andere Felder (z.B. den Namen) anpassen, ohne das Datum ändern zu müssen.

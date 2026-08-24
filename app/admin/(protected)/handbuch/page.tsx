@@ -200,7 +200,7 @@ const content: Record<string, React.ReactNode> = {
             ["Preis pro Person", "In Euro"],
             ["Min./Max. Teilnehmer", "Max. leer lassen für unbegrenzt"],
             ["Farbe", "Für die Anzeige im Kalender"],
-            ["Intern", "Sperrt zusätzlich den allgemeinen Kalender für andere Anfragen"],
+            ["Intern", "Sperrt zusätzlich den Zeitraum im allgemeinen Kalender für andere Anfragen"],
             ["Aktiv", "Nur aktive Events erscheinen im Buchungswidget"],
           ].map(([feld, desc]) => (
             <tr key={feld as string} style={{ borderBottom: "1px solid var(--border)" }}>

@@ -323,7 +323,7 @@ export default function EventsEditor() {
             <Toggle checked={form.intern} onChange={(v) => set("intern", v)} />
             <span>
               <strong>Intern</strong>
-              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Sperrt den allgemeinen Kalender für andere Anfragen im selben Zeitraum</span>
+              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Sperrt den Zeitraum im allgemeinen Kalender für andere Anfragen</span>
             </span>
           </label>
           <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
