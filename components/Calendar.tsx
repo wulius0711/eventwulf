@@ -166,6 +166,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
 
   function handleDayClick(date: Date) {
     if (isBlocked(date, blocked)) return;
+    if (today && toDay(date) < today) return;
     const d = toDay(date);
     let newStart = selStart;
     let newEnd = selEnd;
@@ -233,7 +234,9 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
                 {week.map((cell, di) => {
                   const isToday = today !== null && cell.date.getTime() === today.getTime();
+                  const isPast = today !== null && toDay(cell.date) < today;
                   const blocked_ = isBlocked(cell.date, blocked);
+                  const disabled_ = blocked_ || isPast;
                   const edge = isRangeEdge(cell.date, selStart, selEnd, hover);
                   const between = inRange(cell.date, selStart, selEnd, hover);
                   const isStart = !!(selStart && toDay(cell.date).getTime() === toDay(selStart).getTime());
@@ -278,8 +281,8 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                       style={{
                         padding: "0.4rem 0.3rem 0.3rem",
                         minHeight: "3rem",
-                        cursor: blocked_ ? "not-allowed" : "pointer",
-                        opacity: cell.inMonth ? 1 : 0.3,
+                        cursor: disabled_ ? "not-allowed" : "pointer",
+                        opacity: !cell.inMonth ? 0.3 : isPast && !blocked_ ? 0.4 : 1,
                         background: pillBg,
                         transition: "background 0.1s",
                         display: "flex",
@@ -297,7 +300,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                         fontSize: "0.82rem",
                         fontWeight: isToday ? 700 : 400,
                         background: edge ? "var(--primary)" : isToday ? "var(--text)" : "transparent",
-                        color: edge ? "var(--btn-text)" : isToday ? "#fff" : blocked_ ? "var(--muted)" : "var(--text)",
+                        color: edge ? "var(--btn-text)" : isToday ? "#fff" : disabled_ ? "var(--muted)" : "var(--text)",
                         textDecoration: blocked_ ? "line-through" : "none",
                       }}>
                         {cell.date.getDate()}

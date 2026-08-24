@@ -9,6 +9,10 @@ export function isValidDate(val: unknown): val is string {
   return typeof val === "string" && DATE_RE.test(val);
 }
 
+function todayIso(): string {
+  return new Date().toISOString().substring(0, 10);
+}
+
 export function str(val: unknown, max: number): string | null {
   if (typeof val !== "string") return null;
   if (val.length > max) return null;
@@ -47,6 +51,7 @@ export function validateSubmit(body: unknown): string | null {
   if (!str(b.nameGruppenleitung, 100)) return "nameGruppenleitung fehlt oder zu lang";
   if (!isValidDate(b.datumVon)) return "datumVon ungültig";
   if (!isValidDate(b.datumBis)) return "datumBis ungültig";
+  if (b.datumVon < todayIso()) return "datumVon darf nicht in der Vergangenheit liegen";
   if (b.email && !isValidEmail(b.email)) return "E-Mail-Adresse ungültig";
   if (b.eventId !== undefined && b.eventId !== "" && (typeof b.eventId !== "string" || b.eventId.length > 50)) {
     return "eventId ungültig";
