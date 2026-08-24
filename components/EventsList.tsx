@@ -127,7 +127,10 @@ function EventCard({ event, slug, expanded, onToggle }: { event: EventItem; slug
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateRows: expanded ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
+      <div
+        style={{ display: "grid", gridTemplateRows: expanded ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}
+        onTransitionEnd={() => { sendResizeMessage(); setTimeout(sendResizeMessage, 200); }}
+      >
         <div style={{ overflow: "hidden" }}>
           <div ref={bodyRef} style={{ padding: "0 1.25rem 1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
             {event.description && (
