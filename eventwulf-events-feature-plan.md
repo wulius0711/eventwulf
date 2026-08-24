@@ -80,5 +80,5 @@ End-to-end gegen den Dev-Branch getestet: Seite lädt (200, korrekte CSP inkl. B
 - [x] Produktions-Migration ausgeführt (vom User selbst im eigenen Terminal, `prisma migrate deploy`) — gegen echte DB verifiziert: 3 Events korrekt übernommen, CHECK-Constraints aktiv, `Package` weg, `BlockedDate` sauber
 - [x] `git push` (17 Commits)
 - [x] Deploy via `vercel --prod` — live unter `eventwulf.vercel.app`, öffentliche Endpunkte (`/api/events`, `/api/availability`, `/events`) sowie bestehendes Formular + Admin-Login live gegengecheckt
-- [ ] Neuen Events-Embed-Code an Hotels kommunizieren
+- ~~Neuen Events-Embed-Code an Hotels kommunizieren~~ — entfällt, noch keine Live-Kunden
 - [ ] Neon-Branches `dev-events-feature` und `backup-pre-events-migration` können nach einer Beobachtungsphase gelöscht werden, laufen sonst automatisch ab
