@@ -330,7 +330,7 @@ export default function EventsEditor() {
             <Toggle checked={form.isActive} onChange={(v) => set("isActive", v)} />
             <span>
               <strong>Aktiv</strong>
-              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Nur aktive Events erscheinen im Buchungswidget (z.B. aus, um einen Entwurf vorzubereiten oder ein Event vorübergehend auszublenden, ohne es zu löschen)</span>
+              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Nur aktive Events erscheinen im Buchungswidget — nützlich, um ein Event vorzubereiten, bevor es veröffentlicht wird, oder es vorübergehend auszublenden, ohne es zu löschen</span>
             </span>
           </label>
         </div>
