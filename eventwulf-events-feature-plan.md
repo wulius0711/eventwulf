@@ -46,13 +46,15 @@ API-seitig end-to-end mit signiertem Test-Token gegen den Dev-Branch verifiziert
 
 ## 5. Frontend — neuer Events-Embed
 
-- [ ] Neue Route `/events` (eigener Embed-Code, analog zu `page.tsx`, gleiche Theming-Logik über `config`)
-- [ ] Card-Grid: `repeat(auto-fill, minmax(320px, 1fr))`
-- [ ] Card: Bild oben (fix), Name, Zeitraum, Preis, Kapazitätsbalken, Ausgebucht-Zustand (gedimmt, kein Button)
-- [ ] Accordion-Expand: Beschreibung + Buchungsformular inline; Resize-Trigger erst **nach** Abschluss der Aufklapp-Animation (IframeResizer)
-- [ ] Kompaktes Buchungsformular: Name, E-Mail, Personenanzahl (Live-Validierung gegen freie Plätze/Min/Max)
-- [ ] Leerer Zustand: "Aktuell sind keine Events geplant"
-- [ ] Bestätigungsmail-Template für Event-Buchungen (Event-Name, Zeitraum, Storno-Link)
+- [x] Neue Route `/events` (eigener Embed-Code, analog zu `page.tsx`, gleiche Theming-Logik über `config`) — `next.config.ts` CSP-Routing um `/events` ergänzt, das fehlte sonst komplett (nur `"/"` war erfasst)
+- [x] Card-Grid: `repeat(auto-fill, minmax(320px, 1fr))`
+- [x] Card: Bild oben (fix, Farbbalken als Fallback ohne Bild), Name, Zeitraum, Preis, Kapazitätsanzeige, Ausgebucht-Zustand (Badge, Formular durch Hinweistext ersetzt)
+- [x] Accordion-Expand (CSS-Grid `grid-template-rows`-Technik statt `max-height`, keine JS-Höhenmessung nötig): `ResizeObserver` auf dem Akkordeon-Inhalt löst `IframeResizer`-Resize aus — reagiert laufend während der Animation, nicht nur beim DOM-Mount. Gemeinsame `lib/iframeResize.ts` von `IframeResizer.tsx` und der Card wiederverwendet statt dupliziert.
+- [x] Kompaktes Buchungsformular: Name, E-Mail, Personenanzahl (Client-Validierung gegen Min/freie Plätze, Server bleibt Quelle der Wahrheit)
+- [x] Leerer Zustand: "Aktuell sind keine Events geplant"
+- [x] Bestätigungsmail für Event-Buchungen — bereits in Phase 2 erledigt (Event-Name, Zeitraum, Storno-Link im bestehenden E-Mail-Template)
+
+End-to-end gegen den Dev-Branch getestet: Seite lädt (200, korrekte CSP inkl. Bunny-CDN), volle Buchung über den echten `/api/submit`-Aufruf mit der Card-Payload-Form verifiziert (`bookedCount` korrekt erhöht). **Visuelle UI-Prüfung im Browser weiterhin offen** — kein Browser-Tool verfügbar.
 
 ## 6. Bestehendes Formular / Kalender
 

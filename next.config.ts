@@ -54,6 +54,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/",               headers: widgetHeaders },
+      { source: "/events",         headers: widgetHeaders },
       { source: "/admin/(.*)",     headers: adminHeaders },
       { source: "/api/submit",     headers: submitHeaders },
       { source: "/api/(.*)",       headers: adminHeaders },
