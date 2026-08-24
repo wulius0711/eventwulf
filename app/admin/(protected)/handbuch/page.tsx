@@ -9,7 +9,7 @@ const sections = [
   { id: "anfragen",       title: "Anfragen" },
   { id: "angebote",       title: "Angebote" },
   { id: "verfuegbarkeit", title: "Verfügbarkeit" },
-  { id: "pakete",         title: "Seminarpakete" },
+  { id: "events",         title: "Events" },
   { id: "vorschau",       title: "Vorschau" },
   { id: "faq",            title: "Häufige Fragen" },
 ];
@@ -46,8 +46,8 @@ const content: Record<string, React.ReactNode> = {
         <tbody>
           {[
             ["Einstellungen", "Firmendaten, Formular, Abrechnung, Einbetten, Passwort"],
-            ["Pakete", "Seminarpakete anlegen und verwalten"],
-            ["Verfügbarkeit", "Kalender mit gesperrten Daten und Events"],
+            ["Events", "Terminierte Angebote mit Preis und Kapazität anlegen und verwalten"],
+            ["Verfügbarkeit", "Kalender mit gesperrten Zeiträumen"],
             ["Anfragen", "Eingehende Anfragen bearbeiten"],
             ["Dokumente", "Angebots-Archiv"],
             ["Vorschau", "Live-Vorschau des Buchungswidgets"],
@@ -74,7 +74,8 @@ const content: Record<string, React.ReactNode> = {
       <H3>Abrechnung</H3>
       <p>Steuersatz (%) und Gültigkeitsdauer für neue Angebote in Tagen.</p>
       <H3>Einbetten</H3>
-      <p>Fertiger HTML-Code zum Einbetten des Widgets in deine Website. Einfach kopieren und in den <code>&lt;body&gt;</code> einfügen. Das Widget passt sich automatisch in der Höhe an.</p>
+      <p>Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Buchen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
+      <Callout>Bei <strong>Framer</strong> funktioniert die automatische Höhenanpassung über den normalen HTML-Code nicht (Framer verpackt ihn in ein eigenes iFrame). Nutze stattdessen eine Code Component — den fertigen Code dafür findest du direkt im Einbetten-Tab.</Callout>
       <H3>Passwort</H3>
       <p>Aktuelles Passwort eingeben, dann neues Passwort (mind. 8 Zeichen) vergeben.</p>
     </>

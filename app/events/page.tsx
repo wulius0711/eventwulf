@@ -31,8 +31,14 @@ export default async function EventsPage({ searchParams }: Props) {
     : null;
   const bodyFontFamily = bodyFont ? `'${bodyFont}', system-ui, sans-serif` : undefined;
 
+  const pageBg = config.formBgColor || "transparent";
+
   return (
     <div id="embed-root" style={themeVars as React.CSSProperties}>
+      {/* Matches the widget's own background so a momentarily too-tall iframe (e.g.
+          right after the resize-height catches up post-submit) never reveals an
+          unstyled gap below the content. */}
+      <style>{`body { background: ${pageBg}; }`}</style>
       <IframeResizer />
       {googleFontUrl && <link rel="stylesheet" href={googleFontUrl} />}
       <div className="ew-widget-wrap" style={{ padding: "1.5rem", background: config.formBgColor || "transparent", fontFamily: bodyFontFamily }}>
