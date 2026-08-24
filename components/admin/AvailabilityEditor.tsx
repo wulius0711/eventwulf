@@ -86,7 +86,8 @@ export default function AvailabilityEditor() {
     setLoading(false);
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(id: string, label: string) {
+    if (!window.confirm(`Sperrzeit „${label}" wirklich löschen?`)) return;
     const res = await fetch("/api/admin/availability", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -178,7 +179,7 @@ export default function AvailabilityEditor() {
               }}>
                 Bearbeiten
               </button>
-              <button onClick={() => handleDelete(entry.id)} style={{
+              <button onClick={() => handleDelete(entry.id, entry.label)} style={{
                 padding: "0.28rem 0.65rem", border: "1px solid var(--border)",
                 borderRadius: "var(--radius-sm)", background: "none",
                 color: "var(--error)", cursor: "pointer", fontSize: "0.78rem",

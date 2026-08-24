@@ -155,7 +155,12 @@ export default function EventsEditor() {
     setLoading(false);
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(ev: EventEntry) {
+    const warning = ev.bookedCount > 0
+      ? `Event „${ev.name}" wirklich löschen? ${ev.bookedCount} Person(en) haben sich bereits angemeldet — die Anfragen bleiben erhalten, verlieren aber den Bezug zu diesem Event.`
+      : `Event „${ev.name}" wirklich löschen?`;
+    if (!window.confirm(warning)) return;
+    const id = ev.id;
     const res = await fetch("/api/admin/events", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -203,7 +208,7 @@ export default function EventsEditor() {
             <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
               <button onClick={() => startEdit(ev)} style={miniBtn}>Bearbeiten</button>
               <button onClick={() => duplicate(ev)} style={miniBtn}>Duplizieren</button>
-              <button onClick={() => handleDelete(ev.id)} style={{ ...miniBtn, color: "var(--error)" }}>Löschen</button>
+              <button onClick={() => handleDelete(ev)} style={{ ...miniBtn, color: "var(--error)" }}>Löschen</button>
             </div>
           </div>
           {expandedId === ev.id && (

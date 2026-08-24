@@ -8,7 +8,7 @@
 2. [Navigation & Oberfläche](#2-navigation--oberfläche)
 3. [Einstellungen](#3-einstellungen)
 4. [Events](#4-events)
-5. [Verfügbarkeit & Kalender](#5-verfügbarkeit--kalender)
+5. [Sperrzeiten & Kalender](#5-sperrzeiten--kalender)
 6. [Anfragen](#6-anfragen)
 7. [Angebote](#7-angebote)
 8. [Vorschau](#8-vorschau)
@@ -32,7 +32,7 @@ Die Sidebar links enthält alle Bereiche:
 |-----------|-------------|
 | Einstellungen | Firmendaten, Formular, Abrechnung, Einbetten, Passwort |
 | Events | Terminierte Angebote mit Preis und Kapazität anlegen und verwalten |
-| Verfügbarkeit | Kalender mit gesperrten Zeiträumen |
+| Sperrzeiten | Kalender mit gesperrten Zeiträumen |
 | Anfragen | Eingehende Anfragen bearbeiten |
 | Dokumente | Angebots-Archiv |
 | Vorschau | Live-Vorschau des Buchungswidgets |
@@ -193,7 +193,7 @@ Events werden nach **Bevorstehend** und **Vergangen** (einklappbar) gruppiert. �
 
 ---
 
-## 5. Verfügbarkeit & Kalender
+## 5. Sperrzeiten & Kalender
 
 ### Ansicht
 
@@ -201,7 +201,7 @@ Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine **interne
 
 ### Eintrag hinzufügen
 
-Unter **Verfügbarkeit** trägst du nur noch reine Sperrzeiten ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf **Zeitraum sperren**, um den Eintrag zu speichern.
+Unter **Sperrzeiten** trägst du Zeiträume ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf **Zeitraum sperren**, um den Eintrag zu speichern.
 
 Events werden nicht mehr hier, sondern unter **Events** angelegt.
 

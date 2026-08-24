@@ -7,7 +7,7 @@ const sections = [
   { id: "einstellungen",  title: "Einstellungen" },
   { id: "felder",         title: "Felder & Optionen" },
   { id: "events",         title: "Events" },
-  { id: "verfuegbarkeit", title: "Verfügbarkeit" },
+  { id: "verfuegbarkeit", title: "Sperrzeiten" },
   { id: "anfragen",       title: "Anfragen" },
   { id: "angebote",       title: "Angebote" },
   { id: "vorschau",       title: "Vorschau" },
@@ -47,7 +47,7 @@ const content: Record<string, React.ReactNode> = {
           {[
             ["Einstellungen", "Firmendaten, Formular, Abrechnung, Einbetten, Passwort"],
             ["Events", "Terminierte Angebote mit Preis und Kapazität anlegen und verwalten"],
-            ["Verfügbarkeit", "Kalender mit gesperrten Zeiträumen"],
+            ["Sperrzeiten", "Kalender mit gesperrten Zeiträumen"],
             ["Anfragen", "Eingehende Anfragen bearbeiten"],
             ["Dokumente", "Angebots-Archiv"],
             ["Vorschau", "Live-Vorschau des Buchungswidgets"],

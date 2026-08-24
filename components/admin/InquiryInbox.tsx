@@ -76,7 +76,8 @@ export default function InquiryInbox() {
     }
   }
 
-  async function deleteInquiry(id: string) {
+  async function deleteInquiry(id: string, label: string) {
+    if (!window.confirm(`Anfrage „${label}" wirklich löschen?`)) return;
     const res = await fetch("/api/admin/inquiries", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -178,7 +179,7 @@ export default function InquiryInbox() {
                     </button>
                   ))}
                   <button
-                    onClick={() => deleteInquiry(inq.id)}
+                    onClick={() => deleteInquiry(inq.id, `${d.artTitel || "Retreat"} — ${d.nameGruppenleitung}`)}
                     style={{ marginLeft: "auto", padding: "0.28rem 0.65rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.78rem" }}
                   >
                     Löschen

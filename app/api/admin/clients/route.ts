@@ -60,7 +60,8 @@ export async function DELETE(req: NextRequest) {
 
   const { id } = await req.json();
 
-  // Cascade: delete inquiries + blockedDates for all clients of this org, then clients, users, org
+  // Delete inquiries (cascades to their invoices) + blockedDates explicitly, then clients
+  // (DB-level onDelete: Cascade removes each client's events automatically), then users, org
   const clients = await prisma.client.findMany({ where: { organizationId: id }, select: { id: true } });
   const clientIds = clients.map((c) => c.id);
 

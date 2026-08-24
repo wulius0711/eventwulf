@@ -145,7 +145,7 @@ export default function ClientsEditor() {
           <div style={{ background: "var(--surface)", borderRadius: "var(--radius)", padding: "2rem", maxWidth: "400px", width: "90%" }}>
             <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Kunden löschen?</h3>
             <p style={{ margin: "0 0 1.25rem", fontSize: "0.85rem", color: "var(--muted)" }}>
-              Alle Slugs, Anfragen und Verfügbarkeiten dieses Kunden werden unwiderruflich gelöscht.
+              Alle Slugs, Anfragen, Angebote, Sperrzeiten und Events dieses Kunden werden unwiderruflich gelöscht.
             </p>
             {deleteError && <p style={{ color: "var(--error)", fontSize: "0.82rem", marginBottom: "0.75rem" }}>{deleteError}</p>}
             <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
@@ -162,7 +162,7 @@ export default function ClientsEditor() {
           <div style={{ background: "var(--surface)", borderRadius: "var(--radius)", padding: "2rem", maxWidth: "400px", width: "90%" }}>
             <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem", fontWeight: 600 }}>Slug „{deleteSlugConfirm.slug}" löschen?</h3>
             <p style={{ margin: "0 0 1.25rem", fontSize: "0.85rem", color: "var(--muted)" }}>
-              Alle Anfragen und Verfügbarkeiten dieses Slugs werden unwiderruflich gelöscht.
+              Alle Anfragen, Angebote, Sperrzeiten und Events dieses Slugs werden unwiderruflich gelöscht.
             </p>
             {deleteError && <p style={{ color: "var(--error)", fontSize: "0.82rem", marginBottom: "0.75rem" }}>{deleteError}</p>}
             <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
