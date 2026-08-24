@@ -14,14 +14,14 @@ Umbau von "Pakete" (reine Preisvorlage) zu "Events" (terminierte, buchbare Hotel
 
 ## 2. Backend / API
 
-- [ ] Event-CRUD (`/api/admin/events`: GET/POST/PATCH/DELETE)
-- [ ] Öffentlicher Event-Endpunkt (`/api/events?slug=...`) — nur aktive, zukünftige Events, chronologisch sortiert
-- [ ] Atomare Kapazitätsreservierung (DB-Transaktion) beim Absenden einer Event-Anfrage — verhindert Überbuchung bei gleichzeitigen Anfragen
-- [ ] Validierung: Personenanzahl gegen `minParticipants`/`maxParticipants` **und** freie Plätze
-- [ ] Freigabe reservierter Plätze bei Stornierung (bestehender Cancel-Token-Flow) und bei Ablehnung im Admin
-- [ ] Ablauf-Frist für unbeantwortete Reservierungen (z.B. Cronjob, `reminderSentAt` wiederverwenden)
-- [ ] `isBlocked()`-Bug fixen: künftig sperren nur `type: "blocked"` **und** `Event.intern === true`
-- [ ] `/api/availability` um Event-Daten (inkl. `intern`) erweitern
+- [x] Event-CRUD (`/api/admin/events`: GET/POST/PATCH/DELETE)
+- [x] Öffentlicher Event-Endpunkt (`/api/events?slug=...`) — nur aktive, zukünftige Events, chronologisch sortiert
+- [x] Atomare Kapazitätsreservierung (Conditional Update statt Transaktion/Versionsfeld) beim Absenden einer Event-Anfrage — gegen Überbuchung end-to-end getestet
+- [x] Validierung: Personenanzahl gegen `minParticipants`/`maxParticipants` **und** freie Plätze
+- [x] Freigabe reservierter Plätze bei Stornierung (bestehender Cancel-Token-Flow) und bei Ablehnung im Admin — symmetrische held/nicht-held-Logik in `lib/eventCapacity.ts`
+- [x] Ablauf-Frist für unbeantwortete Reservierungen: Cronjob `/api/cron/event-holds` (48h, eigenes `holdExpiresAt`-Feld). **Offen für Rollout:** `CRON_SECRET` muss in Vercel gesetzt und ein externer Scheduler dafür eingerichtet werden (wie beim bestehenden `/api/cron/reminders`).
+- [ ] `isBlocked()`-Bug fixen: künftig sperren nur `type: "blocked"` **und** `Event.intern === true` (verschoben auf Abschnitt 6 — Calendar.tsx bleibt bis dahin bewusst unverändert, `/api/availability` liefert bereits abwärtskompatibel)
+- [x] `/api/availability` um Event-Daten (inkl. `intern`) erweitert — bewusst abwärtskompatibles Format, damit der Live-Kalender bis Abschnitt 6 unverändert weiterläuft
 
 ## 3. Bunny.net Bild-Upload
 
