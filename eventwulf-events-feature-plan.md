@@ -74,14 +74,11 @@ End-to-end gegen den Dev-Branch getestet: Seite lädt (200, korrekte CSP inkl. B
 ## 8. Rollout
 
 - [x] `eventwulf-handbuch.md` aktualisiert (Abschnitt 7 "Seminarpakete" → "Events", Verfügbarkeit/Kalender + Einbetten-Abschnitt angepasst)
-- [ ] **Braucht explizites Go, laut Anweisung nicht eigenständig auszuführen:**
-  - [ ] Backup der Produktions-DB
-  - [ ] Produktions-Migration (`prisma migrate deploy` gegen die echte `DATABASE_URL`)
-  - [x] `BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_KEY`, `BUNNY_CDN_HOST` in Vercel (Production) gesetzt
-  - [x] `CRON_SECRET` war bereits gesetzt. Kein externer Scheduler nötig — `/api/cron/event-holds` läuft stündlich über Vercel Cron (`vercel.json`, analog zum bestehenden Reminder-Cron)
-  - [ ] Backup/Sicherungspunkt der Produktions-DB vor der Migration
-  - [ ] Produktions-Migration (`prisma migrate deploy` gegen die echte `DATABASE_URL`)
-  - [ ] `git push`
-  - [ ] Deploy via `vercel --prod` — **erst nach** erfolgreicher Migration, sonst läuft neuer Code kurzzeitig gegen altes Schema
-- [ ] Neuen Events-Embed-Code an Hotels kommunizieren (nach erfolgreichem Deploy)
-- [ ] Neon-Dev-Branch `dev-events-feature` kann nach erfolgreichem Rollout gelöscht werden (läuft sonst automatisch nach 7 Tagen ab)
+- [x] `BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_KEY`, `BUNNY_CDN_HOST` in Vercel (Production) gesetzt
+- [x] `CRON_SECRET` war bereits gesetzt. Kein externer Scheduler nötig — `/api/cron/event-holds` läuft stündlich über Vercel Cron (`vercel.json`, analog zum bestehenden Reminder-Cron)
+- [x] Backup-Branch `backup-pre-events-migration` (30 Tage) von `main` angelegt, vor der Migration
+- [x] Produktions-Migration ausgeführt (vom User selbst im eigenen Terminal, `prisma migrate deploy`) — gegen echte DB verifiziert: 3 Events korrekt übernommen, CHECK-Constraints aktiv, `Package` weg, `BlockedDate` sauber
+- [x] `git push` (17 Commits)
+- [x] Deploy via `vercel --prod` — live unter `eventwulf.vercel.app`, öffentliche Endpunkte (`/api/events`, `/api/availability`, `/events`) sowie bestehendes Formular + Admin-Login live gegengecheckt
+- [ ] Neuen Events-Embed-Code an Hotels kommunizieren
+- [ ] Neon-Branches `dev-events-feature` und `backup-pre-events-migration` können nach einer Beobachtungsphase gelöscht werden, laufen sonst automatisch ab
