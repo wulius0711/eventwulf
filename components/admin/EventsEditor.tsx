@@ -33,6 +33,10 @@ function isoDate(iso: string) {
   return iso.substring(0, 10);
 }
 
+function todayIso() {
+  return new Date().toISOString().substring(0, 10);
+}
+
 function fmtPrice(n: number) {
   return n.toLocaleString("de-AT", { style: "currency", currency: "EUR" });
 }
@@ -265,11 +269,17 @@ export default function EventsEditor() {
         <div className="ew-date-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
           <div>
             <label>Von</label>
-            <input type="date" value={form.startDate} onChange={(e) => set("startDate", e.target.value)} required />
+            <input
+              type="date" value={form.startDate} onChange={(e) => set("startDate", e.target.value)} required
+              min={editingId ? undefined : todayIso()}
+            />
           </div>
           <div>
             <label>Bis</label>
-            <input type="date" value={form.endDate} onChange={(e) => set("endDate", e.target.value)} required />
+            <input
+              type="date" value={form.endDate} onChange={(e) => set("endDate", e.target.value)} required
+              min={editingId ? undefined : (form.startDate || todayIso())}
+            />
           </div>
         </div>
 

@@ -38,6 +38,12 @@ function parseMaxParticipants(val: unknown, fallback: number | null): number | n
   return Number.isFinite(n) ? n : fallback;
 }
 
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
@@ -74,6 +80,9 @@ export async function POST(req: NextRequest) {
   }
   if (new Date(endDate) < new Date(startDate)) {
     return NextResponse.json({ error: "Enddatum muss nach Startdatum liegen" }, { status: 400 });
+  }
+  if (new Date(startDate) < startOfToday()) {
+    return NextResponse.json({ error: "Startdatum darf nicht in der Vergangenheit liegen" }, { status: 400 });
   }
 
   const min = Number(minParticipants) || 1;
@@ -122,6 +131,17 @@ export async function PATCH(req: NextRequest) {
   const existing = await prisma.event.findFirst({ where: { id, clientId } });
   if (!existing) return NextResponse.json({ error: "Nicht gefunden" }, { status: 404 });
 
+  const newStartDate = startDate ? new Date(startDate) : existing.startDate;
+  const newEndDate = endDate ? new Date(endDate) : existing.endDate;
+  if (newEndDate < newStartDate) {
+    return NextResponse.json({ error: "Enddatum muss nach Startdatum liegen" }, { status: 400 });
+  }
+  // Only block moving a date INTO the past — editing other fields of an already-past event
+  // (e.g. fixing its name) must keep working without being forced to change its date.
+  if (newStartDate < startOfToday() && newStartDate.getTime() !== existing.startDate.getTime()) {
+    return NextResponse.json({ error: "Startdatum darf nicht in die Vergangenheit verschoben werden" }, { status: 400 });
+  }
+
   const min = minParticipants !== undefined ? Number(minParticipants) : existing.minParticipants;
   const max = parseMaxParticipants(maxParticipants, existing.maxParticipants);
   if (max !== null && min > max) {
@@ -138,8 +158,8 @@ export async function PATCH(req: NextRequest) {
         name: name?.trim() ?? existing.name,
         description: description ?? existing.description,
         image: image ?? existing.image,
-        startDate: startDate ? new Date(startDate) : existing.startDate,
-        endDate: endDate ? new Date(endDate) : existing.endDate,
+        startDate: newStartDate,
+        endDate: newEndDate,
         color: color ?? existing.color,
         intern: intern !== undefined ? Boolean(intern) : existing.intern,
         pricePerPerson: pricePerPerson !== undefined ? Number(pricePerPerson) : existing.pricePerPerson,
