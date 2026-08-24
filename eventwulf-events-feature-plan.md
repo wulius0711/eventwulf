@@ -77,9 +77,11 @@ End-to-end gegen den Dev-Branch getestet: Seite lädt (200, korrekte CSP inkl. B
 - [ ] **Braucht explizites Go, laut Anweisung nicht eigenständig auszuführen:**
   - [ ] Backup der Produktions-DB
   - [ ] Produktions-Migration (`prisma migrate deploy` gegen die echte `DATABASE_URL`)
-  - [ ] `BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_KEY`, `BUNNY_CDN_HOST` in Vercel setzen
-  - [ ] `CRON_SECRET` in Vercel setzen + externen Scheduler für `/api/cron/event-holds` einrichten (analog zum bestehenden Reminder-Cron)
+  - [x] `BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_KEY`, `BUNNY_CDN_HOST` in Vercel (Production) gesetzt
+  - [x] `CRON_SECRET` war bereits gesetzt. Kein externer Scheduler nötig — `/api/cron/event-holds` läuft stündlich über Vercel Cron (`vercel.json`, analog zum bestehenden Reminder-Cron)
+  - [ ] Backup/Sicherungspunkt der Produktions-DB vor der Migration
+  - [ ] Produktions-Migration (`prisma migrate deploy` gegen die echte `DATABASE_URL`)
   - [ ] `git push`
-  - [ ] Deploy via `vercel --prod`
+  - [ ] Deploy via `vercel --prod` — **erst nach** erfolgreicher Migration, sonst läuft neuer Code kurzzeitig gegen altes Schema
 - [ ] Neuen Events-Embed-Code an Hotels kommunizieren (nach erfolgreichem Deploy)
 - [ ] Neon-Dev-Branch `dev-events-feature` kann nach erfolgreichem Rollout gelöscht werden (läuft sonst automatisch nach 7 Tagen ab)
