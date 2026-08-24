@@ -27,13 +27,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function EmbedTab({ slug }: { slug: string }) {
-  const [origin, setOrigin] = useState("");
+function EmbedSnippet({ title, description, src, origin, iframeId }: { title: string; description: string; src: string; origin: string; iframeId: string }) {
   const [copied, setCopied] = useState(false);
-  useEffect(() => { setOrigin(window.location.origin); }, []);
-  const src = `${origin}/?kunde=${slug}`;
-
-  const snippet = `<iframe id="eventwulf-widget" src="${src}" width="100%" frameborder="0" style="border:none;display:block" scrolling="no"></iframe>
+  const snippet = `<iframe id="${iframeId}" src="${src}" width="100%" frameborder="0" style="border:none;display:block" scrolling="no"></iframe>
 <script src="${origin}/embed.js"><\/script>`;
 
   function copySnippet() {
@@ -45,9 +41,10 @@ function EmbedTab({ slug }: { slug: string }) {
 
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--muted)" }}>
-        Diesen Code in deine Website einfügen (z.B. im HTML-Editor deines CMS):
-      </p>
+      <div>
+        <h3 style={{ margin: "0 0 0.3rem", fontSize: "0.95rem", fontWeight: 600 }}>{title}</h3>
+        <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>{description}</p>
+      </div>
       <textarea
         readOnly
         value={snippet}
@@ -73,6 +70,30 @@ function EmbedTab({ slug }: { slug: string }) {
       >
         {copied ? "✓ In der Zwischenablage" : "Code kopieren"}
       </button>
+    </div>
+  );
+}
+
+function EmbedTab({ slug }: { slug: string }) {
+  const [origin, setOrigin] = useState("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <EmbedSnippet
+        title="Anfrageformular"
+        description="Für Gäste/Gruppen, die selbst eine Veranstaltung bei dir durchführen wollen. Diesen Code in deine Website einfügen (z.B. im HTML-Editor deines CMS):"
+        src={`${origin}/?kunde=${slug}`}
+        origin={origin}
+        iframeId="eventwulf-widget"
+      />
+      <EmbedSnippet
+        title="Events"
+        description="Zeigt deine terminierten Events zum direkten Buchen (siehe Admin-Bereich „Events“). Getrennt vom Anfrageformular, kann auf einer eigenen Seite eingebettet werden:"
+        src={`${origin}/events?kunde=${slug}`}
+        origin={origin}
+        iframeId="eventwulf-events-widget"
+      />
     </div>
   );
 }
