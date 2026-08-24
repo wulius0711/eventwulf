@@ -171,6 +171,8 @@ Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum. Jede Anfr
 - Datum und Personenzahl
 - Eingangsdatum
 
+Anfragen, die über das Events-Widget eingegangen sind, tragen zusätzlich ein kleines **„Event"-Badge** — so siehst du auf einen Blick, ob es sich um eine Anmeldung zu einem deiner Events oder eine individuelle Veranstaltungsanfrage handelt. In der Detailansicht heißt das Feld entsprechend „Event" statt „Veranstaltung".
+
 ### Status-Workflow
 
 | Status | Bedeutung |
@@ -181,12 +183,19 @@ Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum. Jede Anfr
 | **Bestätigt** | Buchung ist bestätigt |
 | **Abgelehnt** | Anfrage wurde abgelehnt |
 | **Storniert** | Anfrage wurde storniert (durch Gast per Link oder manuell) |
+| **Abgelaufen** | Nur bei Event-Buchungen: 48 Stunden unbeantwortet geblieben, Platz wurde automatisch wieder freigegeben (siehe unten) |
 
 Den Status änderst du direkt im Anfragen-Detail über die Status-Buttons. Stornierte Anfragen werden grau dargestellt.
+
+Bei Event-Buchungen wird der Platz bereits beim Absenden der Anfrage reserviert (nicht erst bei „Bestätigt"). Wechselst du den Status auf **Abgelehnt** oder **Storniert**, wird der Platz sofort wieder freigegeben und steht anderen Gästen zur Verfügung.
 
 ### Automatische Erinnerungsmail
 
 Wenn eine Anfrage auf **Bestätigt** gesetzt wird, verschickt das System automatisch 24 Stunden vor dem Veranstaltungsdatum eine Erinnerungsmail an deine Benachrichtigungs-E-Mail (aus den Einstellungen). Das passiert täglich um 8:00 Uhr, ohne dass du etwas tun musst.
+
+### Automatischer Ablauf bei Event-Buchungen
+
+Reagierst du 48 Stunden lang nicht auf eine Event-Anfrage (Status bleibt „Neu", „In Prüfung" oder „Angebot versendet"), wird sie automatisch auf **Abgelaufen** gesetzt und der reservierte Platz wieder freigegeben — damit ein beliebtes Event nicht durch unbeantwortete Anfragen dauerhaft blockiert bleibt. Das läuft stündlich im Hintergrund, ohne dass du etwas tun musst. Reagier rechtzeitig, wenn du einen bestimmten Platz sichern willst.
 
 ### Stornierung durch den Gast
 
@@ -266,6 +275,8 @@ Unter **Events** klickst du auf **Event anlegen** und füllst die Felder aus:
 | Intern | Sperrt zusätzlich den allgemeinen Kalender für andere Anfragen im selben Zeitraum. Lass das aus, wenn das Event nicht exklusiv ist und normale Buchungen parallel weiterlaufen sollen. |
 | Aktiv | Nur aktive Events erscheinen im Buchungswidget |
 
+Das **Startdatum** darf nicht in der Vergangenheit liegen — beim Anlegen eines neuen Events blockiert das System das automatisch. Beim Bearbeiten eines bereits vergangenen Events kannst du weiterhin andere Felder (z.B. den Namen) anpassen, ohne das Datum ändern zu müssen.
+
 ### Buchungen & Kapazität
 
 Sobald sich jemand über das Events-Widget anmeldet, wird der Platz sofort reserviert — die Anzeige „X von Y Plätzen frei" aktualisiert sich entsprechend. Lehnst du eine Anfrage ab oder storniert der Gast selbst, wird der Platz automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab und geben den Platz ebenfalls frei.
@@ -281,6 +292,8 @@ Events werden nach **Bevorstehend** und **Vergangen** (einklappbar) gruppiert. �
 Die Vorschau zeigt dein Buchungswidget in einem eingebetteten iFrame.
 
 **Breite anpassen:** Ziehe die grauen Handles links oder rechts am iFrame, um verschiedene Bildschirmbreiten zu simulieren. Die aktuelle Breite wird in Pixel angezeigt.
+
+**Hinweis:** Die Vorschau zeigt aktuell nur das Anfrageformular. Für die Events-Liste rufst du deinen Events-Embed-Link direkt im Browser auf (`/events?kunde=deinslug`).
 
 ---
 
@@ -300,6 +313,9 @@ Prüfe unter Einstellungen → Firma die **Benachrichtigungs-E-Mail**. Schaue au
 
 **Eine Anfrage hat den Status „Storniert" – was jetzt?**
 Der Gast hat die Anfrage über seinen Stornierungslink selbst storniert. Du hast per E-Mail eine Benachrichtigung erhalten. Den Status kannst du bei Bedarf manuell wieder ändern (z.B. auf „Neu" setzen, falls die Stornierung irrtümlich war).
+
+**Eine Event-Anfrage hat den Status „Abgelaufen" – was jetzt?**
+Du hast 48 Stunden nicht auf eine Event-Buchung reagiert, der Platz wurde automatisch wieder freigegeben. Willst du die Buchung doch noch bestätigen, setz den Status manuell zurück (z.B. auf „In Prüfung") — beachte aber, dass der Platz zwischenzeitlich an jemand anderen vergeben worden sein könnte, falls das Event stark nachgefragt ist.
 
 **Wie ändere ich die Farben des Widgets?**
 Unter Einstellungen → Firma → Primärfarbe kannst du den Hex-Code der Hauptfarbe eintragen. Das gesamte Farbschema des Widgets passt sich automatisch an.
