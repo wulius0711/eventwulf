@@ -256,3 +256,33 @@ Participant
 - Neuer ausklappbarer Block in Schritt 2 – standardmäßig minimiert
 - Gruppenleitung kann Teilnehmer direkt beim Einreichen erfassen
 - Werden nach dem `prisma.inquiry.create()` per `createMany` gespeichert
+
+---
+
+## Code & CSS Audit — Juni 2026
+
+**Scope:** Vollständiger Code- und CSS-Audit (Read-only Report → selektive Fixes)
+**Commits:** 3
+
+### Ausgangslage
+
+Strukturierter Audit-Report mit Findings in vier Prioritätsstufen.
+Keine automatischen Fixes — Report zuerst, dann selektiv priorisiert.
+
+### Fixes
+
+| # | Was | Wo | Priorität |
+|---|-----|----|-----------|
+| 1 | `--primary-text: #4f46e5` in `:root` definiert | globals.css | 🔴 |
+| 2 | Submit-Button: `var(--text)` + `#fff` → `var(--primary)` + `var(--btn-text)` | Wizard.tsx | 🔴 |
+| 3 | E-Mail-Guard: kein Send wenn DB-Save fehlschlägt | api/submit/route.ts | 🔴 |
+| 4 | `--error: #dc2626` eingeführt, 24× hardcoded ersetzt | globals.css + 10 Komponenten | 🟡 |
+| 5 | Nicht implementiert — Steps 3–5 haben keine Required Fields (by design korrekt) | — | 🟡 |
+| 6 | `--shadow-card`, `--shadow-tooltip`, `--overlay-sm` definiert | globals.css + Calendar.tsx | 🟢 |
+| 7 | 12 Badge-Tokens (`--badge-new/pending/offer/confirmed/cancelled/neutral`) | globals.css + InvoicePanel + InquiryInbox | 🟢 |
+
+### Ergebnis
+
+`globals.css` ist jetzt Single Source of Truth für alle Design-Werte —
+Farben, Shadows, Badges. Keine hardcodierten `rgba`/`hex`-Werte mehr
+in den Kern-Komponenten.
