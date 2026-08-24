@@ -4,12 +4,12 @@ Umbau von "Pakete" (reine Preisvorlage) zu "Events" (terminierte, buchbare Hotel
 
 ## 1. Datenmodell / Migration
 
-- [ ] Neues `Event`-Modell in `prisma/schema.prisma`: `name`, `description`, `image`, `startDate`, `endDate`, `pricePerPerson`, `minParticipants`, `maxParticipants`, `bookedCount`, `isActive`, `sortOrder`, `color`, `intern` (bool)
-- [ ] `Inquiry.eventId` als echte Relation auf `Event` ergänzen (ersetzt die heutige Datums-Overlap-Heuristik in `inquiries/route.ts`)
-- [x] Package-Datensatz gelöscht (nur einer vorhanden, keine Live-Kunden, keine Datenmigration nötig). Package-Modell wird im Zuge der Schema-Migration aus `schema.prisma` entfernt (inkl. `Inquiry.packageId`/`package`-Relation).
-- [ ] Bestehende `BlockedDate`-Einträge mit `type: "event"` ins neue `Event`-Modell überführen
-- [ ] `BlockedDate` bereinigen — bleibt nur noch für reine Sperrzeiten
-- [ ] Prisma-Migration schreiben, gegen Dev-DB testen
+- [x] Neues `Event`-Modell in `prisma/schema.prisma`: `name`, `description`, `image`, `startDate`, `endDate`, `pricePerPerson`, `minParticipants`, `maxParticipants` (nullable = unbegrenzt), `bookedCount`, `isActive`, `sortOrder`, `color`, `intern` (bool). DB-CHECK-Constraints für Kapazitätsinvarianten ergänzt.
+- [x] `Inquiry.eventId` als echte Relation auf `Event` ergänzt (ersetzt die heutige Datums-Overlap-Heuristik in `inquiries/route.ts` — Anpassung der Route folgt in Abschnitt 2)
+- [x] Package-Datensatz gelöscht (nur einer vorhanden, keine Live-Kunden, keine Datenmigration nötig). Package-Modell im Zuge der Schema-Migration aus `schema.prisma` entfernt (inkl. `Inquiry.packageId`/`package`-Relation).
+- [x] Bestehende `BlockedDate`-Einträge mit `type: "event"` ins neue `Event`-Modell überführt (3 echte Einträge in Prod gefunden und per Migration übernommen, `intern: true` gesetzt um heutiges Verhalten nicht rückwirkend zu ändern)
+- [x] `BlockedDate` bereinigt — bleibt nur noch für reine Sperrzeiten (`type`/`color`/`maxCapacity`/`bookedCount` entfernt)
+- [x] Prisma-Migration geschrieben, gegen Neon-Dev-Branch getestet (inkl. Race-Condition-Test der Kapazitätslogik und Datenmigrations-Verifikation)
 - [ ] Migration gegen Produktions-DB — vorher Backup
 
 ## 2. Backend / API
