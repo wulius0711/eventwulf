@@ -8,6 +8,7 @@ const sections = [
   { id: "felder",         title: "Felder & Optionen" },
   { id: "events",         title: "Events" },
   { id: "verfuegbarkeit", title: "Sperrzeiten" },
+  { id: "einbetten",      title: "Embed-Codes" },
   { id: "anfragen",       title: "Anfragen" },
   { id: "angebote",       title: "Angebote" },
   { id: "vorschau",       title: "Vorschau" },
@@ -45,9 +46,10 @@ const content: Record<string, React.ReactNode> = {
         </thead>
         <tbody>
           {[
-            ["Einstellungen", "Firmendaten, Formular, Abrechnung, Einbetten, Passwort"],
+            ["Einstellungen", "Firmendaten, Formular, Abrechnung, Passwort"],
             ["Events", "Terminierte Angebote mit Preis und Kapazität anlegen und verwalten"],
             ["Sperrzeiten", "Kalender mit gesperrten Zeiträumen"],
+            ["Embed-Codes", "Widget-Codes für Website und Framer"],
             ["Anfragen", "Eingehende Anfragen bearbeiten"],
             ["Dokumente", "Angebots-Archiv"],
             ["Vorschau", "Live-Vorschau des Buchungswidgets"],
@@ -65,7 +67,7 @@ const content: Record<string, React.ReactNode> = {
   ),
   einstellungen: (
     <>
-      <p>Die Einstellungen sind in fünf Tabs unterteilt.</p>
+      <p>Die Einstellungen sind in vier Tabs unterteilt.</p>
       <H3>Firma</H3>
       <p>Basisdaten deiner Organisation: Name, Tagline, Logo-URL, Primärfarbe, Hintergrundfarbe, Schriftarten, Kontaktdaten und Benachrichtigungs-E-Mail.</p>
       <Callout>Die <strong>Benachrichtigungs-E-Mail</strong> erhält bei jeder neuen Anfrage automatisch eine Benachrichtigung.</Callout>
@@ -73,9 +75,6 @@ const content: Record<string, React.ReactNode> = {
       <p>Hier steuerst du welche Felder und Optionen im Buchungsformular erscheinen. Mehr dazu im Abschnitt <em>Felder & Optionen</em>.</p>
       <H3>Abrechnung</H3>
       <p>Steuersatz (%) und Gültigkeitsdauer für neue Angebote in Tagen.</p>
-      <H3>Einbetten</H3>
-      <p>Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Buchen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
-      <Callout>Bei <strong>Framer</strong> funktioniert die automatische Höhenanpassung über den normalen HTML-Code nicht (Framer verpackt ihn in ein eigenes iFrame). Nutze stattdessen eine Code Component — den fertigen Code dafür findest du direkt im Einbetten-Tab.</Callout>
       <H3>Passwort</H3>
       <p>Aktuelles Passwort eingeben, dann neues Passwort (mind. 8 Zeichen) vergeben.</p>
     </>
@@ -185,9 +184,15 @@ const content: Record<string, React.ReactNode> = {
       <p>Klicke auf einen Eintrag in der Liste — er wird im Formular geladen. Mit dem roten ✕ löschen.</p>
     </>
   ),
+  einbetten: (
+    <>
+      <p>Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Buchen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
+      <Callout>Bei <strong>Framer</strong> funktioniert die automatische Höhenanpassung über den normalen HTML-Code nicht (Framer verpackt ihn in ein eigenes iFrame). Nutze stattdessen eine Code Component — den fertigen Code dafür findest du direkt weiter unten auf dieser Seite unter „Einbetten in Framer".</Callout>
+    </>
+  ),
   events: (
     <>
-      <p>Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe Einstellungen → Einbetten), getrennt vom normalen Anfrageformular.</p>
+      <p>Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe Embed-Codes), getrennt vom normalen Anfrageformular.</p>
       <H3>Event anlegen</H3>
       <p>Klicke auf <strong>Event anlegen</strong> und fülle die Felder aus:</p>
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
@@ -247,7 +252,7 @@ const content: Record<string, React.ReactNode> = {
         },
         {
           q: "Wie bettet man das Widget auf der Website ein?",
-          a: "Den fertigen Code findest du unter Einstellungen → Einbetten. Einfach kopieren und in den <body> deiner Website einfügen. Das Widget passt seine Höhe automatisch an.",
+          a: "Den fertigen Code findest du unter Embed-Codes. Einfach kopieren und in den <body> deiner Website einfügen. Das Widget passt seine Höhe automatisch an.",
         },
         {
           q: "Kann ich die Ausstattungs-Optionen individuell anpassen?",
@@ -259,7 +264,7 @@ const content: Record<string, React.ReactNode> = {
         },
         {
           q: "Das Widget wird auf meiner Framer-Website nicht richtig hoch angezeigt.",
-          a: "Framer verpackt eingefügten HTML-Code in ein eigenes iFrame, wodurch die automatische Höhenanpassung nicht funktioniert. Nutze stattdessen die Code Component unter Einstellungen → Einbetten → Einbetten in Framer.",
+          a: "Framer verpackt eingefügten HTML-Code in ein eigenes iFrame, wodurch die automatische Höhenanpassung nicht funktioniert. Nutze stattdessen die Code Component unter Embed-Codes → Einbetten in Framer.",
         },
       ].map(({ q, a }) => (
         <div key={q} style={{ marginBottom: "1.25rem", paddingBottom: "1.25rem", borderBottom: "1px solid var(--border)" }}>

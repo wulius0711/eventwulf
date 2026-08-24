@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/config",       label: "Einstellungen" },
   { href: "/admin/events",       label: "Events" },
   { href: "/admin/availability", label: "Sperrzeiten" },
+  { href: "/admin/embed",        label: "Embed-Codes" },
   { href: "/admin/inquiries",    label: "Anfragen" },
   { href: "/admin/invoices",     label: "Dokumente" },
   { href: "/admin/vorschau",     label: "Vorschau" },

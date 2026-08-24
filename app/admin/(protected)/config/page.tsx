@@ -13,7 +13,7 @@ export default async function ConfigPage() {
       <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
         Einstellungen
       </h1>
-      <ConfigEditor initialConfig={config} slug={client!.slug} />
+      <ConfigEditor initialConfig={config} />
     </div>
   );
 }
