@@ -265,10 +265,33 @@ export default function EventsEditor() {
 
         <div>
           <label>Bild</label>
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-            {form.image && <img src={form.image} alt="" style={{ width: "3rem", height: "3rem", borderRadius: "6px", objectFit: "cover" }} />}
-            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} disabled={uploading} />
-            {uploading && <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>Lädt hoch…</span>}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+              {form.image && <img src={form.image} alt="" style={{ width: "3rem", height: "3rem", borderRadius: "6px", objectFit: "cover" }} />}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+                disabled={uploading}
+                style={{ display: "none" }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                style={{
+                  padding: "0.5rem 1rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)",
+                  background: "none", color: "var(--text)", cursor: uploading ? "not-allowed" : "pointer", fontSize: "0.85rem",
+                }}
+              >
+                {form.image ? "Bild ändern" : "Bild hochladen"}
+              </button>
+              {uploading && <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>Lädt hoch…</span>}
+            </div>
+            <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
+              {form.image ? "Neues Bild wählen, um das aktuelle zu ersetzen" : "JPEG, PNG oder WebP, wird automatisch optimiert (max. 5MB)"}
+            </span>
           </div>
         </div>
 
