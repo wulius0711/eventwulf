@@ -48,8 +48,8 @@ export function validateSubmit(body: unknown): string | null {
   if (!isValidDate(b.datumVon)) return "datumVon ungültig";
   if (!isValidDate(b.datumBis)) return "datumBis ungültig";
   if (b.email && !isValidEmail(b.email)) return "E-Mail-Adresse ungültig";
-  if (b.packageId !== undefined && b.packageId !== "" && (typeof b.packageId !== "string" || b.packageId.length > 50)) {
-    return "packageId ungültig";
+  if (b.eventId !== undefined && b.eventId !== "" && (typeof b.eventId !== "string" || b.eventId.length > 50)) {
+    return "eventId ungültig";
   }
   const textFields: [string, number][] = [
     ["personenAnzahl", 20], ["leiterinnen", 20], ["zeitVon", 10], ["zeitBis", 10],

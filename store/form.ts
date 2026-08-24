@@ -14,7 +14,6 @@ interface FormStore {
 }
 
 const initialForm: InquiryFormData = {
-  packageId: "",
   artTitel: "",
   nameGruppenleitung: "",
   datumVon: "",

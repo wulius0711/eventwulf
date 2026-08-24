@@ -10,7 +10,6 @@ interface Props {
 
 const links = [
   { href: "/admin/config",       label: "Einstellungen" },
-  { href: "/admin/packages",     label: "Pakete" },
   { href: "/admin/availability", label: "Verfügbarkeit" },
   { href: "/admin/inquiries",    label: "Anfragen" },
   { href: "/admin/invoices",     label: "Dokumente" },

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import type { InquiryFormData } from "@/lib/types";
 import { rateLimit, getIp } from "@/lib/ratelimit";
 import { validateSubmit } from "@/lib/validate";
+import { reserveEventCapacity, releaseEventCapacity, HOLD_DURATION_MS } from "@/lib/eventCapacity";
 
 function sanitize(val: unknown): string {
   return String(val ?? "").replace(/[\r\n\t]/g, " ").trim();
@@ -42,22 +43,35 @@ export async function POST(req: NextRequest) {
   const slug = body.slug ?? "default";
   const config = await loadConfigFromDB(slug);
 
-  // Resolve package name for email if provided
-  let packageName = "";
-  if (body.packageId) {
-    try {
-      const pkg = await prisma.package.findUnique({ where: { id: body.packageId }, select: { name: true } });
-      packageName = pkg?.name ?? "";
-    } catch { /* ignore */ }
+// Resolve event, validate participant count and reserve capacity if an eventId was submitted.
+  let eventName = "";
+  const participantCount = parseInt(body.personenAnzahl ?? "0") || 0;
+  if (body.eventId) {
+    const event = await prisma.event.findUnique({ where: { id: body.eventId } });
+    if (!event || !event.isActive) {
+      return NextResponse.json({ error: "Dieses Event ist nicht mehr verfügbar" }, { status: 400 });
+    }
+    if (participantCount < event.minParticipants) {
+      return NextResponse.json({ error: `Mindestens ${event.minParticipants} Teilnehmer:innen erforderlich` }, { status: 400 });
+    }
+    if (event.maxParticipants !== null && participantCount > event.maxParticipants) {
+      return NextResponse.json({ error: `Maximal ${event.maxParticipants} Teilnehmer:innen möglich` }, { status: 400 });
+    }
+    const reserved = await reserveEventCapacity(event.id, participantCount);
+    if (!reserved) {
+      return NextResponse.json({ error: "Nicht mehr genügend Plätze für dieses Event verfügbar" }, { status: 400 });
+    }
+    eventName = event.name;
   }
   const notifyEmail = config.notifyEmail ?? process.env.NOTIFY_EMAIL ?? "";
 
   if (!notifyEmail) {
+    if (body.eventId) await releaseEventCapacity(body.eventId, participantCount);
     return NextResponse.json({ error: "Kein Empfänger konfiguriert" }, { status: 500 });
   }
 
   const rows = [
-    row("Seminarpaket", packageName),
+    row("Event", eventName),
     row("Art / Titel", body.artTitel),
     row("Gruppenleitung", body.nameGruppenleitung),
     row("E-Mail", body.email),
@@ -119,7 +133,6 @@ export async function POST(req: NextRequest) {
   try {
     const client = await prisma.client.findUnique({ where: { slug } });
     if (client) {
-      const participantCount = parseInt(body.personenAnzahl ?? "0") || 0;
       const cancelToken = randomBytes(24).toString("hex");
       const inquiry = await prisma.inquiry.create({
         data: {
@@ -128,14 +141,17 @@ export async function POST(req: NextRequest) {
           status: "neu",
           participantCount,
           cancelToken,
-          ...(body.packageId ? { packageId: body.packageId } : {}),
+          ...(body.eventId ? { eventId: body.eventId, holdExpiresAt: new Date(Date.now() + HOLD_DURATION_MS) } : {}),
         },
       });
       inquiryId = inquiry.id;
       savedCancelToken = cancelToken;
+    } else if (body.eventId) {
+      await releaseEventCapacity(body.eventId, participantCount);
     }
   } catch (e) {
     console.error("Failed to save inquiry:", e);
+    if (body.eventId) await releaseEventCapacity(body.eventId, participantCount);
     // Guard: emails must not be sent if the inquiry was not persisted
     return NextResponse.json({ error: "Anfrage konnte nicht gespeichert werden" }, { status: 500 });
   }

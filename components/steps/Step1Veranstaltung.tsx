@@ -1,8 +1,7 @@
 "use client";
 import { useFormStore } from "@/store/form";
 import Calendar from "@/components/Calendar";
-import type { EventConfig, PackageEntry } from "@/lib/types";
-import { useState, useEffect } from "react";
+import type { EventConfig } from "@/lib/types";
 
 interface Props {
   slug: string;
@@ -22,14 +21,6 @@ function fmtDate(iso: string) {
 
 export default function Step1Veranstaltung({ slug, config }: Props) {
   const { form, setField } = useFormStore();
-  const [packages, setPackages] = useState<PackageEntry[]>([]);
-
-  useEffect(() => {
-    fetch(`/api/packages?slug=${encodeURIComponent(slug)}`)
-      .then((r) => r.json())
-      .then((data: PackageEntry[]) => setPackages(data))
-      .catch(() => {});
-  }, [slug]);
 
   const selectedStart = form.datumVon ? new Date(form.datumVon + "T12:00:00") : null;
   const selectedEnd = form.datumBis ? new Date(form.datumBis + "T12:00:00") : null;
@@ -51,27 +42,6 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      {config.showPackages === true && packages.length > 0 && (
-        <div>
-          <label>Seminarpaket</label>
-          <select value={form.packageId ?? ""} onChange={(e) => setField("packageId", e.target.value)}>
-            <option value="">Kein Paket / individuelle Anfrage</option>
-            {packages.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}{p.pricePerPerson > 0 ? ` – ${p.pricePerPerson.toLocaleString("de-AT", { style: "currency", currency: "EUR" })} / Person` : ""}
-                {p.durationDays > 1 ? ` (${p.durationDays} Tage)` : ""}
-              </option>
-            ))}
-          </select>
-          {form.packageId && (() => {
-            const sel = packages.find((p) => p.id === form.packageId);
-            return sel?.description ? (
-              <p style={{ margin: "0.4rem 0 0", fontSize: "0.8rem", color: "var(--muted)" }}>{sel.description}</p>
-            ) : null;
-          })()}
-        </div>
-      )}
-
       <div className="ew-field">
         <input type="text" placeholder=" " value={form.artTitel} onChange={(e) => setField("artTitel", e.target.value)} autoFocus />
         <label>Art / Titel der Veranstaltung *</label>

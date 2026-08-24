@@ -9,7 +9,7 @@ interface Inquiry {
   status: string;
   createdAt: string;
   participantCount: number;
-  packageId: string | null;
+  eventId: string | null;
 }
 
 const STATUS_LABELS: Record<string, string> = {

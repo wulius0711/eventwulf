@@ -8,19 +8,23 @@ export async function GET(req: NextRequest) {
   const client = await prisma.client.findUnique({ where: { slug }, select: { id: true } });
   if (!client) return NextResponse.json([], { status: 200 });
 
-  const packages = await prisma.package.findMany({
-    where: { clientId: client.id, isActive: true },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  const events = await prisma.event.findMany({
+    where: { clientId: client.id, isActive: true, endDate: { gte: new Date() } },
+    orderBy: [{ startDate: "asc" }, { sortOrder: "asc" }],
     select: {
       id: true,
       name: true,
       description: true,
+      image: true,
+      startDate: true,
+      endDate: true,
+      color: true,
       pricePerPerson: true,
       minParticipants: true,
       maxParticipants: true,
-      durationDays: true,
+      bookedCount: true,
     },
   });
 
-  return NextResponse.json(packages);
+  return NextResponse.json(events);
 }

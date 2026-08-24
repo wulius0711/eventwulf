@@ -89,20 +89,25 @@ export interface BlockedDateEntry {
   bookedCount?: number;
 }
 
-export interface PackageEntry {
+export interface EventEntry {
   id: string;
   name: string;
   description: string;
+  image: string;
+  startDate: string;
+  endDate: string;
+  color: string;
+  intern: boolean;
   pricePerPerson: number;
   minParticipants: number;
-  maxParticipants: number;
-  durationDays: number;
+  maxParticipants: number | null;
+  bookedCount: number;
   isActive: boolean;
   sortOrder: number;
 }
 
 export interface InquiryFormData {
-  packageId?: string;
+  eventId?: string;
   artTitel: string;
   nameGruppenleitung: string;
   datumVon: string;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { isHeld, reserveEventCapacity, releaseEventCapacity } from "@/lib/eventCapacity";
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
@@ -22,7 +23,7 @@ export async function PATCH(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id, status } = await req.json() as { id: string; status: string };
-  const allowed = ["neu", "in_pruefung", "angebot_versendet", "bestaetigt", "abgelehnt", "storniert"];
+  const allowed = ["neu", "in_pruefung", "angebot_versendet", "bestaetigt", "abgelehnt", "storniert", "abgelaufen"];
   if (!allowed.includes(status)) {
     return NextResponse.json({ error: "Ungültiger Status" }, { status: 400 });
   }
@@ -33,36 +34,29 @@ export async function PATCH(req: NextRequest) {
   const inquiry = await prisma.inquiry.findFirst({ where: { id, clientId: client.id } });
   if (!inquiry) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const updated = await prisma.inquiry.update({ where: { id }, data: { status } });
-
-  // Update bookedCount on overlapping events when confirming or un-confirming
-  const wasConfirmed = inquiry.status === "bestaetigt";
-  const nowConfirmed = status === "bestaetigt";
-  if (wasConfirmed !== nowConfirmed && inquiry.participantCount > 0) {
-    try {
-      const data = JSON.parse(inquiry.data) as { datumVon?: string; datumBis?: string };
-      if (data.datumVon && data.datumBis) {
-        const from = new Date(data.datumVon + "T00:00:00");
-        const to = new Date(data.datumBis + "T23:59:59");
-        const events = await prisma.blockedDate.findMany({
-          where: {
-            clientId: client.id,
-            type: "event",
-            startDate: { lte: to },
-            endDate: { gte: from },
-            maxCapacity: { not: null },
-          },
-        });
-        const delta = nowConfirmed ? inquiry.participantCount : -inquiry.participantCount;
-        await Promise.all(events.map((ev) =>
-          prisma.blockedDate.update({
-            where: { id: ev.id },
-            data: { bookedCount: { increment: delta } },
-          })
-        ));
+  // A status change into/out of a "held" status releases/re-reserves the Event capacity
+  // this Inquiry occupies. Symmetric so any transition (not just confirm/reject) stays correct.
+  if (inquiry.eventId && inquiry.participantCount > 0) {
+    const wasHeld = isHeld(inquiry.status);
+    const nowHeld = isHeld(status);
+    if (wasHeld && !nowHeld) {
+      await releaseEventCapacity(inquiry.eventId, inquiry.participantCount);
+    } else if (!wasHeld && nowHeld) {
+      const reserved = await reserveEventCapacity(inquiry.eventId, inquiry.participantCount);
+      if (!reserved) {
+        return NextResponse.json({ error: "Für diesen Status reicht die freie Kapazität des Events nicht mehr aus" }, { status: 400 });
       }
-    } catch { /* non-critical */ }
+    }
   }
+
+  const updated = await prisma.inquiry.update({
+    where: { id },
+    data: {
+      status,
+      // A confirmed or resolved booking is no longer subject to the capacity-hold expiry.
+      ...(status !== "neu" && status !== "in_pruefung" && status !== "angebot_versendet" ? { holdExpiresAt: null } : {}),
+    },
+  });
 
   return NextResponse.json(updated);
 }

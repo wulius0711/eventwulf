@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import type { InquiryFormData } from "@/lib/types";
+import { isHeld, releaseEventCapacity } from "@/lib/eventCapacity";
 
 function fmt(iso: string) {
   const [y, m, d] = iso.split("-");
@@ -30,8 +31,12 @@ export async function GET(
 
   await prisma.inquiry.update({
     where: { id: inquiry.id },
-    data: { status: "storniert", cancelledAt: new Date() },
+    data: { status: "storniert", cancelledAt: new Date(), holdExpiresAt: null },
   });
+
+  if (inquiry.eventId && inquiry.participantCount > 0 && isHeld(inquiry.status)) {
+    await releaseEventCapacity(inquiry.eventId, inquiry.participantCount);
+  }
 
   // Notify admin
   try {
