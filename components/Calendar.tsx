@@ -396,9 +396,9 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
           boxShadow: "var(--shadow-tooltip)",
         }}>
           <strong>{tooltip.label}</strong><br />
-          {new Date(tooltip.start + "T12:00:00").toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" })}
+          {new Date(tooltip.start).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
           {" – "}
-          {new Date(tooltip.end + "T12:00:00").toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" })}
+          {new Date(tooltip.end).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
         </div>
       )}
 
