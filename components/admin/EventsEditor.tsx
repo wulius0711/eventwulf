@@ -248,6 +248,9 @@ export default function EventsEditor() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+      <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
+        Terminierte Angebote mit Preis und Kapazität — werden im Events-Widget angezeigt und können direkt gebucht werden.
+      </p>
       <form onSubmit={handleSubmit} style={{
         background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`,
         borderRadius: "var(--radius)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem",

@@ -101,6 +101,9 @@ export default function AvailabilityEditor() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+      <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
+        Markiere Zeiträume als „nicht verfügbar" — sie werden im Kalender angezeigt.
+      </p>
 
       <form onSubmit={handleSubmit} style={{
         background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`,

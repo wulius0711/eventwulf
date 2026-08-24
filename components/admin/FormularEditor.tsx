@@ -144,6 +144,9 @@ export default function FormularEditor({ initialConfig }: Props) {
 
   return (
     <div>
+      <p style={{ color: "var(--muted)", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
+        Titel, Farben, Schriftarten und Felder deines Buchungsformulars — steuert, was Gäste im Anfrageformular sehen und ausfüllen können.
+      </p>
       <Section title="Formular">
         <Field label="Formular-Titel (optional, leer lassen zum Ausblenden)">
           <input type="text" value={config.formTitle} onChange={(e) => set("formTitle", e.target.value)} placeholder="z.B. Du hast Interesse an einem Retreat bei uns?" />

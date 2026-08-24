@@ -5,15 +5,17 @@ const sections = [
   { id: "login",          title: "Login" },
   { id: "navigation",     title: "Navigation & Oberfläche" },
   { id: "einstellungen",  title: "Einstellungen" },
-  { id: "felder",         title: "Felder & Optionen" },
-  { id: "events",         title: "Events" },
-  { id: "verfuegbarkeit", title: "Sperrzeiten" },
+  { id: "elemente",       title: "Elemente" },
   { id: "einbetten",      title: "Embed-Codes" },
   { id: "anfragen",       title: "Anfragen" },
   { id: "angebote",       title: "Angebote" },
   { id: "vorschau",       title: "Vorschau" },
   { id: "faq",            title: "Häufige Fragen" },
 ];
+
+function H2({ children }: { children: React.ReactNode }) {
+  return <h2 style={{ fontSize: "1.05rem", fontWeight: 700, margin: "2rem 0 0.75rem", paddingTop: "1.5rem", borderTop: "1px solid var(--border)", color: "var(--text)" }}>{children}</h2>;
+}
 
 function H3({ children }: { children: React.ReactNode }) {
   return <h3 style={{ fontSize: "0.95rem", fontWeight: 700, margin: "1.25rem 0 0.5rem", color: "var(--text)" }}>{children}</h3>;
@@ -46,9 +48,8 @@ const content: Record<string, React.ReactNode> = {
         </thead>
         <tbody>
           {[
-            ["Einstellungen", "Firmendaten, Formular, Abrechnung, Passwort"],
-            ["Events", "Terminierte Angebote mit Preis und Kapazität anlegen und verwalten"],
-            ["Sperrzeiten", "Kalender mit gesperrten Zeiträumen"],
+            ["Einstellungen", "Firmendaten, Abrechnung, Passwort — Konto-/Backend-Konfiguration"],
+            ["Elemente", "Formular-Felder, Events und Sperrzeiten — alles, was das öffentliche Widget prägt"],
             ["Embed-Codes", "Widget-Codes für Website und Framer"],
             ["Anfragen", "Eingehende Anfragen bearbeiten"],
             ["Dokumente", "Angebots-Archiv"],
@@ -67,21 +68,22 @@ const content: Record<string, React.ReactNode> = {
   ),
   einstellungen: (
     <>
-      <p>Die Einstellungen sind in vier Tabs unterteilt.</p>
+      <p>Konto-/Backend-Konfiguration, in drei Tabs unterteilt. Alles, was das öffentliche Widget selbst prägt (Formular, Events, Sperrzeiten), findest du unter <em>Elemente</em>.</p>
       <H3>Firma</H3>
       <p>Basisdaten deiner Organisation: Name, Tagline, Logo-URL, Primärfarbe, Hintergrundfarbe, Schriftarten, Kontaktdaten und Benachrichtigungs-E-Mail.</p>
       <Callout>Die <strong>Benachrichtigungs-E-Mail</strong> erhält bei jeder neuen Anfrage automatisch eine Benachrichtigung.</Callout>
-      <H3>Formular</H3>
-      <p>Hier steuerst du welche Felder und Optionen im Buchungsformular erscheinen. Mehr dazu im Abschnitt <em>Felder & Optionen</em>.</p>
       <H3>Abrechnung</H3>
       <p>Steuersatz (%) und Gültigkeitsdauer für neue Angebote in Tagen.</p>
       <H3>Passwort</H3>
       <p>Aktuelles Passwort eingeben, dann neues Passwort (mind. 8 Zeichen) vergeben.</p>
     </>
   ),
-  felder: (
+  elemente: (
     <>
-      <p>Unter <strong>Einstellungen → Formular → Felder</strong> steuerst du was im Buchungsformular erscheint. Die Felder sind nach den 5 Schritten des Formulars gruppiert.</p>
+      <p>Alles, was das öffentliche Widget/die Website prägt, gebündelt in drei Tabs: <strong>Formular</strong>, <strong>Events</strong> und <strong>Sperrzeiten</strong>.</p>
+
+      <H2>Formular</H2>
+      <p>Steuert Titel, Farben, Schriftarten und welche Felder im Buchungsformular erscheinen. Die Felder sind nach den 5 Schritten des Formulars gruppiert.</p>
 
       <H3>Checkboxen</H3>
       <p>Jede Checkbox aktiviert oder deaktiviert ein optionales Feld. Deaktivierte Felder werden den Gästen nicht angezeigt.</p>
@@ -128,6 +130,45 @@ const content: Record<string, React.ReactNode> = {
 
       <H3>Optionen verwalten</H3>
       <p>Alle Optionslisten befinden sich im unteren Bereich des Felder-Abschnitts. Einfach Einträge hinzufügen, bearbeiten oder löschen und anschließend <strong>Änderungen speichern</strong> klicken.</p>
+
+      <H2>Events</H2>
+      <p>Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe Embed-Codes), getrennt vom normalen Anfrageformular.</p>
+      <H3>Event anlegen</H3>
+      <p>Klicke auf <strong>Event anlegen</strong> und fülle die Felder aus:</p>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
+        <tbody>
+          {[
+            ["Event-Name", "Bezeichnung des Events"],
+            ["Beschreibung", "Ausführlicher Text, erscheint beim Aufklappen der Karte"],
+            ["Bild", "Optional, JPEG/PNG/WebP, max. 5MB"],
+            ["Von / Bis", "Zeitraum des Events"],
+            ["Preis pro Person", "In Euro"],
+            ["Min./Max. Teilnehmer", "Max. leer lassen für unbegrenzt"],
+            ["Farbe", "Für die Anzeige im Kalender"],
+            ["Intern", "Sperrt zusätzlich den Zeitraum im allgemeinen Kalender für andere Anfragen"],
+            ["Aktiv", "Nur aktive Events erscheinen im Buchungswidget"],
+          ].map(([feld, desc]) => (
+            <tr key={feld as string} style={{ borderBottom: "1px solid var(--border)" }}>
+              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500, whiteSpace: "nowrap" }}>{feld}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{desc}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <Callout>Das Startdatum darf nicht in der Vergangenheit liegen. Beim Bearbeiten eines bereits vergangenen Events kannst du trotzdem andere Felder anpassen, ohne das Datum ändern zu müssen.</Callout>
+      <H3>Buchungen & Kapazität</H3>
+      <p>Meldet sich jemand über das Events-Widget an, wird der Platz sofort reserviert. Lehnst du ab oder storniert der Gast, wird er automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab.</p>
+      <H3>Liste, Duplizieren & Teilnehmer</H3>
+      <p>Events werden nach <strong>Bevorstehend</strong> und <strong>Vergangen</strong> (einklappbar) gruppiert. Über <strong>Duplizieren</strong> legst du schnell eine Wiederholung an. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.</p>
+
+      <H2>Sperrzeiten</H2>
+      <H3>Kalenderansicht</H3>
+      <p>Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine <strong>internen</strong> Events als „nicht verfügbar". <strong>Externe</strong> Events blockieren den Kalender nicht — sie erscheinen nur als informativer, farbiger Banner, Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.</p>
+      <H3>Eintrag hinzufügen</H3>
+      <p>Hier trägst du reine Sperrzeiten ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf <strong>Zeitraum sperren</strong>.</p>
+      <Callout>Events werden nicht hier, sondern im Tab „Events" angelegt.</Callout>
+      <H3>Bearbeiten / Löschen</H3>
+      <p>Klicke auf einen Eintrag in der Liste — er wird im Formular geladen. Mit dem roten ✕ löschen.</p>
     </>
   ),
   anfragen: (
@@ -173,53 +214,10 @@ const content: Record<string, React.ReactNode> = {
       <Callout>Angebote können storniert, aber nicht gelöscht werden.</Callout>
     </>
   ),
-  verfuegbarkeit: (
-    <>
-      <H3>Kalenderansicht</H3>
-      <p>Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine <strong>internen</strong> Events (siehe Abschnitt Events) als „nicht verfügbar". <strong>Externe</strong> Events blockieren den Kalender nicht — sie erscheinen nur als informativer, farbiger Banner, Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.</p>
-      <H3>Eintrag hinzufügen</H3>
-      <p>Hier trägst du nur noch reine Sperrzeiten ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf <strong>Zeitraum sperren</strong>.</p>
-      <Callout>Events werden nicht mehr hier, sondern unter „Events" angelegt.</Callout>
-      <H3>Bearbeiten / Löschen</H3>
-      <p>Klicke auf einen Eintrag in der Liste — er wird im Formular geladen. Mit dem roten ✕ löschen.</p>
-    </>
-  ),
   einbetten: (
     <>
       <p>Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Buchen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
       <Callout>Bei <strong>Framer</strong> funktioniert die automatische Höhenanpassung über den normalen HTML-Code nicht (Framer verpackt ihn in ein eigenes iFrame). Nutze stattdessen eine Code Component — den fertigen Code dafür findest du direkt weiter unten auf dieser Seite unter „Einbetten in Framer".</Callout>
-    </>
-  ),
-  events: (
-    <>
-      <p>Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe Embed-Codes), getrennt vom normalen Anfrageformular.</p>
-      <H3>Event anlegen</H3>
-      <p>Klicke auf <strong>Event anlegen</strong> und fülle die Felder aus:</p>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
-        <tbody>
-          {[
-            ["Event-Name", "Bezeichnung des Events"],
-            ["Beschreibung", "Ausführlicher Text, erscheint beim Aufklappen der Karte"],
-            ["Bild", "Optional, JPEG/PNG/WebP, max. 5MB"],
-            ["Von / Bis", "Zeitraum des Events"],
-            ["Preis pro Person", "In Euro"],
-            ["Min./Max. Teilnehmer", "Max. leer lassen für unbegrenzt"],
-            ["Farbe", "Für die Anzeige im Kalender"],
-            ["Intern", "Sperrt zusätzlich den Zeitraum im allgemeinen Kalender für andere Anfragen"],
-            ["Aktiv", "Nur aktive Events erscheinen im Buchungswidget"],
-          ].map(([feld, desc]) => (
-            <tr key={feld as string} style={{ borderBottom: "1px solid var(--border)" }}>
-              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500, whiteSpace: "nowrap" }}>{feld}</td>
-              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{desc}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Callout>Das Startdatum darf nicht in der Vergangenheit liegen. Beim Bearbeiten eines bereits vergangenen Events kannst du trotzdem andere Felder anpassen, ohne das Datum ändern zu müssen.</Callout>
-      <H3>Buchungen & Kapazität</H3>
-      <p>Meldet sich jemand über das Events-Widget an, wird der Platz sofort reserviert. Lehnst du ab oder storniert der Gast, wird er automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab.</p>
-      <H3>Liste, Duplizieren & Teilnehmer</H3>
-      <p>Events werden nach <strong>Bevorstehend</strong> und <strong>Vergangen</strong> (einklappbar) gruppiert. Über <strong>Duplizieren</strong> legst du schnell eine Wiederholung an. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.</p>
     </>
   ),
   vorschau: (
@@ -248,7 +246,7 @@ const content: Record<string, React.ReactNode> = {
         },
         {
           q: "Wie ändere ich die Farben des Widgets?",
-          a: "Unter Einstellungen → Formular → Primärfarbe kannst du den Hex-Code eintragen. Das gesamte Farbschema passt sich automatisch an.",
+          a: "Unter Elemente → Formular → Primärfarbe kannst du den Hex-Code eintragen. Das gesamte Farbschema passt sich automatisch an.",
         },
         {
           q: "Wie bettet man das Widget auf der Website ein?",
@@ -256,7 +254,7 @@ const content: Record<string, React.ReactNode> = {
         },
         {
           q: "Kann ich die Ausstattungs-Optionen individuell anpassen?",
-          a: "Ja. Unter Einstellungen → Formular → Ausstattungs-Optionen kannst du beliebige Optionen hinzufügen, umbenennen oder entfernen. Was dort steht, erscheint als Checkbox im Formular.",
+          a: "Ja. Unter Elemente → Formular → Ausstattungs-Optionen kannst du beliebige Optionen hinzufügen, umbenennen oder entfernen. Was dort steht, erscheint als Checkbox im Formular.",
         },
         {
           q: "Eine Event-Anfrage hat den Status „Abgelaufen“ – was jetzt?",

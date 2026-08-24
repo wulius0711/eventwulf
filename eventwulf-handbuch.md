@@ -7,13 +7,12 @@
 1. [Login](#1-login)
 2. [Navigation & Oberfläche](#2-navigation--oberfläche)
 3. [Einstellungen](#3-einstellungen)
-4. [Events](#4-events)
-5. [Sperrzeiten & Kalender](#5-sperrzeiten--kalender)
-6. [Embed-Codes](#6-embed-codes)
-7. [Anfragen](#7-anfragen)
-8. [Angebote](#8-angebote)
-9. [Vorschau](#9-vorschau)
-10. [Passwort ändern](#10-passwort-ändern)
+4. [Elemente](#4-elemente)
+5. [Embed-Codes](#5-embed-codes)
+6. [Anfragen](#6-anfragen)
+7. [Angebote](#7-angebote)
+8. [Vorschau](#8-vorschau)
+9. [Passwort ändern](#9-passwort-ändern)
 
 ---
 
@@ -31,9 +30,8 @@ Die Sidebar links enthält alle Bereiche:
 
 | Menüpunkt | Beschreibung |
 |-----------|-------------|
-| Einstellungen | Firmendaten, Formular, Abrechnung, Passwort |
-| Events | Terminierte Angebote mit Preis und Kapazität anlegen und verwalten |
-| Sperrzeiten | Kalender mit gesperrten Zeiträumen |
+| Einstellungen | Firmendaten, Abrechnung, Passwort — Konto-/Backend-Konfiguration |
+| Elemente | Formular-Felder, Events und Sperrzeiten — alles, was das öffentliche Widget prägt |
 | Embed-Codes | Widget-Codes für Website und Framer |
 | Anfragen | Eingehende Anfragen bearbeiten |
 | Dokumente | Angebots-Archiv |
@@ -47,7 +45,7 @@ Die Sidebar links enthält alle Bereiche:
 
 ## 3. Einstellungen
 
-Die Einstellungen sind in vier Tabs unterteilt.
+Konto-/Backend-Konfiguration, in drei Tabs unterteilt. Alles, was das öffentliche Widget selbst prägt (Formular, Events, Sperrzeiten), findest du unter [Elemente](#4-elemente).
 
 ### Firma
 
@@ -62,9 +60,24 @@ Hier pflegst du die Basisdaten deiner Organisation:
 - **Telefon, Website, Adresse** – Erscheinen in der Bestätigungsmail
 - **Benachrichtigungs-E-Mail** – An diese Adresse geht die Operator-Mail bei jeder neuen Anfrage
 
+### Abrechnung
+
+- **Steuersatz (%)** – Wird für Angebote verwendet (Standard: 20 %)
+- **Angebot gültig für (Tage)** – Gültigkeitsdauer neuer Angebote (Standard: 30 Tage)
+
+### Passwort
+
+Aktuelles Passwort eingeben und neues Passwort (mind. 8 Zeichen) zweimal bestätigen.
+
+---
+
+## 4. Elemente
+
+Alles, was das öffentliche Widget/die Website prägt, gebündelt in drei Tabs: **Formular**, **Events** und **Sperrzeiten**.
+
 ### Formular
 
-Konfiguriere welche Felder im Buchungsformular angezeigt werden. Die Felder sind nach Schritten gruppiert:
+Steuert Titel, Farben, Schriftarten und welche Felder im Buchungsformular angezeigt werden. Die Felder sind nach Schritten gruppiert:
 
 - **Schritt 1 – Veranstaltung:** Uhrzeiten
 - **Schritt 2 – Gruppe:** Teilnehmerzahl, Leiter:innen, Telefon, Sprache
@@ -81,24 +94,13 @@ Deaktivierte Felder werden im Widget nicht angezeigt.
 **Widget-Features:**
 - *Kapazitätsanzeige* – Zeigt verfügbare Plätze im Kalender
 
-### Abrechnung
+### Events
 
-- **Steuersatz (%)** – Wird für Angebote verwendet (Standard: 20 %)
-- **Angebot gültig für (Tage)** – Gültigkeitsdauer neuer Angebote (Standard: 30 Tage)
+Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe [Embed-Codes](#5-embed-codes)), getrennt vom normalen Anfrageformular.
 
-### Passwort
+#### Event anlegen
 
-Aktuelles Passwort eingeben und neues Passwort (mind. 8 Zeichen) zweimal bestätigen.
-
----
-
-## 4. Events
-
-Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe [Embed-Codes](#6-embed-codes)), getrennt vom normalen Anfrageformular.
-
-### Event anlegen
-
-Unter **Events** klickst du auf **Event anlegen** und füllst die Felder aus:
+Im Tab **Events** klickst du auf **Event anlegen** und füllst die Felder aus:
 
 | Feld | Beschreibung |
 |------|-------------|
@@ -115,39 +117,37 @@ Unter **Events** klickst du auf **Event anlegen** und füllst die Felder aus:
 
 Das **Startdatum** darf nicht in der Vergangenheit liegen — beim Anlegen eines neuen Events blockiert das System das automatisch. Beim Bearbeiten eines bereits vergangenen Events kannst du weiterhin andere Felder (z.B. den Namen) anpassen, ohne das Datum ändern zu müssen.
 
-### Buchungen & Kapazität
+#### Buchungen & Kapazität
 
 Sobald sich jemand über das Events-Widget anmeldet, wird der Platz sofort reserviert — die Anzeige „X von Y Plätzen frei" aktualisiert sich entsprechend. Lehnst du eine Anfrage ab oder storniert der Gast selbst, wird der Platz automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab und geben den Platz ebenfalls frei.
 
-### Liste, Duplizieren & Teilnehmer
+#### Liste, Duplizieren & Teilnehmer
 
 Events werden nach **Bevorstehend** und **Vergangen** (einklappbar) gruppiert. Über **Duplizieren** legst du schnell eine Wiederholung eines Events an (z.B. dasselbe Retreat im nächsten Quartal) — alle Felder außer dem Zeitraum werden übernommen. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.
 
----
+### Sperrzeiten
 
-## 5. Sperrzeiten & Kalender
+#### Ansicht
 
-### Ansicht
+Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine **internen** Events als „nicht verfügbar". **Externe** Events blockieren den Kalender nicht, sie erscheinen nur als informativer, farbiger Banner — Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.
 
-Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine **internen** Events (siehe [Events](#4-events)) als „nicht verfügbar". **Externe** Events blockieren den Kalender nicht, sie erscheinen nur als informativer, farbiger Banner — Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.
+#### Eintrag hinzufügen
 
-### Eintrag hinzufügen
+Im Tab **Sperrzeiten** trägst du Zeiträume ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf **Zeitraum sperren**, um den Eintrag zu speichern.
 
-Unter **Sperrzeiten** trägst du Zeiträume ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf **Zeitraum sperren**, um den Eintrag zu speichern.
+Events werden nicht hier, sondern im Tab **Events** angelegt.
 
-Events werden nicht mehr hier, sondern unter **Events** angelegt.
-
-### Eintrag bearbeiten / löschen
+#### Eintrag bearbeiten / löschen
 
 Klicke auf einen bestehenden Eintrag in der Liste – er wird im Formular zum Bearbeiten geladen. Mit dem roten ✕-Button löschen.
 
 ---
 
-## 6. Embed-Codes
+## 5. Embed-Codes
 
 Hier findest du den fertigen HTML-Code zum Einbetten des Widgets in deine Website. Einfach kopieren und in den `<body>` deiner Seite einfügen.
 
-Es gibt zwei getrennte Embed-Codes: das **Anfrageformular** (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die **Event-Liste** (zeigt deine terminierten Events zum direkten Buchen, siehe [Events](#4-events)). Beide lassen sich unabhängig voneinander einbetten, z.B. auf verschiedenen Seiten.
+Es gibt zwei getrennte Embed-Codes: das **Anfrageformular** (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die **Event-Liste** (zeigt deine terminierten Events zum direkten Buchen, siehe [Elemente](#4-elemente)). Beide lassen sich unabhängig voneinander einbetten, z.B. auf verschiedenen Seiten.
 
 ### Einbetten in Framer
 
@@ -215,7 +215,7 @@ Die Component erscheint danach im Insert-Panel und lässt sich per Drag & Drop a
 
 ---
 
-## 7. Anfragen
+## 6. Anfragen
 
 ### Übersicht
 
@@ -262,7 +262,7 @@ Klick auf eine Anfrage öffnet die Detailansicht mit allen Formulardaten. Im rec
 
 ---
 
-## 8. Angebote
+## 7. Angebote
 
 ### Angebot erstellen
 
@@ -291,7 +291,7 @@ Angebote können nur storniert, nicht gelöscht werden (Aufbewahrungspflicht).
 
 ---
 
-## 9. Vorschau
+## 8. Vorschau
 
 Die Vorschau zeigt dein Buchungswidget in einem eingebetteten iFrame.
 
@@ -301,7 +301,7 @@ Die Vorschau zeigt dein Buchungswidget in einem eingebetteten iFrame.
 
 ---
 
-## 10. Passwort ändern
+## 9. Passwort ändern
 
 Unter **Einstellungen → Passwort** kannst du dein Passwort jederzeit ändern. Mindestlänge: 8 Zeichen.
 
@@ -322,4 +322,4 @@ Der Gast hat die Anfrage über seinen Stornierungslink selbst storniert. Du hast
 Du hast 48 Stunden nicht auf eine Event-Buchung reagiert, der Platz wurde automatisch wieder freigegeben. Willst du die Buchung doch noch bestätigen, setz den Status manuell zurück (z.B. auf „In Prüfung") — beachte aber, dass der Platz zwischenzeitlich an jemand anderen vergeben worden sein könnte, falls das Event stark nachgefragt ist.
 
 **Wie ändere ich die Farben des Widgets?**
-Unter Einstellungen → Firma → Primärfarbe kannst du den Hex-Code der Hauptfarbe eintragen. Das gesamte Farbschema des Widgets passt sich automatisch an.
+Unter Elemente → Formular → Primärfarbe kannst du den Hex-Code der Hauptfarbe eintragen. Das gesamte Farbschema des Widgets passt sich automatisch an.
