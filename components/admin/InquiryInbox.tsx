@@ -19,6 +19,7 @@ const STATUS_LABELS: Record<string, string> = {
   bestaetigt:        "Bestätigt",
   abgelehnt:         "Abgelehnt",
   storniert:         "Storniert",
+  abgelaufen:        "Abgelaufen",
 };
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
@@ -28,6 +29,7 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   bestaetigt:        { bg: "var(--badge-confirmed-bg)", color: "var(--badge-confirmed-text)" },
   abgelehnt:         { bg: "var(--badge-cancelled-bg)", color: "var(--badge-cancelled-text)" },
   storniert:         { bg: "var(--badge-neutral-bg)",   color: "var(--badge-neutral-text)" },
+  abgelaufen:        { bg: "var(--badge-neutral-bg)",   color: "var(--badge-neutral-text)" },
 };
 
 function fmt(iso: string) {
@@ -109,6 +111,11 @@ export default function InquiryInbox() {
               <span style={{ background: sc.bg, color: sc.color, padding: "0.18rem 0.6rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600, flexShrink: 0 }}>
                 {STATUS_LABELS[inq.status] ?? inq.status}
               </span>
+              {inq.eventId && (
+                <span style={{ background: "var(--primary-tint)", color: "var(--primary-text)", padding: "0.18rem 0.5rem", borderRadius: "4px", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
+                  Event
+                </span>
+              )}
               <span style={{ fontWeight: 600, fontSize: "0.9rem", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {d.artTitel || "Retreat"} — {d.nameGruppenleitung}
               </span>
@@ -125,7 +132,7 @@ export default function InquiryInbox() {
             {isOpen && (
               <div style={{ borderTop: "1px solid var(--border)", padding: "1.25rem", display: "flex", flexDirection: "column", gap: "0.9rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <DetailRow label="Veranstaltung" value={d.artTitel} />
+                  <DetailRow label={inq.eventId ? "Event" : "Veranstaltung"} value={d.artTitel} />
                   <DetailRow label="Gruppenleitung" value={d.nameGruppenleitung} />
                   <DetailRow label="E-Mail" value={d.email} />
                   <DetailRow label="Anreise" value={d.datumVon && d.zeitVon ? `${fmtDate(d.datumVon)}, ${d.zeitVon} Uhr` : fmtDate(d.datumVon)} />

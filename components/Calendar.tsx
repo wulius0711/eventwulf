@@ -53,9 +53,15 @@ function buildGrid(year: number, month: number): CalendarDay[][] {
   return weeks;
 }
 
+// Only real Sperrzeiten and "intern" Events actually block the calendar —
+// "extern" Events are informational only (see weekEvents banners below).
+function blocksCalendar(e: BlockedDateEntry) {
+  return e.type === "blocked" || e.intern === true;
+}
+
 function isBlocked(date: Date, blocked: BlockedDateEntry[]) {
   const t = date.getTime();
-  return blocked.some((b) => {
+  return blocked.filter(blocksCalendar).some((b) => {
     const s = new Date(b.startDate).setHours(0, 0, 0, 0);
     const e = new Date(b.endDate).setHours(23, 59, 59, 999);
     return t >= s && t <= e;
@@ -65,7 +71,7 @@ function isBlocked(date: Date, blocked: BlockedDateEntry[]) {
 function hasBlockedBetween(a: Date, b: Date, blocked: BlockedDateEntry[]) {
   const lo = Math.min(a.getTime(), b.getTime());
   const hi = Math.max(a.getTime(), b.getTime());
-  return blocked.some((bl) => {
+  return blocked.filter(blocksCalendar).some((bl) => {
     const s = new Date(bl.startDate).setHours(0, 0, 0, 0);
     const e = new Date(bl.endDate).setHours(23, 59, 59, 999);
     return s <= hi && e >= lo;

@@ -58,8 +58,8 @@ End-to-end gegen den Dev-Branch getestet: Seite lädt (200, korrekte CSP inkl. B
 
 ## 6. Bestehendes Formular / Kalender
 
-- [ ] `Calendar.tsx`: extern-Events nur als Info-Banner, intern-Events sperren wie Sperrzeiten
-- [ ] Begriffstrennung im UI konsequent: "Event" (Hotel-Termin) vs. "Veranstaltung" (Gruppen-Anfrage)
+- [x] `Calendar.tsx`: `isBlocked()`/`hasBlockedBetween()` sperren jetzt nur noch bei `type: "blocked"` oder `intern: true` — extern-Events bleiben reine Info-Banner. Gegen echte Daten verifiziert (`intern:false`-Testevent blockiert korrekt nicht).
+- [x] Begriffstrennung im UI: `InquiryInbox.tsx` zeigt jetzt "Event" statt "Veranstaltung" als Detail-Label, wenn `eventId` gesetzt ist, plus ein kleines "Event"-Badge in der Anfragenliste zur schnellen Unterscheidung. Fehlenden Status "abgelaufen" in `STATUS_LABELS`/`STATUS_COLORS` ergänzt (wäre sonst als "Neu" falsch eingefärbt worden).
 
 ## 7. Testing
 

@@ -87,6 +87,7 @@ export interface BlockedDateEntry {
   color: string;
   maxCapacity?: number | null;
   bookedCount?: number;
+  intern?: boolean;
 }
 
 export interface EventEntry {
