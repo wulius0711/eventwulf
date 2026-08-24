@@ -127,7 +127,7 @@ const content: Record<string, React.ReactNode> = {
   ),
   anfragen: (
     <>
-      <p>Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum.</p>
+      <p>Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum. Anfragen aus dem Events-Widget tragen zusätzlich ein kleines <strong>„Event"-Badge</strong>, damit du sie auf einen Blick von individuellen Veranstaltungsanfragen unterscheiden kannst.</p>
       <H3>Status-Workflow</H3>
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
         <tbody>
@@ -137,6 +137,8 @@ const content: Record<string, React.ReactNode> = {
             ["Angebot versendet", "#8b5cf6", "Angebot wurde erstellt und verschickt"],
             ["Bestätigt", "#10b981", "Buchung ist bestätigt"],
             ["Abgelehnt", "#ef4444", "Anfrage wurde abgelehnt"],
+            ["Storniert", "#6b7280", "Anfrage wurde storniert (durch Gast per Link oder manuell)"],
+            ["Abgelaufen", "#6b7280", "Nur bei Events: 48h unbeantwortet, Platz automatisch wieder freigegeben"],
           ].map(([status, color, desc]) => (
             <tr key={status as string} style={{ borderBottom: "1px solid var(--border)" }}>
               <td style={{ padding: "0.6rem 0.75rem" }}>
@@ -147,6 +149,9 @@ const content: Record<string, React.ReactNode> = {
           ))}
         </tbody>
       </table>
+      <Callout>Bei Event-Buchungen wird der Platz schon beim Absenden reserviert, nicht erst bei „Bestätigt". Setzt du eine Anfrage auf „Abgelehnt" oder „Storniert", wird der Platz sofort wieder frei.</Callout>
+      <H3>Automatischer Ablauf bei Event-Buchungen</H3>
+      <p>Reagierst du 48 Stunden nicht auf eine Event-Anfrage, wird sie automatisch auf „Abgelaufen" gesetzt und der Platz freigegeben — läuft stündlich im Hintergrund, ohne dass du etwas tun musst.</p>
       <H3>Anfrage öffnen</H3>
       <p>Klick auf eine Anfrage öffnet die Detailansicht mit allen Formulardaten. Im rechten Bereich befindet sich das Angebots-Panel.</p>
     </>
@@ -166,25 +171,44 @@ const content: Record<string, React.ReactNode> = {
   verfuegbarkeit: (
     <>
       <H3>Kalenderansicht</H3>
-      <p>Der Kalender zeigt gesperrte Zeiträume und eingetragene Events. Belegte Tage sind farbig markiert und im Buchungsformular nicht wählbar.</p>
+      <p>Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine <strong>internen</strong> Events (siehe Abschnitt Events) als „nicht verfügbar". <strong>Externe</strong> Events blockieren den Kalender nicht — sie erscheinen nur als informativer, farbiger Banner, Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.</p>
       <H3>Eintrag hinzufügen</H3>
-      <p>Wähle oben den Typ:</p>
-      <ul style={{ marginTop: "0.5rem", paddingLeft: "1.25rem", lineHeight: 1.8 }}>
-        <li><strong>Gesperrter Zeitraum</strong> – Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub")</li>
-        <li><strong>Event</strong> – Datum, Bezeichnung, Farbe und optional maximale Kapazität</li>
-      </ul>
+      <p>Hier trägst du nur noch reine Sperrzeiten ein: Datum von/bis und Bezeichnung (z.B. „Betriebsurlaub"). Klicke auf <strong>Zeitraum sperren</strong>.</p>
+      <Callout>Events werden nicht mehr hier, sondern unter „Events" angelegt.</Callout>
       <H3>Bearbeiten / Löschen</H3>
-      <p>Klicke auf einen Eintrag in der rechten Liste — er wird im Formular geladen. Mit dem roten ✕ löschen.</p>
-      <H3>Kapazität</H3>
-      <p>Bei Events mit Kapazität siehst du wie viele Plätze noch frei sind. Die Kapazitätsanzeige im Widget aktivierst du unter Einstellungen → Formular → Widget-Features.</p>
+      <p>Klicke auf einen Eintrag in der Liste — er wird im Formular geladen. Mit dem roten ✕ löschen.</p>
     </>
   ),
-  pakete: (
+  events: (
     <>
-      <p>Pakete werden in Schritt 1 des Buchungsformulars angezeigt, wenn die Paketauswahl in den Einstellungen aktiviert ist.</p>
-      <H3>Paket anlegen</H3>
-      <p>Klicke auf <strong>+ Neues Paket</strong> und fülle die Felder aus: Name, Beschreibung, Preis pro Person, Min./Max. Teilnehmer, Dauer und ob das Paket aktiv ist.</p>
-      <Callout>Nur aktive Pakete erscheinen im Buchungsformular.</Callout>
+      <p>Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe Einstellungen → Einbetten), getrennt vom normalen Anfrageformular.</p>
+      <H3>Event anlegen</H3>
+      <p>Klicke auf <strong>Event anlegen</strong> und fülle die Felder aus:</p>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
+        <tbody>
+          {[
+            ["Event-Name", "Bezeichnung des Events"],
+            ["Beschreibung", "Ausführlicher Text, erscheint beim Aufklappen der Karte"],
+            ["Bild", "Optional, JPEG/PNG/WebP, max. 5MB"],
+            ["Von / Bis", "Zeitraum des Events"],
+            ["Preis pro Person", "In Euro"],
+            ["Min./Max. Teilnehmer", "Max. leer lassen für unbegrenzt"],
+            ["Farbe", "Für die Anzeige im Kalender"],
+            ["Intern", "Sperrt zusätzlich den allgemeinen Kalender für andere Anfragen"],
+            ["Aktiv", "Nur aktive Events erscheinen im Buchungswidget"],
+          ].map(([feld, desc]) => (
+            <tr key={feld as string} style={{ borderBottom: "1px solid var(--border)" }}>
+              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500, whiteSpace: "nowrap" }}>{feld}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{desc}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <Callout>Das Startdatum darf nicht in der Vergangenheit liegen. Beim Bearbeiten eines bereits vergangenen Events kannst du trotzdem andere Felder anpassen, ohne das Datum ändern zu müssen.</Callout>
+      <H3>Buchungen & Kapazität</H3>
+      <p>Meldet sich jemand über das Events-Widget an, wird der Platz sofort reserviert. Lehnst du ab oder storniert der Gast, wird er automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab.</p>
+      <H3>Liste, Duplizieren & Teilnehmer</H3>
+      <p>Events werden nach <strong>Bevorstehend</strong> und <strong>Vergangen</strong> (einklappbar) gruppiert. Über <strong>Duplizieren</strong> legst du schnell eine Wiederholung an. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.</p>
     </>
   ),
   vorschau: (
@@ -193,6 +217,7 @@ const content: Record<string, React.ReactNode> = {
       <H3>Breite anpassen</H3>
       <p>Ziehe die grauen Handles links oder rechts am iFrame, um verschiedene Bildschirmbreiten zu simulieren. Die aktuelle Breite wird in Pixel angezeigt.</p>
       <Callout>Tipp: Ziehe auf ~390 px um eine iPhone-Ansicht zu simulieren.</Callout>
+      <Callout>Die Vorschau zeigt aktuell nur das Anfrageformular. Für die Events-Liste rufst du deinen Events-Embed-Link direkt im Browser auf.</Callout>
     </>
   ),
   faq: (
@@ -221,6 +246,14 @@ const content: Record<string, React.ReactNode> = {
         {
           q: "Kann ich die Ausstattungs-Optionen individuell anpassen?",
           a: "Ja. Unter Einstellungen → Formular → Ausstattungs-Optionen kannst du beliebige Optionen hinzufügen, umbenennen oder entfernen. Was dort steht, erscheint als Checkbox im Formular.",
+        },
+        {
+          q: "Eine Event-Anfrage hat den Status „Abgelaufen“ – was jetzt?",
+          a: "48 Stunden ohne Reaktion, der Platz wurde automatisch wieder freigegeben. Willst du trotzdem noch bestätigen, setz den Status manuell zurück — der Platz könnte inzwischen aber an jemand anderen vergeben worden sein.",
+        },
+        {
+          q: "Das Widget wird auf meiner Framer-Website nicht richtig hoch angezeigt.",
+          a: "Framer verpackt eingefügten HTML-Code in ein eigenes iFrame, wodurch die automatische Höhenanpassung nicht funktioniert. Nutze stattdessen die Code Component unter Einstellungen → Einbetten → Einbetten in Framer.",
         },
       ].map(({ q, a }) => (
         <div key={q} style={{ marginBottom: "1.25rem", paddingBottom: "1.25rem", borderBottom: "1px solid var(--border)" }}>
