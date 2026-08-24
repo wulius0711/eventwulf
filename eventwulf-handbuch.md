@@ -90,6 +90,70 @@ Hier findest du den fertigen HTML-Code zum Einbetten des Widgets in deine Websit
 
 Es gibt zwei getrennte Embed-Codes: das **Anfrageformular** (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die **Event-Liste** (zeigt deine terminierten Events zum direkten Buchen, siehe [Events](#7-events)). Beide lassen sich unabhängig voneinander einbetten, z.B. auf verschiedenen Seiten.
 
+#### Einbetten in Framer
+
+Framer packt eingefügten HTML-Code standardmäßig in ein eigenes, zusätzliches iFrame — dadurch funktioniert die automatische Höhenanpassung des normalen Embed-Codes dort **nicht**, das Widget wird abgeschnitten oder erzeugt Leerraum.
+
+**Lösung:** Statt des HTML-Embeds eine **Code Component** in Framer anlegen (Assets → Code → + → New Code File) und folgenden Code einfügen:
+
+```tsx
+import { useEffect, useRef, useState } from "react"
+import { addPropertyControls, ControlType } from "framer"
+
+const BASE_URL = "https://eventwulf.vercel.app"
+
+/**
+ * @framerSupportedLayoutWidth any
+ * @framerSupportedLayoutHeight auto
+ */
+export default function EventwulfWidget(props) {
+    const { slug, widget } = props
+    const iframeRef = useRef(null)
+    const [height, setHeight] = useState(400)
+
+    const path = widget === "events" ? "/events" : "/"
+    const src = `${BASE_URL}${path}?kunde=${encodeURIComponent(slug || "default")}`
+
+    useEffect(() => {
+        function handleMessage(e) {
+            if (!e.data || e.data.type !== "eventwulf-resize") return
+            if (e.source !== iframeRef.current?.contentWindow) return
+            if (e.data.height) setHeight(e.data.height)
+        }
+        window.addEventListener("message", handleMessage)
+        return () => window.removeEventListener("message", handleMessage)
+    }, [])
+
+    return (
+        <iframe
+            ref={iframeRef}
+            src={src}
+            width="100%"
+            height={height}
+            style={{ border: "none", display: "block", width: "100%", height }}
+            scrolling="no"
+        />
+    )
+}
+
+addPropertyControls(EventwulfWidget, {
+    slug: {
+        type: ControlType.String,
+        title: "Kunde-Slug",
+        defaultValue: "default",
+    },
+    widget: {
+        type: ControlType.Enum,
+        title: "Widget",
+        options: ["form", "events"],
+        optionTitles: ["Anfrageformular", "Events"],
+        defaultValue: "form",
+    },
+})
+```
+
+Die Component erscheint danach im Insert-Panel und lässt sich per Drag & Drop auf die Seite ziehen. Slug und Widget-Typ werden über das Eigenschaften-Panel eingestellt, kein manuelles Code-Bearbeiten pro Hotel nötig. Der Stack darum kann auf "Fit" stehen — die Component meldet ihre Höhe automatisch über die `@framerSupportedLayoutHeight auto`-Annotation.
+
 ### Passwort
 
 Aktuelles Passwort eingeben und neues Passwort (mind. 8 Zeichen) zweimal bestätigen.
