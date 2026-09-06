@@ -78,16 +78,6 @@ function hasBlockedBetween(a: Date, b: Date, blocked: BlockedDateEntry[]) {
   });
 }
 
-function inRange(date: Date, start: Date | null, end: Date | null, hover: Date | null) {
-  if (!start) return false;
-  const lo = toDay(start);
-  const hi = end ? toDay(end) : hover ? toDay(hover) : null;
-  if (!hi) return false;
-  const d = toDay(date);
-  const [a, b] = lo <= hi ? [lo, hi] : [hi, lo];
-  return d > a && d < b;
-}
-
 function isRangeEdge(date: Date, start: Date | null, end: Date | null, hover: Date | null) {
   if (!start) return false;
   const d = toDay(date).getTime();
@@ -106,6 +96,30 @@ function weekBlockedRange(week: CalendarDay[], entries: BlockedDateEntry[]) {
     }
   }
   return start === -1 ? null : { start, end };
+}
+
+// Selected-range pill drawn once per row (like weekBlockedRange/weekEvents below),
+// instead of per-cell, so the rounded caps never have to line up across cell boundaries.
+function weekSelectedRange(week: CalendarDay[], start: Date | null, end: Date | null, hover: Date | null) {
+  if (!start) return null;
+  const lo = toDay(start);
+  const hi = end ? toDay(end) : hover ? toDay(hover) : lo;
+  const [a, b] = lo <= hi ? [lo, hi] : [hi, lo];
+  let startCol = -1, endCol = -1;
+  for (let i = 0; i < week.length; i++) {
+    const t = toDay(week[i].date).getTime();
+    if (t >= a.getTime() && t <= b.getTime()) {
+      if (startCol === -1) startCol = i;
+      endCol = i;
+    }
+  }
+  if (startCol === -1) return null;
+  return {
+    startCol,
+    endCol,
+    roundLeft: toDay(week[startCol].date).getTime() === a.getTime(),
+    roundRight: toDay(week[endCol].date).getTime() === b.getTime(),
+  };
 }
 
 function weekEvents(week: CalendarDay[], entries: BlockedDateEntry[]) {
@@ -205,24 +219,24 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
   }
 
   const weeks = buildGrid(year, month);
-  const hasRange = selStart && selEnd;
 
   return (
     <div style={{
-      borderRadius: "var(--radius)",
+      borderRadius: "var(--radius-lg)",
       background: "var(--surface)",
       userSelect: "none",
       boxShadow: "var(--shadow-card)",
+      overflow: "hidden",
     }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1rem", borderBottom: "1px solid var(--border)" }}>
         <button
-          onClick={() => { if (today) { const dir = (today.getFullYear() * 12 + today.getMonth()) < (year * 12 + month) ? "prev" : "next"; navigate(dir); setMonth(today.getMonth()); setYear(today.getFullYear()); } }}
-          style={{ padding: "0.3rem 0.8rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", cursor: "pointer", fontSize: "0.82rem", fontWeight: 500 }}>
+          className="ew-cal-today-btn"
+          onClick={() => { if (today) { const dir = (today.getFullYear() * 12 + today.getMonth()) < (year * 12 + month) ? "prev" : "next"; navigate(dir); setMonth(today.getMonth()); setYear(today.getFullYear()); } }}>
           Heute
         </button>
-        <button onClick={() => navigate("prev")} style={{ padding: "0.3rem 0.6rem", border: "none", background: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1.1rem" }}>‹</button>
-        <button onClick={() => navigate("next")} style={{ padding: "0.3rem 0.6rem", border: "none", background: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1.1rem" }}>›</button>
+        <button className="ew-cal-nav-btn" onClick={() => navigate("prev")}>‹</button>
+        <button className="ew-cal-nav-btn" onClick={() => navigate("next")}>›</button>
         <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{MONTHS[month]} {year}</span>
         {selStart && (
           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--primary-text)", fontWeight: 500 }}>
@@ -233,7 +247,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
       </div>
 
       {/* Weekday headers */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", background: "var(--bg2)", borderBottom: "1px solid var(--border)" }}>
+      <div className="ew-cal-weekday-header" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: "1px solid var(--border)" }}>
         {DAYS.map(d => (
           <div key={d} style={{ padding: "0.4rem 0", textAlign: "center", fontSize: "0.72rem", fontWeight: 600, color: "var(--muted)", letterSpacing: "0.05em" }}>{d}</div>
         ))}
@@ -244,47 +258,34 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
         {weeks.map((week, wi) => {
           const blockedRange = weekBlockedRange(week, blocked);
           const events = weekEvents(week, blocked);
+          const selRange = weekSelectedRange(week, selStart, selEnd, hover);
           return (
             <div key={wi} style={{ borderBottom: "1px solid var(--border)" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
+              <div className="ew-cal-week-row" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
+                {/* Weekend columns (SA/SO) are always the last two of a Monday-start week.
+                    Placed via grid-column (not calc/%) so it shares the exact same column
+                    boundaries as the day cells below — no rounding drift between the two. */}
+                <div style={{ gridColumn: "6 / 8", gridRow: 1, background: "rgba(0,0,0,0.05)" }} />
+                {selRange && (
+                  <div style={{
+                    gridColumn: `${selRange.startCol + 1} / ${selRange.endCol + 2}`,
+                    gridRow: 1,
+                    background: "var(--primary-dim)",
+                    borderRadius: `${selRange.roundLeft ? "999px" : "0"} ${selRange.roundRight ? "999px" : "0"} ${selRange.roundRight ? "999px" : "0"} ${selRange.roundLeft ? "999px" : "0"}`,
+                  }} />
+                )}
                 {week.map((cell, di) => {
                   const isToday = today !== null && cell.date.getTime() === today.getTime();
                   const isPast = today !== null && toDay(cell.date) < today;
                   const blocked_ = isBlocked(cell.date, blocked);
                   const disabled_ = blocked_ || isPast;
                   const edge = isRangeEdge(cell.date, selStart, selEnd, hover);
-                  const between = inRange(cell.date, selStart, selEnd, hover);
-                  const isStart = !!(selStart && toDay(cell.date).getTime() === toDay(selStart).getTime());
-                  const isEnd = !!(selEnd && toDay(cell.date).getTime() === toDay(selEnd).getTime());
-
-                  // Pill-Range background
-                  const pillBg = (() => {
-                    if (!hasRange && !hover) {
-                      return "transparent";
-                    }
-                    if (isStart && isEnd) return "transparent";
-                    if (isStart) return `linear-gradient(to right, transparent 50%, var(--primary-dim) 50%)`;
-                    if (isEnd) return `linear-gradient(to left, transparent 50%, var(--primary-dim) 50%)`;
-                    if (between) return "var(--primary-dim)";
-                    // hover state (only one date selected)
-                    if (!selEnd && hover && selStart) {
-                      const lo = toDay(selStart);
-                      const hi = toDay(hover);
-                      const d = toDay(cell.date);
-                      const [a, b] = lo <= hi ? [lo, hi] : [hi, lo];
-                      const isHoverStart = d.getTime() === a.getTime();
-                      const isHoverEnd = d.getTime() === b.getTime();
-                      const isHoverBetween = d > a && d < b;
-                      if (isHoverStart) return `linear-gradient(to right, transparent 50%, var(--primary-dim) 50%)`;
-                      if (isHoverEnd) return `linear-gradient(to left, transparent 50%, var(--primary-dim) 50%)`;
-                      if (isHoverBetween) return "var(--primary-dim)";
-                    }
-                    return "transparent";
-                  })();
+                  const inSelRange = !!selRange && di >= selRange.startCol && di <= selRange.endCol;
 
                   return (
                     <div
                       key={di}
+                      className={!disabled_ ? `ew-cal-day${inSelRange ? " ew-cal-day--pill" : ""}` : undefined}
                       onClick={() => handleDayClick(cell.date)}
                       onMouseEnter={() => {
                         if (selStart && !selEnd && !hasBlockedBetween(toDay(selStart), toDay(cell.date), blocked))
@@ -294,18 +295,21 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                       }}
                       onMouseLeave={() => setHover(null)}
                       style={{
+                        gridColumn: di + 1,
+                        gridRow: 1,
+                        position: "relative",
                         padding: "0.4rem 0.3rem 0.3rem",
                         minHeight: "3rem",
                         cursor: disabled_ ? "not-allowed" : "pointer",
                         opacity: !cell.inMonth ? 0.3 : isPast && !blocked_ ? 0.4 : 1,
-                        background: pillBg,
-                        transition: "background 0.1s",
                         display: "flex",
                         alignItems: "flex-start",
                         justifyContent: "center",
                       }}
                     >
                       <span style={{
+                        position: "relative",
+                        boxSizing: "border-box",
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -313,9 +317,10 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                         height: "1.7rem",
                         borderRadius: "50%",
                         fontSize: "0.82rem",
-                        fontWeight: isToday ? 700 : 400,
-                        background: edge ? "var(--primary)" : isToday ? "var(--text)" : "transparent",
-                        color: edge ? "var(--btn-text)" : isToday ? "#fff" : disabled_ ? "var(--muted)" : "var(--text)",
+                        fontWeight: isToday || edge ? 700 : 400,
+                        background: edge ? "var(--primary)" : "transparent",
+                        border: edge ? "none" : isToday ? "1.5px solid var(--primary)" : "1.5px solid transparent",
+                        color: edge ? "var(--btn-text)" : disabled_ ? "var(--muted)" : "var(--text)",
                         textDecoration: blocked_ ? "line-through" : "none",
                       }}>
                         {cell.date.getDate()}

@@ -255,6 +255,43 @@ button:active:not(:disabled) {
 .cal-slide-next { animation: cal-slide-next 0.25s ease; }
 .cal-slide-prev { animation: cal-slide-prev 0.25s ease; }
 
+.ew-cal-nav-btn {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.1rem;
+  border-radius: 50%;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.ew-cal-nav-btn:hover { background: var(--bg2); color: var(--text); }
+
+.ew-cal-today-btn {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.ew-cal-today-btn:hover { background: var(--bg2); }
+
+.ew-cal-day:hover {
+  background-color: var(--bg2) !important;
+}
+.ew-cal-day.ew-cal-day--pill:hover {
+  background-color: transparent !important;
+}
+.ew-cal-weekday-header > div:nth-child(6),
+.ew-cal-weekday-header > div:nth-child(7) {
+  color: var(--primary-text);
+}
+
 .ew-grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
