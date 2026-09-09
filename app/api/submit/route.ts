@@ -43,12 +43,16 @@ export async function POST(req: NextRequest) {
   const body = raw as InquiryFormData & { slug?: string };
   const slug = body.slug ?? "default";
   const config = await loadConfigFromDB(slug);
+  // Resolved once, up front, so eventId/roomId below are always looked up scoped to
+  // this client — otherwise a submission to Client A's public form could reference
+  // Client B's Event/Room by id (both are just public, enumerable cuids).
+  const client = await prisma.client.findUnique({ where: { slug } });
 
 // Resolve event, validate participant count and reserve capacity if an eventId was submitted.
   let eventName = "";
   const participantCount = parseInt(body.personenAnzahl ?? "0") || 0;
   if (body.eventId) {
-    const event = await prisma.event.findUnique({ where: { id: body.eventId } });
+    const event = client ? await prisma.event.findFirst({ where: { id: body.eventId, clientId: client.id } }) : null;
     if (!event || !event.isActive) {
       return NextResponse.json({ error: "Dieses Event ist nicht mehr verfügbar" }, { status: 400 });
     }
@@ -68,7 +72,7 @@ export async function POST(req: NextRequest) {
   // Resolve the room (if selected) so the display name comes from the DB, not client input.
   let roomName = "";
   if (body.roomId) {
-    const room = await prisma.room.findUnique({ where: { id: body.roomId } });
+    const room = client ? await prisma.room.findFirst({ where: { id: body.roomId, clientId: client.id } }) : null;
     if (!room || !room.isActive) {
       if (body.eventId) await releaseEventCapacity(body.eventId, participantCount);
       return NextResponse.json({ error: "Dieser Raum ist nicht mehr verfügbar" }, { status: 400 });
@@ -145,7 +149,6 @@ export async function POST(req: NextRequest) {
   let inquiryId: string | null = null;
   let savedCancelToken: string | null = null;
   try {
-    const client = await prisma.client.findUnique({ where: { slug } });
     if (client) {
       const cancelToken = randomBytes(24).toString("hex");
       const inquiry = await prisma.$transaction(async (tx) => {
