@@ -116,6 +116,42 @@ Bei Überschreitung: HTTP 429.
 
 ---
 
+## Nachtrag — September 2026 (Räume-Feature-Review)
+
+Fokussierter Security-Review über den Diff der Räume-Feature-Session (nicht die gesamte Codebasis) — Vorgehen: Identifikations-Agent findet Kandidaten, je ein zweiter Agent verifiziert unabhängig gegen den echten Code inkl. Confidence-Score, nur Funde ≥8/10 übernommen.
+
+### 8. Cross-Tenant IDOR bei eventId/roomId in `/api/submit`
+
+**Problem:** Die öffentliche Anfrage-Route löste `body.eventId`/`body.roomId` per `findUnique`/`findFirst` ohne `clientId`-Filter auf. Der `clientId` der erzeugten Anfrage kam ausschließlich aus `body.slug` — unabhängig davon, welchem Mandanten das referenzierte Event/der Raum tatsächlich gehörte. Raum- und Event-IDs sind über öffentliche Endpunkte (`/api/rooms?slug=`, sowie länger schon für Events) pro Mandant einsehbar.
+
+**Exploit:** Eine Anfrage an Mandant A mit der `roomId`/`eventId` von Mandant B führte dazu, dass Mandant B eine Anfrage mit dem Namen seines eigenen Raums/Events bekam, der Raum für den Zeitraum fälschlich als belegt markiert wurde, und die Paket-Freischaltung (Räume ab Pro) umgangen werden konnte (auch Mandanten im Basis-Paket konnten so Buchungen gegen fremde Räume auslösen).
+
+**Fix:** Der anfragende Client wird jetzt einmal zu Beginn der Route aus dem `slug` aufgelöst; Event- und Raum-Lookup sind zwingend auf dessen `clientId` gescoped (`findFirst` statt `findUnique`). Verifiziert mit zwei realen Cross-Tenant-Exploit-Versuchen gegen frisch angelegte Testmandanten (beide korrekt `400`, legitime Same-Tenant-Buchungen weiterhin `200`).
+
+**Geprüft, kein Fund:** Ein zweiter Kandidat (Räume bleiben nach einem Paket-Downgrade weiter über das eigene Widget des Kunden buchbar) wurde als reine Abrechnungs-/Entitlement-Frage eingestuft, keine Sicherheitslücke — es gibt keinen Zugriff auf fremde Mandantendaten, nur auf zuvor selbst konfigurierte eigene Inhalte (Confidence 2/10, verworfen).
+
+**Bekannte Einschränkung:** Dieser Review deckte nur den Diff dieser Session ab. Ein vollständiger Codebase-Audit (analog zum ursprünglichen Security-Hardening-Audit oben) steht für die restliche, ältere Codebasis noch aus.
+
+---
+
+## Nachtrag — Launch-Readiness-Audit (September 2026), Phase 1
+
+Der oben erwähnte vollständige Codebase-Audit wurde als 3-Durchgänge-Review über die gesamte Codebasis durchgeführt (Track A: Multi-Tenancy, Concurrency, Business Logic, Auth, Input-Validierung, Dependencies, E-Mail, Cron, Config, Frontend, Deploy, Tests, Edge Cases) und ergab 12 Launch-Blocker plus Medium-/Low-Funde. Umsetzung erfolgt phasenweise; hier der Stand von Phase 1.
+
+### Block A: Next.js/sharp-CVEs — erledigt
+
+**Problem:** `next@16.2.4` enthielt zwei unauthenticated-RCE-Advisories und eine kritische DoS-Advisory; `sharp@0.34.4` enthielt bekannte libvips/libheif-CVEs auf dem Bild-Upload-Pfad (Räume/Events-Admin-Upload).
+
+**Fix:** Update auf `next@16.3.4` und `sharp@0.35.4` (gezielt minimale Patch-Version statt `latest`, um die Blast Radius klein zu halten). `npm audit`: critical 1→0, high 13→10 — die verbleibenden 10 High betreffen ausschließlich andere, nicht in dieser Phase behandelte Pakete (Prisma-Ökosystem, tiptap, browserslist, hono, js-yaml, mysql2, brace-expansion, fast-uri), keiner davon next/sharp. Verifiziert mit vollem Playwright-Smoke-Test (Login, Räume-CRUD inkl. Bild-Upload mit WebP-Magic-Byte-Prüfung, kompletter Gäste-Buchungsassistent inkl. Räume-Buchungsflow).
+
+### Fund 9: Gast erhielt 500 trotz erfolgreich gespeicherter Anfrage — erledigt
+
+**Problem:** In `/api/submit` hing die Erfolgsantwort an den Gast am Erfolg des E-Mail-Versands (Betreiber-Benachrichtigung). Schlug nur die interne Betreiber-Mail fehl, bekam der Gast einen 500er, obwohl seine Anfrage bereits in der DB gespeichert war — mit dem Risiko doppelter Anfragen durch erneutes Absenden.
+
+**Fix:** Beide E-Mail-Sends (Betreiber + Gast-Bestätigung) laufen jetzt außerhalb des kritischen Pfads; Fehler werden mit `inquiryId` geloggt statt geworfen. Die Betreiber-Mail bekommt vor dem Loggen einen einmaligen Retry, da sie der einzige Kanal ist, über den der Betreiber überhaupt von der Anfrage erfährt. Reproduziert (ungültiger Resend-Key → 500 trotz gespeicherter Anfrage) und nach Fix verifiziert (200, Fehler korrekt geloggt) — zusätzlich live im Smoke-Test bestätigt, als Resends Sandbox-Regel die Gast-Bestätigung an eine `example.com`-Testadresse ablehnte: Betreiber-Mail ging raus, Submit blieb trotzdem bei 200.
+
+---
+
 ## Bereits korrekt implementiert (vor dem Audit)
 
 - HMAC-Autologin mit `timingSafeEqual` (verhindert Timing-Angriffe)
