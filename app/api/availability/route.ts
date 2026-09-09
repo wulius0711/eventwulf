@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
           maxCapacity: null,
           bookedCount: 0,
           intern: true,
+          silent: true, // the Event's own colored banner already explains the block
         }))
       : [];
 

@@ -88,7 +88,10 @@ function isRangeEdge(date: Date, start: Date | null, end: Date | null, hover: Da
 }
 
 function weekBlockedRange(week: CalendarDay[], entries: BlockedDateEntry[]) {
-  const blocked = entries.filter((e) => e.type === "blocked");
+  // A "silent" block (e.g. a room's own assigned Event) still disables the days via
+  // isBlocked()/blocksCalendar() elsewhere — it just skips this redundant "nicht
+  // verfügbar" banner, since the Event's own colored banner already explains why.
+  const blocked = entries.filter((e) => e.type === "blocked" && !e.silent);
   let start = -1, end = -1;
   for (let i = 0; i < week.length; i++) {
     if (isBlocked(week[i].date, blocked)) {

@@ -89,6 +89,7 @@ export interface BlockedDateEntry {
   bookedCount?: number;
   intern?: boolean;
   roomName?: string | null;
+  silent?: boolean; // blocks the days but skips the "nicht verfügbar" banner
 }
 
 export interface EventEntry {
