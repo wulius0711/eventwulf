@@ -15,6 +15,7 @@ interface Props {
   onRangeChange?: (start: Date | null, end: Date | null) => void;
   showCapacity?: boolean;
   roomId?: string;
+  onInvalidSelectionCleared?: () => void;
 }
 
 interface CalendarDay {
@@ -148,7 +149,7 @@ function weekEvents(week: CalendarDay[], entries: BlockedDateEntry[]) {
   });
 }
 
-export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChange, showCapacity, roomId }: Props) {
+export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChange, showCapacity, roomId, onInvalidSelectionCleared }: Props) {
   const [today, setToday] = useState<Date | null>(null);
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth());
@@ -188,7 +189,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
         // leave a stale, now-invalid selection standing until the submit-time check.
         if (onRangeChange && selStart) {
           const stillValid = selEnd ? !hasBlockedBetween(selStart, selEnd, data) : !isBlocked(selStart, data);
-          if (!stillValid) onRangeChange(null, null);
+          if (!stillValid) { onRangeChange(null, null); onInvalidSelectionCleared?.(); }
         }
       })
       .catch(() => {});

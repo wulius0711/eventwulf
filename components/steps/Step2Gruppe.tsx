@@ -39,6 +39,12 @@ export default function Step2Gruppe({ config }: Props) {
         )}
       </div>
 
+      {form.raumKapazitaet != null && parseInt(form.personenAnzahl, 10) > form.raumKapazitaet && (
+        <p className="ew-form-error">
+          „{form.raum}" bietet Platz für bis zu {form.raumKapazitaet} Personen — die eingegebene Teilnehmerzahl liegt darüber.
+        </p>
+      )}
+
       <div className="ew-grid-2">
         {show(config, "leiterinnen") && (
           <div className="ew-field">

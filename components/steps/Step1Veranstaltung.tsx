@@ -19,16 +19,21 @@ function RoomPicker({ slug, config }: { slug: string; config: EventConfig }) {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
 
   useEffect(() => {
-    fetch(`/api/rooms?slug=${encodeURIComponent(slug)}`)
+    const dateParams = form.datumVon && form.datumBis
+      ? `&datumVon=${encodeURIComponent(form.datumVon)}&datumBis=${encodeURIComponent(form.datumBis)}`
+      : "";
+    fetch(`/api/rooms?slug=${encodeURIComponent(slug)}${dateParams}`)
       .then((r) => r.json()).then(setRooms).catch(() => {});
-  }, [slug]);
+  }, [slug, form.datumVon, form.datumBis]);
 
   if (config.formFields?.raum === false || rooms.length === 0) return null;
 
   function select(room: RoomEntry) {
+    if (room.available === false) return;
     const alreadySelected = form.roomId === room.id;
     setField("roomId", alreadySelected ? "" : room.id);
     setField("raum", alreadySelected ? "" : room.name);
+    setField("raumKapazitaet", alreadySelected ? null : room.capacity);
   }
 
   return (
@@ -37,19 +42,24 @@ function RoomPicker({ slug, config }: { slug: string; config: EventConfig }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(180px, 100%), 1fr))", gap: "0.75rem" }}>
         {rooms.map((room) => {
           const selected = form.roomId === room.id;
+          const unavailable = room.available === false;
           return (
             <button
               key={room.id}
               type="button"
               onClick={() => select(room)}
+              disabled={unavailable}
+              title={unavailable ? "Für den gewählten Zeitraum nicht verfügbar" : undefined}
               style={{
-                textAlign: "left", padding: 0, overflow: "hidden", cursor: "pointer",
+                textAlign: "left", padding: 0, overflow: "hidden",
+                cursor: unavailable ? "not-allowed" : "pointer",
                 borderRadius: "var(--radius-sm)", border: `2px solid ${selected ? "var(--primary)" : "var(--border)"}`,
                 background: "var(--surface)", display: "flex", flexDirection: "column",
+                opacity: unavailable ? 0.45 : 1,
               }}
             >
               {room.image ? (
-                <img src={room.image} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover" }} />
+                <img src={room.image} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", filter: unavailable ? "grayscale(1)" : undefined }} />
               ) : (
                 <div style={{ width: "100%", aspectRatio: "16/9", background: "var(--bg2)" }} />
               )}
@@ -57,6 +67,9 @@ function RoomPicker({ slug, config }: { slug: string; config: EventConfig }) {
                 <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>{room.name}</div>
                 {room.capacity != null && (
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>bis {room.capacity} Personen</div>
+                )}
+                {unavailable && (
+                  <div style={{ fontSize: "0.72rem", color: "var(--error)", marginTop: "0.15rem" }}>Nicht verfügbar</div>
                 )}
               </div>
             </button>
@@ -75,6 +88,7 @@ function fmtDate(iso: string) {
 
 export default function Step1Veranstaltung({ slug, config }: Props) {
   const { form, setField } = useFormStore();
+  const [dateConflict, setDateConflict] = useState(false);
 
   const selectedStart = form.datumVon ? new Date(form.datumVon + "T12:00:00") : null;
   const selectedEnd = form.datumBis ? new Date(form.datumBis + "T12:00:00") : null;
@@ -88,6 +102,7 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
   }
 
   function handleRangeChange(start: Date | null, end: Date | null) {
+    setDateConflict(false);
     setField("datumVon", start ? localISO(start) : "");
     setField("datumBis", end ? localISO(end) : "");
   }
@@ -105,7 +120,16 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
 
       <div>
         <label style={{ marginBottom: "0.5rem", display: "block" }}>Zeitraum wählen</label>
-        <Calendar slug={slug} selectedStart={selectedStart} selectedEnd={selectedEnd} onRangeChange={handleRangeChange} showCapacity={config.showCapacity === true} roomId={form.roomId} />
+        <Calendar
+          slug={slug} selectedStart={selectedStart} selectedEnd={selectedEnd} onRangeChange={handleRangeChange}
+          showCapacity={config.showCapacity === true} roomId={form.roomId}
+          onInvalidSelectionCleared={() => setDateConflict(true)}
+        />
+        {dateConflict && (
+          <p className="ew-form-error">
+            Der zuvor gewählte Zeitraum ist für „{form.raum}" nicht verfügbar und wurde zurückgesetzt. Bitte wähle einen neuen Zeitraum.
+          </p>
+        )}
       </div>
 
       <div className="ew-date-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", background: hasRange ? "var(--primary-tint)" : "var(--bg2)", border: `1px solid ${hasRange ? "var(--primary-dim)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", padding: "0.85rem 1rem", transition: "all 0.2s" }}>

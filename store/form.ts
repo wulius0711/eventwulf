@@ -16,6 +16,7 @@ interface FormStore {
 const initialForm: InquiryFormData = {
   roomId: "",
   raum: "",
+  raumKapazitaet: null,
   artTitel: "",
   nameGruppenleitung: "",
   datumVon: "",

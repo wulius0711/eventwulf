@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { findUnavailableRoomIds } from "@/lib/roomAvailability";
+import { isValidDate } from "@/lib/validate";
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug");
@@ -19,6 +21,15 @@ export async function GET(req: NextRequest) {
       capacity: true,
     },
   });
+
+  // Optional: annotate each room with whether it's free for a given date range, so
+  // the room picker can gray out rooms already occupied before a room is chosen.
+  const datumVon = req.nextUrl.searchParams.get("datumVon");
+  const datumBis = req.nextUrl.searchParams.get("datumBis");
+  if (isValidDate(datumVon) && isValidDate(datumBis)) {
+    const unavailable = await findUnavailableRoomIds(rooms.map((r) => r.id), datumVon, datumBis);
+    return NextResponse.json(rooms.map((r) => ({ ...r, available: !unavailable.has(r.id) })));
+  }
 
   return NextResponse.json(rooms);
 }

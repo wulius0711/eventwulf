@@ -119,12 +119,14 @@ export interface RoomEntry {
   capacity: number | null;
   isActive: boolean;
   sortOrder: number;
+  available?: boolean; // only present when queried together with a date range
 }
 
 export interface InquiryFormData {
   eventId?: string;
   roomId?: string;
   raum?: string; // display name of the chosen room, set alongside roomId for admin/email display
+  raumKapazitaet?: number | null; // capacity of the chosen room, for the Step2 participant-count warning
   artTitel: string;
   nameGruppenleitung: string;
   datumVon: string;
