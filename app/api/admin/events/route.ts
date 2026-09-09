@@ -17,6 +17,7 @@ function serialize(e: {
   startDate: Date; endDate: Date; color: string; intern: boolean;
   pricePerPerson: number; minParticipants: number; maxParticipants: number | null;
   bookedCount: number; isActive: boolean; sortOrder: number;
+  roomId: string | null; room?: { name: string } | null;
 }) {
   return {
     id: e.id,
@@ -33,12 +34,22 @@ function serialize(e: {
     bookedCount: e.bookedCount,
     isActive: e.isActive,
     sortOrder: e.sortOrder,
+    roomId: e.roomId,
+    roomName: e.room?.name ?? null,
   };
 }
 
 async function getClientId(slug: string) {
   const client = await prisma.client.findUnique({ where: { slug }, select: { id: true } });
   return client?.id ?? null;
+}
+
+// Validates a submitted roomId belongs to this client. `null`/"" clears the room.
+// Returns `undefined` only when the id doesn't resolve to one of the client's own rooms.
+async function validateRoomId(clientId: string, roomId: string | null): Promise<string | null | undefined> {
+  if (roomId === null || roomId === "") return null;
+  const room = await prisma.room.findFirst({ where: { id: roomId, clientId }, select: { id: true } });
+  return room ? room.id : undefined;
 }
 
 function parseMaxParticipants(val: unknown, fallback: number | null): number | null {
@@ -64,6 +75,7 @@ export async function GET() {
   const events = await prisma.event.findMany({
     where: { clientId },
     orderBy: [{ startDate: "asc" }, { sortOrder: "asc" }],
+    include: { room: { select: { name: true } } },
   });
 
   return NextResponse.json(events.map(serialize));
@@ -79,7 +91,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     name, description, image, startDate, endDate, color, intern,
-    pricePerPerson, minParticipants, maxParticipants, isActive, sortOrder,
+    pricePerPerson, minParticipants, maxParticipants, isActive, sortOrder, roomId,
   } = body;
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -101,6 +113,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Min. Teilnehmer darf nicht über Max. Teilnehmer liegen" }, { status: 400 });
   }
 
+  const resolvedRoomId = await validateRoomId(clientId, roomId ?? null);
+  if (resolvedRoomId === undefined) {
+    return NextResponse.json({ error: "Raum ungültig" }, { status: 400 });
+  }
+
   try {
     const ev = await prisma.event.create({
       data: {
@@ -117,7 +134,9 @@ export async function POST(req: NextRequest) {
         maxParticipants: max,
         isActive: isActive !== false,
         sortOrder: Number(sortOrder) || 0,
+        roomId: resolvedRoomId,
       },
+      include: { room: { select: { name: true } } },
     });
     return NextResponse.json(serialize(ev));
   } catch {
@@ -135,11 +154,20 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const {
     id, name, description, image, startDate, endDate, color, intern,
-    pricePerPerson, minParticipants, maxParticipants, isActive, sortOrder,
+    pricePerPerson, minParticipants, maxParticipants, isActive, sortOrder, roomId,
   } = body;
 
   const existing = await prisma.event.findFirst({ where: { id, clientId } });
   if (!existing) return NextResponse.json({ error: "Nicht gefunden" }, { status: 404 });
+
+  let newRoomId = existing.roomId;
+  if (roomId !== undefined) {
+    const resolvedRoomId = await validateRoomId(clientId, roomId);
+    if (resolvedRoomId === undefined) {
+      return NextResponse.json({ error: "Raum ungültig" }, { status: 400 });
+    }
+    newRoomId = resolvedRoomId;
+  }
 
   const newStartDate = startDate ? new Date(startDate) : existing.startDate;
   const newEndDate = endDate ? new Date(endDate) : existing.endDate;
@@ -179,7 +207,9 @@ export async function PATCH(req: NextRequest) {
         maxParticipants: max,
         isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
         sortOrder: sortOrder !== undefined ? Number(sortOrder) : existing.sortOrder,
+        roomId: newRoomId,
       },
+      include: { room: { select: { name: true } } },
     });
     if (existing.image && existing.image !== newImage) {
       await releaseEventImage(existing.image, clientId, id);

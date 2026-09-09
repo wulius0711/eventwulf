@@ -105,6 +105,8 @@ export interface EventEntry {
   bookedCount: number;
   isActive: boolean;
   sortOrder: number;
+  roomId: string | null;
+  roomName: string | null;
 }
 
 export interface RoomEntry {

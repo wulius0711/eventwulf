@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import type { EventEntry } from "@/lib/types";
+import type { EventEntry, RoomEntry } from "@/lib/types";
 import Toggle from "./Toggle";
 import RichTextEditor from "./RichTextEditor";
 
@@ -47,13 +47,14 @@ function emptyForm() {
   return {
     name: "", description: "", image: "", startDate: "", endDate: "",
     color: EVENT_COLORS[0].value, intern: false, pricePerPerson: "0",
-    minParticipants: "1", maxParticipants: "", isActive: true,
+    minParticipants: "1", maxParticipants: "", isActive: true, roomId: "",
   };
 }
 
 export default function EventsEditor() {
   const [events, setEvents] = useState<EventEntry[]>([]);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
+  const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
   const [loading, setLoading] = useState(false);
@@ -66,6 +67,8 @@ export default function EventsEditor() {
   useEffect(() => {
     fetch("/api/admin/events").then((r) => r.json()).then(setEvents).catch(() => {});
     fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
+    // 403 if rooms aren't unlocked for this plan — fine, just means no room picker.
+    fetch("/api/admin/rooms").then((r) => r.ok ? r.json() : []).then(setRooms).catch(() => {});
   }, []);
 
   function set<K extends keyof ReturnType<typeof emptyForm>>(key: K, value: ReturnType<typeof emptyForm>[K]) {
@@ -80,7 +83,7 @@ export default function EventsEditor() {
       color: ev.color || EVENT_COLORS[0].value, intern: ev.intern,
       pricePerPerson: String(ev.pricePerPerson), minParticipants: String(ev.minParticipants),
       maxParticipants: ev.maxParticipants != null ? String(ev.maxParticipants) : "",
-      isActive: ev.isActive,
+      isActive: ev.isActive, roomId: ev.roomId ?? "",
     });
     setError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -94,7 +97,7 @@ export default function EventsEditor() {
       color: ev.color || EVENT_COLORS[0].value, intern: ev.intern,
       pricePerPerson: String(ev.pricePerPerson), minParticipants: String(ev.minParticipants),
       maxParticipants: ev.maxParticipants != null ? String(ev.maxParticipants) : "",
-      isActive: true,
+      isActive: true, roomId: ev.roomId ?? "",
     });
     setError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -205,6 +208,7 @@ export default function EventsEditor() {
               {ev.pricePerPerson > 0 && <span style={{ color: "var(--muted)", fontWeight: 400 }}> · {fmtPrice(ev.pricePerPerson)} / Person</span>}
               {ev.maxParticipants != null && <span style={{ color: "var(--muted)", fontWeight: 400 }}> · {ev.bookedCount}/{ev.maxParticipants} Plätze</span>}
               {ev.intern && <span style={{ color: "var(--muted)", fontWeight: 400 }}> · intern (sperrt Kalender)</span>}
+              {ev.roomName && <span style={{ color: "var(--muted)", fontWeight: 400 }}> · {ev.roomName}</span>}
             </span>
             <span style={{ background: b.bg, color: b.color, padding: "0.18rem 0.55rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap" }}>{b.label}</span>
             <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
@@ -330,6 +334,19 @@ export default function EventsEditor() {
             <input type="number" min="1" value={form.maxParticipants} onChange={(e) => set("maxParticipants", e.target.value)} placeholder="unbegrenzt" />
           </div>
         </div>
+
+        {rooms.length > 0 && (
+          <div>
+            <label>Raum</label>
+            <select value={form.roomId} onChange={(e) => set("roomId", e.target.value)}>
+              <option value="">Kein bestimmter Raum</option>
+              {rooms.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.3rem" }}>
+              Blockiert diesen Raum für den Event-Zeitraum, auch in der normalen Raumwahl des Anfrageformulars.
+            </span>
+          </div>
+        )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "1rem", alignItems: "end" }}>
           <div>

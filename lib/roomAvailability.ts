@@ -19,15 +19,15 @@ export async function assertRoomAvailable(
 ): Promise<void> {
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${roomId})::bigint)`;
 
+  const newStart = new Date(datumVon).getTime();
+  const newEnd = new Date(datumBis).getTime();
+
   const existing = await tx.inquiry.findMany({
     where: { roomId, status: { notIn: INACTIVE_STATUSES } },
     select: { data: true },
   });
 
-  const newStart = new Date(datumVon).getTime();
-  const newEnd = new Date(datumBis).getTime();
-
-  const overlaps = existing.some((inq) => {
+  const overlapsInquiry = existing.some((inq) => {
     try {
       const d = JSON.parse(inq.data) as { datumVon?: string; datumBis?: string };
       if (!d.datumVon || !d.datumBis) return false;
@@ -38,6 +38,13 @@ export async function assertRoomAvailable(
       return false;
     }
   });
+  if (overlapsInquiry) throw new RoomConflictError();
 
-  if (overlaps) throw new RoomConflictError();
+  // A room assigned to an Event is occupied for that Event's whole date range too,
+  // independent of the Event's own `intern` flag (see /api/availability).
+  const conflictingEvent = await tx.event.findFirst({
+    where: { roomId, startDate: { lte: new Date(newEnd) }, endDate: { gte: new Date(newStart) } },
+    select: { id: true },
+  });
+  if (conflictingEvent) throw new RoomConflictError();
 }

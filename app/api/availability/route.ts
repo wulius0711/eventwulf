@@ -47,6 +47,23 @@ export async function GET(req: NextRequest) {
       }
     });
 
+    // An Event assigned to the selected room occupies it for its whole date range,
+    // regardless of the Event's own `intern` flag (which only governs the general
+    // calendar) — a room can't be double-booked by an inquiry during that Event.
+    const roomEventBlockedEntries = roomId
+      ? events.filter((e) => e.roomId === roomId).map((e) => ({
+          id: `event-${e.id}`,
+          startDate: e.startDate.toISOString(),
+          endDate: e.endDate.toISOString(),
+          label: "Raum belegt (Event)",
+          type: "blocked" as const,
+          color: "",
+          maxCapacity: null,
+          bookedCount: 0,
+          intern: true,
+        }))
+      : [];
+
     // Legacy shape (type/color/maxCapacity/bookedCount) kept for the current Calendar
     // component, which still expects a single merged list. `intern` is new — the
     // Calendar rewrite in a later phase will use it to decide what actually blocks.
@@ -74,7 +91,7 @@ export async function GET(req: NextRequest) {
       intern: e.intern,
     }));
 
-    return NextResponse.json([...blockedEntries, ...eventEntries, ...roomBlockedEntries]);
+    return NextResponse.json([...blockedEntries, ...eventEntries, ...roomBlockedEntries, ...roomEventBlockedEntries]);
   } catch {
     return NextResponse.json([]);
   }
