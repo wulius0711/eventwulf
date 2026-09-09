@@ -14,6 +14,7 @@ interface Props {
   selectedEnd?: Date | null;
   onRangeChange?: (start: Date | null, end: Date | null) => void;
   showCapacity?: boolean;
+  roomId?: string;
 }
 
 interface CalendarDay {
@@ -143,7 +144,7 @@ function weekEvents(week: CalendarDay[], entries: BlockedDateEntry[]) {
   });
 }
 
-export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChange, showCapacity }: Props) {
+export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChange, showCapacity, roomId }: Props) {
   const [today, setToday] = useState<Date | null>(null);
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth());
@@ -173,9 +174,10 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
   useEffect(() => { setToday(toDay(new Date())); }, []);
 
   useEffect(() => {
-    fetch(`/api/availability?slug=${encodeURIComponent(slug)}`)
+    const roomParam = roomId ? `&roomId=${encodeURIComponent(roomId)}` : "";
+    fetch(`/api/availability?slug=${encodeURIComponent(slug)}${roomParam}`)
       .then((r) => r.json()).then(setBlocked).catch(() => {});
-  }, [slug]);
+  }, [slug, roomId]);
 
   function navigate(dir: "prev" | "next") {
     gridKey.current += 1;

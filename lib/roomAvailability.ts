@@ -1,0 +1,43 @@
+import type { Prisma } from "@prisma/client";
+
+type Tx = Prisma.TransactionClient;
+
+const INACTIVE_STATUSES = ["storniert", "abgelehnt", "abgelaufen"];
+
+export class RoomConflictError extends Error {}
+
+// Race-safe overlap check: two concurrent submissions for the SAME room must not both
+// pass this check before either has actually inserted its Inquiry. pg_advisory_xact_lock
+// serializes them on the room id — the second call blocks until the first transaction
+// commits (or rolls back), so by the time it re-runs the query below, the first
+// submission's row (if any) is already visible.
+export async function assertRoomAvailable(
+  tx: Tx,
+  roomId: string,
+  datumVon: string,
+  datumBis: string
+): Promise<void> {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${roomId})::bigint)`;
+
+  const existing = await tx.inquiry.findMany({
+    where: { roomId, status: { notIn: INACTIVE_STATUSES } },
+    select: { data: true },
+  });
+
+  const newStart = new Date(datumVon).getTime();
+  const newEnd = new Date(datumBis).getTime();
+
+  const overlaps = existing.some((inq) => {
+    try {
+      const d = JSON.parse(inq.data) as { datumVon?: string; datumBis?: string };
+      if (!d.datumVon || !d.datumBis) return false;
+      const s = new Date(d.datumVon).getTime();
+      const e = new Date(d.datumBis).getTime();
+      return s <= newEnd && e >= newStart;
+    } catch {
+      return false;
+    }
+  });
+
+  if (overlaps) throw new RoomConflictError();
+}

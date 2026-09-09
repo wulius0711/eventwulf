@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
+import { PLAN_LABELS, type Plan } from "@/lib/plan";
 
 interface OrgEntry {
   id: string;
   name: string;
   createdAt: string;
+  plan: Plan;
   clients: { id: string; slug: string; createdAt: string }[];
   users: { email: string }[];
 }
@@ -66,7 +68,7 @@ export default function ClientsEditor({ superadminSlug }: Props) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       setOrgs((prev) => [...prev, {
-        id: data.id, name: slug, createdAt: new Date().toISOString(),
+        id: data.id, name: slug, createdAt: new Date().toISOString(), plan: "basis",
         clients: [{ id: "", slug, createdAt: new Date().toISOString() }],
         users: [{ email }],
       }]);
@@ -112,6 +114,17 @@ export default function ClientsEditor({ superadminSlug }: Props) {
       const data = await res.json().catch(() => ({}));
       setDeleteError(data.error ?? "Fehler beim Löschen");
     }
+  }
+
+  async function handlePlanChange(orgId: string, plan: Plan) {
+    const prev = orgs;
+    setOrgs((p) => p.map((o) => o.id === orgId ? { ...o, plan } : o));
+    const res = await fetch("/api/admin/clients", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: orgId, plan }),
+    });
+    if (!res.ok) setOrgs(prev); // revert on failure
   }
 
   async function handleDeleteSlug(orgId: string, slug: string) {
@@ -215,9 +228,20 @@ export default function ClientsEditor({ superadminSlug }: Props) {
                   <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>{org.name}</span>
                   <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{org.users[0]?.email}</span>
                   {!isSuperadminOrg && (
-                    <button style={{ ...btnDanger, marginLeft: "auto" }} onClick={() => { setDeleteOrgConfirm(org.id); setDeleteError(""); }}>
-                      Kunde löschen
-                    </button>
+                    <>
+                      <select
+                        value={org.plan}
+                        onChange={(e) => handlePlanChange(org.id, e.target.value as Plan)}
+                        style={{ fontSize: "0.78rem", padding: "0.2rem 0.4rem", border: "1px solid var(--border)", borderRadius: "4px", background: "var(--surface)", color: "var(--text)" }}
+                      >
+                        {(Object.keys(PLAN_LABELS) as Plan[]).map((p) => (
+                          <option key={p} value={p}>{PLAN_LABELS[p]}</option>
+                        ))}
+                      </select>
+                      <button style={{ ...btnDanger, marginLeft: "auto" }} onClick={() => { setDeleteOrgConfirm(org.id); setDeleteError(""); }}>
+                        Kunde löschen
+                      </button>
+                    </>
                   )}
                 </div>
                 <div style={{ padding: "0.5rem 1rem", display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>

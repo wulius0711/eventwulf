@@ -7,6 +7,7 @@ import type { InquiryFormData } from "@/lib/types";
 import { rateLimit, getIp } from "@/lib/ratelimit";
 import { validateSubmit } from "@/lib/validate";
 import { reserveEventCapacity, releaseEventCapacity, HOLD_DURATION_MS } from "@/lib/eventCapacity";
+import { assertRoomAvailable, RoomConflictError } from "@/lib/roomAvailability";
 
 function sanitize(val: unknown): string {
   return String(val ?? "").replace(/[\r\n\t]/g, " ").trim();
@@ -63,6 +64,18 @@ export async function POST(req: NextRequest) {
     }
     eventName = event.name;
   }
+
+  // Resolve the room (if selected) so the display name comes from the DB, not client input.
+  let roomName = "";
+  if (body.roomId) {
+    const room = await prisma.room.findUnique({ where: { id: body.roomId } });
+    if (!room || !room.isActive) {
+      if (body.eventId) await releaseEventCapacity(body.eventId, participantCount);
+      return NextResponse.json({ error: "Dieser Raum ist nicht mehr verfügbar" }, { status: 400 });
+    }
+    roomName = room.name;
+  }
+
   const notifyEmail = config.notifyEmail ?? process.env.NOTIFY_EMAIL ?? "";
 
   if (!notifyEmail) {
@@ -72,6 +85,7 @@ export async function POST(req: NextRequest) {
 
   const rows = [
     row("Event", eventName),
+    row("Raum", roomName),
     row("Art / Titel", body.artTitel),
     row("Gruppenleitung", body.nameGruppenleitung),
     row("E-Mail", body.email),
@@ -134,15 +148,27 @@ export async function POST(req: NextRequest) {
     const client = await prisma.client.findUnique({ where: { slug } });
     if (client) {
       const cancelToken = randomBytes(24).toString("hex");
-      const inquiry = await prisma.inquiry.create({
-        data: {
-          clientId: client.id,
-          data: JSON.stringify(body),
-          status: "neu",
-          participantCount,
-          cancelToken,
-          ...(body.eventId ? { eventId: body.eventId, holdExpiresAt: new Date(Date.now() + HOLD_DURATION_MS) } : {}),
-        },
+      const inquiry = await prisma.$transaction(async (tx) => {
+        // The overlap check and the insert must happen inside the same locked
+        // transaction — otherwise two near-simultaneous submissions for the same
+        // room could both pass the check before either has actually inserted.
+        if (body.roomId) {
+          await assertRoomAvailable(tx, body.roomId, body.datumVon, body.datumBis);
+        }
+        return tx.inquiry.create({
+          data: {
+            clientId: client.id,
+            data: JSON.stringify(body),
+            status: "neu",
+            participantCount,
+            cancelToken,
+            ...(body.eventId ? { eventId: body.eventId } : {}),
+            ...(body.roomId ? { roomId: body.roomId } : {}),
+            // An unanswered booking hold expires 48h after submission — for either
+            // an Event (capacity release) or a Room (see /api/cron/room-holds).
+            ...(body.eventId || body.roomId ? { holdExpiresAt: new Date(Date.now() + HOLD_DURATION_MS) } : {}),
+          },
+        });
       });
       inquiryId = inquiry.id;
       savedCancelToken = cancelToken;
@@ -150,8 +176,11 @@ export async function POST(req: NextRequest) {
       await releaseEventCapacity(body.eventId, participantCount);
     }
   } catch (e) {
-    console.error("Failed to save inquiry:", e);
     if (body.eventId) await releaseEventCapacity(body.eventId, participantCount);
+    if (e instanceof RoomConflictError) {
+      return NextResponse.json({ error: "Dieser Raum ist im gewählten Zeitraum leider bereits belegt" }, { status: 409 });
+    }
+    console.error("Failed to save inquiry:", e);
     // Guard: emails must not be sent if the inquiry was not persisted
     return NextResponse.json({ error: "Anfrage konnte nicht gespeichert werden" }, { status: 500 });
   }

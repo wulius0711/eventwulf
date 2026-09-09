@@ -56,9 +56,12 @@ export function validateSubmit(body: unknown): string | null {
   if (b.eventId !== undefined && b.eventId !== "" && (typeof b.eventId !== "string" || b.eventId.length > 50)) {
     return "eventId ungültig";
   }
+  if (b.roomId !== undefined && b.roomId !== "" && (typeof b.roomId !== "string" || b.roomId.length > 50)) {
+    return "roomId ungültig";
+  }
   const textFields: [string, number][] = [
     ["personenAnzahl", 20], ["leiterinnen", 20], ["zeitVon", 10], ["zeitBis", 10],
-    ["sonstigesEquipment", 500], ["verpflegung", 200], ["zimmerwunsch", 200],
+    ["sonstigesEquipment", 500], ["verpflegung", 200], ["zimmerwunsch", 200], ["raum", 200],
     ["wuenscheRahmenprogramm", 1000], ["abrechnung", 200], ["telefon", 50],
     ["sprache", 50], ["anreise", 200], ["barrierefreiheit", 500], ["budget", 100], ["quelle", 200],
   ];

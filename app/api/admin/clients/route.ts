@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
 import { validatePassword } from "@/lib/validate";
+import { isPlan } from "@/lib/plan";
 
 const SUPERADMIN = process.env.SUPERADMIN_SLUG ?? "admin";
 
@@ -22,6 +23,21 @@ export async function GET() {
   });
 
   return NextResponse.json(orgs);
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await getSession();
+  if (!session || session.clientSlug !== SUPERADMIN) {
+    return NextResponse.json({ error: "Kein Zugriff" }, { status: 403 });
+  }
+
+  const { id, plan } = await req.json();
+  if (!isPlan(plan)) {
+    return NextResponse.json({ error: "Ungültiges Paket" }, { status: 400 });
+  }
+
+  await prisma.organization.update({ where: { id }, data: { plan } });
+  return NextResponse.json({ ok: true });
 }
 
 export async function POST(req: NextRequest) {

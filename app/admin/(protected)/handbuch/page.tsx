@@ -49,7 +49,7 @@ const content: Record<string, React.ReactNode> = {
         <tbody>
           {[
             ["Einstellungen", "Firmendaten, Abrechnung, Passwort — Konto-/Backend-Konfiguration"],
-            ["Elemente", "Formular-Felder, Events und Sperrzeiten — alles, was das öffentliche Widget prägt"],
+            ["Elemente", "Formular-Felder, Events, Räume und Sperrzeiten — alles, was das öffentliche Widget prägt"],
             ["Embed-Codes", "Widget-Codes für Website und Framer"],
             ["Anfragen", "Eingehende Anfragen bearbeiten"],
             ["Dokumente", "Angebots-Archiv"],
@@ -161,6 +161,32 @@ const content: Record<string, React.ReactNode> = {
       <H3>Liste, Duplizieren & Teilnehmer</H3>
       <p>Events werden nach <strong>Bevorstehend</strong> und <strong>Vergangen</strong> (einklappbar) gruppiert. Über <strong>Duplizieren</strong> legst du schnell eine Wiederholung an. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.</p>
 
+      <H2>Räume</H2>
+      <Callout>Räume sind ab dem <strong>Pro-Paket</strong> verfügbar. Im Basis-Paket ist der Tab gesperrt.</Callout>
+      <p>Hinterlege einen oder mehrere physische Räume deines Standorts (z.B. „Großer Saal", „Seminarraum") mit Name, Beschreibung, Bild und Kapazität. Gäste wählen im ersten Schritt des Anfrageformulars einen Raum aus, bevor sie den Zeitraum festlegen — der Kalender zeigt dann automatisch nur die für diesen Raum bereits belegten Zeiträume.</p>
+      <H3>Raum anlegen</H3>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
+        <tbody>
+          {[
+            ["Raum-Name", "Bezeichnung, erscheint als Karte im Formular"],
+            ["Beschreibung", "Optional, ausführlicher Text"],
+            ["Bild", "Optional, JPEG/PNG/WebP, max. 5MB"],
+            ["Kapazität", "Max. Personenanzahl, leer lassen für unbegrenzt"],
+            ["Sortierung", "Reihenfolge der Raum-Karten im Formular"],
+            ["Aktiv", "Nur aktive Räume erscheinen im Buchungsformular"],
+          ].map(([feld, desc]) => (
+            <tr key={feld as string} style={{ borderBottom: "1px solid var(--border)" }}>
+              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500, whiteSpace: "nowrap" }}>{feld}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{desc}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <H3>Wie viele Räume sind erlaubt?</H3>
+      <p>Im <strong>Pro-Paket</strong> können bis zu 3 Räume angelegt werden, im <strong>Premium-Paket</strong> unbegrenzt viele.</p>
+      <H3>Doppelbuchungen & Ablauf</H3>
+      <p>Fragt ein Gast einen Raum für einen bereits belegten Zeitraum an, wird die Anfrage abgelehnt — auch wenn zwei Anfragen im selben Moment eingehen. Unbeantwortete Raum-Anfragen laufen wie bei Events nach 48 Stunden automatisch ab und geben den Raum wieder frei. Das Formularfeld „Raum-Auswahl" (unter Elemente → Formular → Felder) kann bei Bedarf ausgeblendet werden, auch wenn Räume angelegt sind.</p>
+
       <H2>Sperrzeiten</H2>
       <H3>Kalenderansicht</H3>
       <p>Der Kalender im Anfrageformular zeigt gesperrte Zeiträume sowie deine <strong>internen</strong> Events als „nicht verfügbar". <strong>Externe</strong> Events blockieren den Kalender nicht — sie erscheinen nur als informativer, farbiger Banner, Gäste können für denselben Zeitraum trotzdem eine eigene Anfrage stellen.</p>
@@ -173,7 +199,7 @@ const content: Record<string, React.ReactNode> = {
   ),
   anfragen: (
     <>
-      <p>Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum. Anfragen aus dem Events-Widget tragen zusätzlich ein kleines <strong>„Event"-Badge</strong>, damit du sie auf einen Blick von individuellen Veranstaltungsanfragen unterscheiden kannst.</p>
+      <p>Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum. Anfragen aus dem Events-Widget tragen zusätzlich ein kleines <strong>„Event"-Badge</strong>, damit du sie auf einen Blick von individuellen Veranstaltungsanfragen unterscheiden kannst. Wurde ein Raum gewählt, siehst du ihn in der Detailansicht unter „Raum".</p>
       <H3>Status-Workflow</H3>
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
         <tbody>
@@ -184,7 +210,7 @@ const content: Record<string, React.ReactNode> = {
             ["Bestätigt", "#10b981", "Buchung ist bestätigt"],
             ["Abgelehnt", "#ef4444", "Anfrage wurde abgelehnt"],
             ["Storniert", "#6b7280", "Anfrage wurde storniert (durch Gast per Link oder manuell)"],
-            ["Abgelaufen", "#6b7280", "Nur bei Events: 48h unbeantwortet, Platz automatisch wieder freigegeben"],
+            ["Abgelaufen", "#6b7280", "Nur bei Event- oder Raum-Anfragen: 48h unbeantwortet, Platz/Raum automatisch wieder freigegeben"],
           ].map(([status, color, desc]) => (
             <tr key={status as string} style={{ borderBottom: "1px solid var(--border)" }}>
               <td style={{ padding: "0.6rem 0.75rem" }}>
@@ -195,9 +221,9 @@ const content: Record<string, React.ReactNode> = {
           ))}
         </tbody>
       </table>
-      <Callout>Bei Event-Buchungen wird der Platz schon beim Absenden reserviert, nicht erst bei „Bestätigt". Setzt du eine Anfrage auf „Abgelehnt" oder „Storniert", wird der Platz sofort wieder frei.</Callout>
-      <H3>Automatischer Ablauf bei Event-Buchungen</H3>
-      <p>Reagierst du 48 Stunden nicht auf eine Event-Anfrage, wird sie automatisch auf „Abgelaufen" gesetzt und der Platz freigegeben — läuft stündlich im Hintergrund, ohne dass du etwas tun musst.</p>
+      <Callout>Bei Event- und Raum-Buchungen wird der Platz bzw. Raum schon beim Absenden reserviert, nicht erst bei „Bestätigt". Setzt du eine Anfrage auf „Abgelehnt" oder „Storniert", wird er sofort wieder frei.</Callout>
+      <H3>Automatischer Ablauf bei Event- und Raum-Buchungen</H3>
+      <p>Reagierst du 48 Stunden nicht auf eine Event- oder Raum-Anfrage, wird sie automatisch auf „Abgelaufen" gesetzt und der Platz bzw. Raum freigegeben — läuft stündlich im Hintergrund, ohne dass du etwas tun musst.</p>
       <H3>Anfrage öffnen</H3>
       <p>Klick auf eine Anfrage öffnet die Detailansicht mit allen Formulardaten. Im rechten Bereich befindet sich das Angebots-Panel.</p>
     </>
@@ -255,6 +281,10 @@ const content: Record<string, React.ReactNode> = {
         {
           q: "Kann ich die Ausstattungs-Optionen individuell anpassen?",
           a: "Ja. Unter Elemente → Formular → Ausstattungs-Optionen kannst du beliebige Optionen hinzufügen, umbenennen oder entfernen. Was dort steht, erscheint als Checkbox im Formular.",
+        },
+        {
+          q: "Der Tab „Räume“ zeigt nur ein Schloss-Symbol an.",
+          a: "Räume sind ab dem Pro-Paket freigeschaltet. Das Paket wird zentral verwaltet — wende dich an den Support, wenn du upgraden möchtest.",
         },
         {
           q: "Eine Event-Anfrage hat den Status „Abgelaufen“ – was jetzt?",

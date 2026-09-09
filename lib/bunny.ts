@@ -31,3 +31,32 @@ export async function releaseEventImage(imageUrl: string, clientId: string, excl
     // Non-critical — an orphaned file on Bunny is cheap and not worth failing the request over.
   }
 }
+
+// Same as releaseEventImage, but checks the Room table for remaining references.
+export async function releaseRoomImage(imageUrl: string, clientId: string, excludeRoomId: string): Promise<void> {
+  if (!imageUrl) return;
+
+  const stillUsed = await prisma.room.findFirst({
+    where: { clientId, image: imageUrl, id: { not: excludeRoomId } },
+    select: { id: true },
+  });
+  if (stillUsed) return;
+
+  const zone = process.env.BUNNY_STORAGE_ZONE;
+  const key = process.env.BUNNY_STORAGE_KEY;
+  const cdnHost = process.env.BUNNY_CDN_HOST;
+  if (!zone || !key || !cdnHost) return;
+
+  const prefix = `https://${cdnHost}/`;
+  if (!imageUrl.startsWith(prefix)) return;
+  const path = imageUrl.slice(prefix.length);
+
+  try {
+    await fetch(`https://storage.bunnycdn.com/${zone}/${path}`, {
+      method: "DELETE",
+      headers: { AccessKey: key },
+    });
+  } catch {
+    // Non-critical — an orphaned file on Bunny is cheap and not worth failing the request over.
+  }
+}

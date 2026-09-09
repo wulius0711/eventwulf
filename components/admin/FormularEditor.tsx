@@ -236,6 +236,7 @@ export default function FormularEditor({ initialConfig }: Props) {
             label: "Schritt 1 – Veranstaltung",
             fields: [
               { key: "uhrzeiten" as const, label: "Uhrzeiten (Beginn / Ende)" },
+              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind" },
             ],
           },
           {

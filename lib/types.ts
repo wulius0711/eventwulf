@@ -1,6 +1,7 @@
 export interface FormFields {
   // Step 1
   uhrzeiten?: boolean;
+  raum?: boolean;
   // Step 2
   personenAnzahl?: boolean;
   leiterinnen?: boolean;
@@ -106,8 +107,20 @@ export interface EventEntry {
   sortOrder: number;
 }
 
+export interface RoomEntry {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  capacity: number | null;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 export interface InquiryFormData {
   eventId?: string;
+  roomId?: string;
+  raum?: string; // display name of the chosen room, set alongside roomId for admin/email display
   artTitel: string;
   nameGruppenleitung: string;
   datumVon: string;

@@ -3,13 +3,14 @@ import { useState } from "react";
 import type { EventConfig } from "@/lib/types";
 import FormularEditor from "@/components/admin/FormularEditor";
 import EventsEditor from "@/components/admin/EventsEditor";
+import RoomsEditor from "@/components/admin/RoomsEditor";
 import AvailabilityEditor from "@/components/admin/AvailabilityEditor";
 
 interface Props {
   initialConfig: EventConfig;
 }
 
-type Tab = "formular" | "events" | "sperrzeiten";
+type Tab = "formular" | "events" | "raeume" | "sperrzeiten";
 
 export default function ElementeTabs({ initialConfig }: Props) {
   const [tab, setTab] = useState<Tab>("formular");
@@ -33,11 +34,13 @@ export default function ElementeTabs({ initialConfig }: Props) {
       >
         <button style={tabStyle("formular")} onClick={() => setTab("formular")}>Formular</button>
         <button style={tabStyle("events")} onClick={() => setTab("events")}>Events</button>
+        <button style={tabStyle("raeume")} onClick={() => setTab("raeume")}>Räume</button>
         <button style={tabStyle("sperrzeiten")} onClick={() => setTab("sperrzeiten")}>Sperrzeiten</button>
       </div>
 
       {tab === "formular" && <FormularEditor initialConfig={initialConfig} />}
       {tab === "events" && <EventsEditor />}
+      {tab === "raeume" && <RoomsEditor />}
       {tab === "sperrzeiten" && <AvailabilityEditor />}
     </div>
   );

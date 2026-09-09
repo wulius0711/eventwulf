@@ -134,6 +134,7 @@ export default function InquiryInbox() {
               <div style={{ borderTop: "1px solid var(--border)", padding: "1.25rem", display: "flex", flexDirection: "column", gap: "0.9rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <DetailRow label={inq.eventId ? "Event" : "Veranstaltung"} value={d.artTitel} />
+                  <DetailRow label="Raum" value={d.raum ?? ""} />
                   <DetailRow label="Gruppenleitung" value={d.nameGruppenleitung} />
                   <DetailRow label="E-Mail" value={d.email} />
                   <DetailRow label="Anreise" value={d.datumVon && d.zeitVon ? `${fmtDate(d.datumVon)}, ${d.zeitVon} Uhr` : fmtDate(d.datumVon)} />
