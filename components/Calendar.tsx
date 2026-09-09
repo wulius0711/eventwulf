@@ -180,7 +180,22 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
   useEffect(() => {
     const roomParam = roomId ? `&roomId=${encodeURIComponent(roomId)}` : "";
     fetch(`/api/availability?slug=${encodeURIComponent(slug)}${roomParam}`)
-      .then((r) => r.json()).then(setBlocked).catch(() => {});
+      .then((r) => r.json())
+      .then((data: BlockedDateEntry[]) => {
+        setBlocked(data);
+        // A date range picked before choosing this room (or while a different room
+        // was selected) can conflict with its availability — clear it rather than
+        // leave a stale, now-invalid selection standing until the submit-time check.
+        if (onRangeChange && selStart) {
+          const stillValid = selEnd ? !hasBlockedBetween(selStart, selEnd, data) : !isBlocked(selStart, data);
+          if (!stillValid) onRangeChange(null, null);
+        }
+      })
+      .catch(() => {});
+    // Only refetch on slug/room change — selStart/selEnd are read for validation at
+    // that moment, not tracked as their own trigger (handleDayClick already guards
+    // new picks against the current `blocked` state).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, roomId]);
 
   function navigate(dir: "prev" | "next") {
