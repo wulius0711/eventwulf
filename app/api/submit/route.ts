@@ -200,33 +200,57 @@ export async function POST(req: NextRequest) {
     `${icalLink}</div>`
   );
 
+  // The inquiry is already saved at this point — email delivery is a side effect,
+  // not part of the guest-facing success criteria. A failure here must be logged,
+  // not turned into a 500, or the guest would retry and create a duplicate inquiry.
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  const [operatorResult, confirmResult] = await Promise.all([
-    resend.emails.send({
+  // The operator notification is the one email that must not silently vanish
+  // (it's how the retreat actually learns about the inquiry), so a single
+  // transient failure gets one retry before being logged as missed.
+  const sendOperatorEmail = resend.emails
+    .send({
       from: `${config.company.name} <onboarding@resend.dev>`,
       to: notifyEmail,
       replyTo: body.email ? sanitize(body.email) : undefined,
       subject: `Neue Anfrage: ${sanitize(body.artTitel) || "Retreat"} – ${sanitize(body.nameGruppenleitung)}`,
       html: operatorHtml,
-    }),
-    body.email
-      ? resend.emails.send({
+    })
+    .then(({ error }) => {
+      if (error) throw error;
+    })
+    .catch(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { error } = await resend.emails.send({
+        from: `${config.company.name} <onboarding@resend.dev>`,
+        to: notifyEmail,
+        replyTo: body.email ? sanitize(body.email) : undefined,
+        subject: `Neue Anfrage: ${sanitize(body.artTitel) || "Retreat"} – ${sanitize(body.nameGruppenleitung)}`,
+        html: operatorHtml,
+      });
+      if (error) throw error;
+    })
+    .catch((e) => {
+      console.error(`Failed to send operator notification email for inquiry ${inquiryId} (after retry):`, e);
+    });
+
+  const sendConfirmationEmail = body.email
+    ? resend.emails
+        .send({
           from: `${config.company.name} <onboarding@resend.dev>`,
           to: body.email,
           subject: `Anfrage erhalten – ${sanitize(body.artTitel) || "Retreat"}`,
           html: confirmationHtmlWithIcal,
         })
-      : Promise.resolve({ error: null }),
-  ]);
+        .then(({ error }) => {
+          if (error) throw error;
+        })
+        .catch((e) => {
+          console.error(`Failed to send guest confirmation email for inquiry ${inquiryId}:`, e);
+        })
+    : Promise.resolve();
 
-  if (operatorResult.error) {
-    console.error("Resend operator error:", operatorResult.error);
-    return NextResponse.json({ error: "E-Mail konnte nicht gesendet werden" }, { status: 500 });
-  }
-  if (confirmResult.error) {
-    console.error("Resend confirmation error:", confirmResult.error);
-  }
+  await Promise.all([sendOperatorEmail, sendConfirmationEmail]);
 
   return NextResponse.json({ ok: true });
 }
