@@ -15,7 +15,11 @@ export async function GET(req: NextRequest) {
 
     const [blocked, events, roomInquiries] = await Promise.all([
       prisma.blockedDate.findMany({ where: { clientId: client.id }, orderBy: { startDate: "asc" } }),
-      prisma.event.findMany({ where: { clientId: client.id, isActive: true }, orderBy: { startDate: "asc" } }),
+      prisma.event.findMany({
+        where: { clientId: client.id, isActive: true },
+        orderBy: { startDate: "asc" },
+        include: { room: { select: { name: true } } },
+      }),
       roomId
         ? prisma.inquiry.findMany({
             where: { clientId: client.id, roomId, status: { notIn: ["storniert", "abgelehnt", "abgelaufen"] } },
@@ -79,7 +83,12 @@ export async function GET(req: NextRequest) {
       intern: true,
     }));
 
-    const eventEntries = events.map((e) => ({
+    // Once a specific room is selected, an Event assigned to a DIFFERENT room is
+    // irrelevant to it — it shouldn't show up there at all, not even informationally.
+    // Room-less events (unknown which space) still show everywhere, same as before.
+    const relevantEvents = roomId ? events.filter((e) => !e.roomId || e.roomId === roomId) : events;
+
+    const eventEntries = relevantEvents.map((e) => ({
       id: e.id,
       startDate: e.startDate.toISOString(),
       endDate: e.endDate.toISOString(),
@@ -88,7 +97,12 @@ export async function GET(req: NextRequest) {
       color: e.color,
       maxCapacity: e.maxParticipants,
       bookedCount: e.bookedCount,
-      intern: e.intern,
+      // Once an Event is tied to a specific room, its "intern" blocking is scoped to
+      // that room (via roomEventBlockedEntries) — it must not also block every other
+      // room's calendar or the general no-room-selected view. Only a room-less intern
+      // Event (we don't know which physical space it occupies) keeps blocking everything.
+      intern: e.roomId ? false : e.intern,
+      roomName: e.room?.name ?? null,
     }));
 
     return NextResponse.json([...blockedEntries, ...eventEntries, ...roomBlockedEntries, ...roomEventBlockedEntries]);

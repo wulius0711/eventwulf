@@ -140,6 +140,7 @@ function weekEvents(week: CalendarDay[], entries: BlockedDateEntry[]) {
       start, end, label: ev.label, color: ev.color || "#16a34a",
       startDate: ev.startDate, endDate: ev.endDate,
       maxCapacity: ev.maxCapacity ?? null, bookedCount: ev.bookedCount ?? 0,
+      roomName: ev.roomName ?? null,
     }];
   });
 }
@@ -158,7 +159,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
   const selStart = onRangeChange ? (selectedStart ?? null) : localStart;
   const selEnd = onRangeChange ? (selectedEnd ?? null) : localEnd;
 
-  const [tooltip, setTooltip] = useState<{ label: string; start: string; end: string; x: number; y: number } | null>(null);
+  const [tooltip, setTooltip] = useState<{ label: string; start: string; end: string; roomName: string | null; x: number; y: number } | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -358,7 +359,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                   {events.map((ev, ei) => (
                     <div key={ei} style={{ position: "relative", height: "1.2rem" }}>
                       <div
-                        onMouseEnter={(e) => setTooltip({ label: ev.label, start: ev.startDate, end: ev.endDate, x: e.clientX, y: e.clientY })}
+                        onMouseEnter={(e) => setTooltip({ label: ev.label, start: ev.startDate, end: ev.endDate, roomName: ev.roomName, x: e.clientX, y: e.clientY })}
                         onMouseLeave={() => setTooltip(null)}
                         style={{
                           position: "absolute",
@@ -421,6 +422,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
           {new Date(tooltip.start).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
           {" – "}
           {new Date(tooltip.end).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" })}
+          {tooltip.roomName && <><br />{tooltip.roomName}</>}
         </div>
       )}
 

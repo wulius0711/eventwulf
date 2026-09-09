@@ -88,6 +88,7 @@ export interface BlockedDateEntry {
   maxCapacity?: number | null;
   bookedCount?: number;
   intern?: boolean;
+  roomName?: string | null;
 }
 
 export interface EventEntry {
