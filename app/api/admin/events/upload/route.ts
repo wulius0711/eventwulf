@@ -4,7 +4,11 @@ import sharp from "sharp";
 import { getSession } from "@/lib/auth";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB, checked before resizing
+// Vercel's serverless functions hard-cap the request body at ~4.5MB regardless of
+// this check — a larger upload gets rejected by the platform before this code even
+// runs, surfacing as an opaque non-JSON response. Stay safely under that ceiling so
+// our own, clearer "Datei zu groß" message is the one that actually gets shown.
+const MAX_SIZE = 4 * 1024 * 1024; // 4MB, checked before resizing
 const MAX_WIDTH = 1200; // enough for a ~600px-wide card at 2x retina
 
 export async function POST(req: NextRequest) {
@@ -28,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Nur JPEG, PNG oder WebP erlaubt" }, { status: 400 });
   }
   if (file.size > MAX_SIZE) {
-    return NextResponse.json({ error: "Datei zu groß (max. 5MB)" }, { status: 400 });
+    return NextResponse.json({ error: "Datei zu groß (max. 4MB)" }, { status: 400 });
   }
 
   // Every upload is normalized to WebP and capped at MAX_WIDTH — the original

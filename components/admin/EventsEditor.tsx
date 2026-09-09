@@ -110,6 +110,13 @@ export default function EventsEditor() {
   }
 
   async function handleUpload(file: File) {
+    // Vercel rejects request bodies over ~4.5MB at the platform level before our
+    // API route even runs — catch it here so the admin gets a clear message
+    // instead of a confusing generic upload failure.
+    if (file.size > 4 * 1024 * 1024) {
+      setError("Datei zu groß (max. 4MB)");
+      return;
+    }
     setUploading(true);
     setError("");
     const body = new FormData();
@@ -298,7 +305,7 @@ export default function EventsEditor() {
               {uploading && <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>Lädt hoch…</span>}
             </div>
             <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
-              {form.image ? "Neues Bild wählen, um das aktuelle zu ersetzen" : "JPEG, PNG oder WebP, wird automatisch optimiert (max. 5MB)"}
+              {form.image ? "Neues Bild wählen, um das aktuelle zu ersetzen" : "JPEG, PNG oder WebP, wird automatisch optimiert (max. 4MB)"}
             </span>
           </div>
         </div>
