@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 import { prisma } from "../helpers/testDb";
 import { createTestClient, createTestEvent, createTestRoom, createTestInquiry, deleteTestClient } from "../helpers/fixtures";
 
-const CRON_HEADERS = { "x-cron-secret": "test-cron-secret" };
+// Matches how Vercel actually authenticates scheduled cron invocations —
+// see lib/cronAuth.ts.
+const CRON_HEADERS = { authorization: "Bearer test-cron-secret" };
 const PAST = new Date(Date.now() - 60_000); // already expired
 
 // Regression test for Fund 4: the hold-expiry crons previously read an
@@ -81,7 +83,15 @@ test.describe("Cron hold-expiry status race (event-holds)", () => {
   });
 
   test("rejects requests without the correct cron secret", async ({ request }) => {
-    const res = await request.get("/api/cron/event-holds", { headers: { "x-cron-secret": "wrong" } });
+    const res = await request.get("/api/cron/event-holds", { headers: { authorization: "Bearer wrong" } });
+    expect(res.status()).toBe(401);
+  });
+
+  test("rejects the old custom x-cron-secret header — Vercel never sends it", async ({ request }) => {
+    // Regression guard for the header-mismatch bug: Vercel's real cron
+    // trigger sends Authorization: Bearer <secret>, never a custom header.
+    // A request using the old mechanism must not be treated as authorized.
+    const res = await request.get("/api/cron/event-holds", { headers: { "x-cron-secret": "test-cron-secret" } });
     expect(res.status()).toBe(401);
   });
 });
@@ -110,5 +120,22 @@ test.describe("Cron hold-expiry status race (room-holds)", () => {
 
     const reloadedPending = await prisma.inquiry.findUniqueOrThrow({ where: { id: pending.id } });
     expect(reloadedPending.status).toBe("abgelaufen");
+  });
+
+  test("rejects the old custom x-cron-secret header", async ({ request }) => {
+    const res = await request.get("/api/cron/room-holds", { headers: { "x-cron-secret": "test-cron-secret" } });
+    expect(res.status()).toBe(401);
+  });
+});
+
+test.describe("Cron auth header (reminders)", () => {
+  // Only the auth mechanism itself — the reminder logic is unrelated to
+  // Block B and not exercised further here.
+  test("accepts the real Vercel auth header, rejects the old custom one", async ({ request }) => {
+    const ok = await request.get("/api/cron/reminders", { headers: CRON_HEADERS });
+    expect(ok.status()).toBe(200);
+
+    const rejected = await request.get("/api/cron/reminders", { headers: { "x-cron-secret": "test-cron-secret" } });
+    expect(rejected.status()).toBe(401);
   });
 });

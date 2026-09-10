@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import type { InquiryFormData } from "@/lib/types";
+import { isAuthorizedCronRequest } from "@/lib/cronAuth";
 
 function fmt(iso: string) {
   const [y, m, d] = iso.split("-");
@@ -10,8 +11,7 @@ function fmt(iso: string) {
 }
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("x-cron-secret");
-  if (secret !== process.env.CRON_SECRET) {
+  if (!isAuthorizedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { releaseEventCapacity } from "@/lib/eventCapacity";
+import { isAuthorizedCronRequest } from "@/lib/cronAuth";
 
 type ExpiredRow = { id: string; eventId: string | null; participantCount: number };
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("x-cron-secret");
-  if (secret !== process.env.CRON_SECRET) {
+  if (!isAuthorizedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
