@@ -75,6 +75,14 @@ export async function POST(req: NextRequest) {
     if (!room || !room.isActive) {
       return NextResponse.json({ error: "Dieser Raum ist nicht mehr verfügbar" }, { status: 400 });
     }
+    // Plain read, no transaction needed — capacity doesn't change between
+    // requests in a way that would create a race (unlike availability/booking).
+    if (room.capacity != null && participantCount > room.capacity) {
+      return NextResponse.json(
+        { error: `„${room.name}" bietet Platz für bis zu ${room.capacity} Personen — die eingegebene Teilnehmerzahl liegt darüber.` },
+        { status: 400 }
+      );
+    }
     roomName = room.name;
   }
 
