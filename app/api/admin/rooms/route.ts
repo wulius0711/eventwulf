@@ -55,7 +55,11 @@ export async function GET() {
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   });
 
-  return NextResponse.json(rooms.map(serialize));
+  // limit alongside the list so the admin UI can show a heads-up when a plan
+  // downgrade left more active rooms than the current plan allows (Medium
+  // finding 6) — existing rooms are never touched by a downgrade, only new
+  // creation is gated (see POST below), so this is purely informational.
+  return NextResponse.json({ rooms: rooms.map(serialize), limit: roomLimitFor(access.plan) });
 }
 
 export async function POST(req: NextRequest) {
@@ -75,7 +79,11 @@ export async function POST(req: NextRequest) {
 
   const limit = roomLimitFor(access.plan);
   if (limit !== null) {
-    const count = await prisma.room.count({ where: { clientId: access.clientId } });
+    // Active rooms only (Medium finding 6) — a client over the limit after a
+    // plan downgrade can bring themselves back into compliance by
+    // deactivating excess rooms rather than being stuck indefinitely, since
+    // a downgrade itself never deactivates anything automatically.
+    const count = await prisma.room.count({ where: { clientId: access.clientId, isActive: true } });
     if (count >= limit) {
       return NextResponse.json({ error: `Maximal ${limit} Räume im ${PLAN_LABELS[access.plan]}-Paket. Für mehr Räume upgraden.` }, { status: 400 });
     }
@@ -112,6 +120,21 @@ export async function PATCH(req: NextRequest) {
   const cap = capacity === undefined ? existing.capacity : (capacity === "" || capacity == null ? null : Number(capacity));
   if (cap !== null && (!Number.isFinite(cap) || cap < 1)) {
     return NextResponse.json({ error: "Kapazität ungültig" }, { status: 400 });
+  }
+
+  // Reactivating a deactivated room is the same effective action as creating
+  // one (it increases the active count), so it needs the same plan-limit
+  // check as POST — otherwise a client could bring themselves back under
+  // the limit by deactivating rooms, then bypass the creation gate entirely
+  // by reactivating others instead of actually creating a new one.
+  if (isActive === true && !existing.isActive) {
+    const limit = roomLimitFor(access.plan);
+    if (limit !== null) {
+      const count = await prisma.room.count({ where: { clientId: access.clientId, isActive: true } });
+      if (count >= limit) {
+        return NextResponse.json({ error: `Maximal ${limit} Räume im ${PLAN_LABELS[access.plan]}-Paket. Für mehr Räume upgraden.` }, { status: 400 });
+      }
+    }
   }
 
   const newImage = image ?? existing.image;

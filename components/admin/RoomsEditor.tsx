@@ -10,6 +10,7 @@ function emptyForm() {
 
 export default function RoomsEditor() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const [roomLimit, setRoomLimit] = useState<number | null>(null);
   const [locked, setLocked] = useState(false);
   const [lockedMessage, setLockedMessage] = useState("");
   const [loaded, setLoaded] = useState(false);
@@ -29,7 +30,9 @@ export default function RoomsEditor() {
           setLockedMessage(data.error ?? "Räume sind in deinem aktuellen Paket nicht verfügbar.");
           return;
         }
-        setRooms(await r.json());
+        const data = await r.json();
+        setRooms(data.rooms);
+        setRoomLimit(data.limit);
       })
       .catch(() => {})
       .finally(() => setLoaded(true));
@@ -166,6 +169,15 @@ export default function RoomsEditor() {
       <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
         Räume mit Kapazität und Bild — können im Buchungsformular ausgewählt werden.
       </p>
+
+      {roomLimit !== null && rooms.filter((r) => r.isActive).length > roomLimit && (
+        <div style={{
+          background: "var(--surface)", border: "1px solid var(--primary)",
+          borderRadius: "var(--radius-sm)", padding: "0.75rem 1rem", fontSize: "0.85rem", color: "var(--text)",
+        }}>
+          Aktuell sind mehr aktive Räume angelegt ({rooms.filter((r) => r.isActive).length}), als das gebuchte Paket erlaubt ({roomLimit}) — z.B. nach einem Paket-Wechsel. Bestehende Räume bleiben nutzbar, aber es können keine weiteren angelegt werden, solange das so ist.
+        </div>
+      )}
       <form onSubmit={handleSubmit} style={{
         background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`,
         borderRadius: "var(--radius)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem",

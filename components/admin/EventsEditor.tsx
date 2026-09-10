@@ -68,7 +68,7 @@ export default function EventsEditor() {
     fetch("/api/admin/events").then((r) => r.json()).then(setEvents).catch(() => {});
     fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
     // 403 if rooms aren't unlocked for this plan — fine, just means no room picker.
-    fetch("/api/admin/rooms").then((r) => r.ok ? r.json() : []).then(setRooms).catch(() => {});
+    fetch("/api/admin/rooms").then((r) => r.ok ? r.json() : { rooms: [] }).then((data) => setRooms(data.rooms)).catch(() => {});
   }, []);
 
   function set<K extends keyof ReturnType<typeof emptyForm>>(key: K, value: ReturnType<typeof emptyForm>[K]) {
