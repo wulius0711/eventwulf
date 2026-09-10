@@ -1,5 +1,12 @@
 import type { NextConfig } from "next";
 
+// React uses eval() in development only, to reconstruct server-side error
+// stacks in the browser — neither React nor Next.js use it in production
+// (confirmed: no eval()/new Function() anywhere in this project either).
+// See https://nextjs.org/docs/app/guides/content-security-policy.
+const isDev = process.env.NODE_ENV === "development";
+const scriptSrc = `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`;
+
 const commonHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-XSS-Protection", value: "1; mode=block" },
@@ -15,7 +22,7 @@ const widgetHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://eventwulf-zone.b-cdn.net",
       "font-src 'self' https://fonts.gstatic.com",
@@ -33,7 +40,7 @@ const adminHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://eventwulf-zone.b-cdn.net",
       "font-src 'self' https://fonts.gstatic.com",
