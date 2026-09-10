@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
 
 // Resolve event, validate participant count and reserve capacity if an eventId was submitted.
   let eventName = "";
-  const participantCount = parseInt(body.personenAnzahl ?? "0") || 0;
+  // validateSubmit already guarantees this is a positive integer within bounds.
+  const participantCount = Number(body.personenAnzahl);
   if (body.eventId) {
     const event = client ? await prisma.event.findFirst({ where: { id: body.eventId, clientId: client.id } }) : null;
     if (!event || !event.isActive) {

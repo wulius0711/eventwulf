@@ -9,6 +9,16 @@ export function isValidDate(val: unknown): val is string {
   return typeof val === "string" && DATE_RE.test(val);
 }
 
+const MAX_PARTICIPANT_COUNT = 10000;
+
+// Checked against the raw value on purpose, not a pre-parsed one — parseInt("1.5")
+// silently truncates to 1, which would make a non-integer input pass unnoticed.
+export function isValidParticipantCount(val: unknown): boolean {
+  if (typeof val !== "string" && typeof val !== "number") return false;
+  const n = Number(val);
+  return Number.isInteger(n) && n > 0 && n <= MAX_PARTICIPANT_COUNT;
+}
+
 function todayIso(): string {
   return new Date().toISOString().substring(0, 10);
 }
@@ -59,8 +69,11 @@ export function validateSubmit(body: unknown): string | null {
   if (b.roomId !== undefined && b.roomId !== "" && (typeof b.roomId !== "string" || b.roomId.length > 50)) {
     return "roomId ungültig";
   }
+  if (!isValidParticipantCount(b.personenAnzahl)) {
+    return "Teilnehmerzahl ungültig";
+  }
   const textFields: [string, number][] = [
-    ["personenAnzahl", 20], ["leiterinnen", 20], ["zeitVon", 10], ["zeitBis", 10],
+    ["leiterinnen", 20], ["zeitVon", 10], ["zeitBis", 10],
     ["sonstigesEquipment", 500], ["verpflegung", 200], ["zimmerwunsch", 200], ["raum", 200],
     ["wuenscheRahmenprogramm", 1000], ["abrechnung", 200], ["telefon", 50],
     ["sprache", 50], ["anreise", 200], ["barrierefreiheit", 500], ["budget", 100], ["quelle", 200],
