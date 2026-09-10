@@ -3,44 +3,59 @@ import { prisma } from "@/lib/db";
 import { releaseEventCapacity } from "@/lib/eventCapacity";
 import { isAuthorizedCronRequest } from "@/lib/cronAuth";
 
-type ExpiredRow = { id: string; eventId: string | null; participantCount: number };
-
 export async function GET(req: NextRequest) {
   if (!isAuthorizedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Single atomic UPDATE ... RETURNING instead of read-then-write: the status
-  // re-check happens in the same statement that performs the transition, so a
-  // booking an admin confirmed moments earlier (no longer matching the WHERE)
-  // can never be raced past. Bundled into one transaction with the capacity
-  // release for the same reason B1 needed one — a crash between "mark expired"
-  // and "release capacity" would otherwise leave bookedCount stuck reserved
-  // for a booking that's already flagged as expired.
-  const { released, errors } = await prisma.$transaction(async (tx) => {
-    const expired = await tx.$queryRaw<ExpiredRow[]>`
-      UPDATE "Inquiry"
-      SET status = 'abgelaufen', "holdExpiresAt" = NULL
-      WHERE "holdExpiresAt" < now()
-        AND status IN ('neu', 'in_pruefung', 'angebot_versendet')
-        AND "eventId" IS NOT NULL
-      RETURNING id, "eventId", "participantCount"
-    `;
-
-    let released = 0;
-    const errors: string[] = [];
-    for (const inq of expired) {
-      try {
-        if (inq.eventId && inq.participantCount > 0) {
-          await releaseEventCapacity(inq.eventId, inq.participantCount, tx);
-        }
-        released++;
-      } catch (e) {
-        errors.push(`${inq.id}: ${e}`);
-      }
-    }
-    return { released, errors };
+  // Read-only scan to find candidates — not itself the source of truth for
+  // what gets changed. Each row is re-validated and transitioned in its own
+  // small transaction below, so a stale candidate here (already changed by
+  // an admin, or a duplicate cron invocation) just gets skipped, not acted on.
+  const candidates = await prisma.inquiry.findMany({
+    where: {
+      status: { in: ["neu", "in_pruefung", "angebot_versendet"] },
+      holdExpiresAt: { lt: new Date() },
+      eventId: { not: null },
+    },
+    select: { id: true, eventId: true, participantCount: true },
   });
+
+  let released = 0;
+  const errors: string[] = [];
+
+  for (const row of candidates) {
+    try {
+      // Status transition and capacity release for THIS row, atomically
+      // together — but scoped to one row, not the whole batch. A failure here
+      // (e.g. releaseEventCapacity returning false because the Event was
+      // deleted since the scan above) rolls back only this row's status
+      // change, leaving it pending for the next cron run to retry. Other
+      // rows in this same run are unaffected — the try/catch is outside the
+      // transaction boundary on purpose, so it only ever reacts to an
+      // already-rolled-back failure, never leaves a half-applied state.
+      const acted = await prisma.$transaction(async (tx) => {
+        const updated = await tx.$executeRaw`
+          UPDATE "Inquiry"
+          SET status = 'abgelaufen', "holdExpiresAt" = NULL
+          WHERE id = ${row.id}
+            AND status IN ('neu', 'in_pruefung', 'angebot_versendet')
+            AND "holdExpiresAt" < now()
+        `;
+        if (updated === 0) return false; // changed by someone else since the scan — not an error, just skip
+
+        if (row.eventId && row.participantCount > 0) {
+          const ok = await releaseEventCapacity(row.eventId, row.participantCount, tx);
+          if (!ok) throw new Error(`releaseEventCapacity found no matching Event ${row.eventId}`);
+        }
+        return true;
+      });
+      if (acted) released++;
+    } catch (e) {
+      console.error("event-holds cron: failed to expire inquiry", { inquiryId: row.id, error: String(e) });
+      errors.push(`${row.id}: ${e}`);
+    }
+  }
 
   return NextResponse.json({ released, errors });
 }

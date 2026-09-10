@@ -30,9 +30,13 @@ export async function reserveEventCapacity(eventId: string, count: number, clien
   return affected === 1;
 }
 
-export async function releaseEventCapacity(eventId: string, count: number, client: Tx | typeof prisma = prisma): Promise<void> {
-  await client.$executeRaw`
+// Returns whether the Event row was actually found and updated — e.g. false
+// if it was deleted since the caller last looked at it. Callers that need to
+// treat a failed release as an error (not just a silent no-op) check this.
+export async function releaseEventCapacity(eventId: string, count: number, client: Tx | typeof prisma = prisma): Promise<boolean> {
+  const affected = await client.$executeRaw`
     UPDATE "Event" SET "bookedCount" = GREATEST("bookedCount" - ${count}, 0)
     WHERE id = ${eventId}
   `;
+  return affected > 0;
 }

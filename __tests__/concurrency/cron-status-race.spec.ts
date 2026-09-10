@@ -57,8 +57,13 @@ test.describe("Cron hold-expiry status race (event-holds)", () => {
       eventId: event.id,
       status: "neu",
       participantCount: 5,
-      holdExpiresAt: PAST,
+      // holdExpiresAt flips to the past only as the very last setup step
+      // (see cancel-cron-race.spec.ts) — set at creation time, the row would
+      // be sweepable by ANY concurrently running test file's cron call
+      // (fullyParallel: true) before this test's own request below fires,
+      // making the below released assertion flaky.
     });
+    await prisma.inquiry.update({ where: { id: inquiry.id }, data: { holdExpiresAt: PAST } });
 
     const first = await request.get("/api/cron/event-holds", { headers: CRON_HEADERS });
     expect(first.status()).toBe(200);
@@ -110,7 +115,10 @@ test.describe("Cron hold-expiry status race (room-holds)", () => {
   test("does not touch a confirmed room inquiry, expires a still-pending one", async ({ request }) => {
     const room = await createTestRoom(client.id);
     const confirmed = await createTestInquiry(client.id, { roomId: room.id, status: "bestaetigt", holdExpiresAt: PAST });
-    const pending = await createTestInquiry(client.id, { roomId: room.id, status: "neu", holdExpiresAt: PAST });
+    // Same flip-last requirement as above — "pending" is a real cron
+    // candidate (status "neu"), so it must not sit sweepable from creation.
+    const pending = await createTestInquiry(client.id, { roomId: room.id, status: "neu" });
+    await prisma.inquiry.update({ where: { id: pending.id }, data: { holdExpiresAt: PAST } });
 
     const res = await request.get("/api/cron/room-holds", { headers: CRON_HEADERS });
     expect(res.status()).toBe(200);

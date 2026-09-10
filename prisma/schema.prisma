@@ -59,7 +59,7 @@ model Inquiry {
   data             String // JSON string of InquiryFormData
   status           String    @default("neu")
   eventId          String?
-  event            Event?    @relation(fields: [eventId], references: [id])
+  event            Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
   roomId           String?
   room             Room?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
   participantCount Int       @default(0)
