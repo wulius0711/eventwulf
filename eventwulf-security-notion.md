@@ -311,3 +311,23 @@ Mit Abschluss von Durchgang 3 ist der komplette Medium-Track (11/11) fertig. Zus
 ## Low/Info — Punkt 5: `hashtext()`-Kollisionsrisiko (bewusst nicht behoben)
 
 `lib/roomAvailability.ts` sperrt beim Raum-Verfügbarkeitscheck per `pg_advisory_xact_lock(hashtext(roomId)::bigint)` — ein 32-Bit-Hash des Raum-`cuid`. Zwei verschiedene Räume können im (seltenen) Kollisionsfall denselben Lock-Key erhalten und sich dadurch gegenseitig unnötig blockieren (ein Buchungsversuch für Raum A wartet kurz auf einen gleichzeitigen Versuch für Raum B). Das ist ein reines Performance-/Latenz-Thema, kein Korrektheitsproblem: eine Kollision führt nie dazu, dass zwei sich überschneidende Buchungen für denselben Raum gleichzeitig durchgelassen werden, nur im Kollisionsfall zu unnötiger Wartezeit zwischen zwei eigentlich unabhängigen Räumen. Wird erst bei einer sehr großen Raumzahl pro Mandant überhaupt spürbar. Bewusst nicht behoben — bereits im Original-Audit als Performance-Grenzfall eingestuft, kein Code-Fix in dieser Phase.
+
+## Low/Info-Liste abgeschlossen — kompletter Code-Track fertig
+
+Letzter Track vor Track B. Fünf Punkte aus der ursprünglichen „nach Launch nachziehbar"-Liste, plus drei während der Bearbeitung entdeckte Zusatzfunde (analog zu Cron-Auth/Invoices-Kapazität im Critical-Track).
+
+| Punkt | Finding | Commit | Anmerkung |
+|---|---|---|---|
+| 1 | Nicht-timing-safe Secret-Vergleiche | `1144b9e` | Einziger verbleibender Fall: `PROVISIONING_SECRET`, jetzt über denselben Helper wie Cron-Auth |
+| 2 | `unsafe-inline`/`unsafe-eval` in der CSP | `d06e06b` | `unsafe-eval` komplett entfernt (production-only). `unsafe-inline` deutlich größer als angenommen — 425 `style={{...}}`-Vorkommen in 34 Dateien, kein Nonce-Mechanismus für Inline-Style-Attribute; `script-src unsafe-inline` stellte sich als dieselbe Fund-Klasse heraus (Next.js' eigene Hydration-Scripts betroffen). Zurückgestellt, nicht Teil dieses Abschlusses — siehe offener Punkt unten. |
+| 3 | Unescaped HTML in E-Mail-Bodies | `68ea0a5` | Scope erweitert über `reminders.ts` hinaus: `/api/submit`s eigener `row()`-Helper hatte dieselbe Lücke, sogar zentraler (läuft bei jeder Anfrage). `escapeHtml` aus dem Fund-8-Fix nach `lib/validate.ts` verschoben, an beiden Stellen wiederverwendet |
+| 4 | Redundante Header auf `/api/submit` | `5bd12b4` | Next.js führte überlappende Header-Regeln zusammen statt „erste Regel gewinnt" — `/api/submit` bekam die komplette Admin-CSP inkl. `X-Frame-Options: DENY` aufgedrückt. Per Negative-Lookahead ausgeschlossen, mit vollem Wizard-Durchlauf gegenverifiziert |
+| 5 | `hashtext()`-Kollisionsrisiko | `9b5c843` | Reiner Dokumentationspunkt wie geplant, kein Code |
+
+**Zwei Zusatzfunde, während Teil 3 entdeckt, eigene Commits:**
+- CRLF-Header-Injection im `from`-Feld (`d1a135f`) — dieselbe Vulnerability-Klasse wie ein bereits früher gefixter Header-Injection-Fund, nie auf `from` ausgerollt (nur `subject`/`replyTo` waren geschützt), jetzt auch in `reminders.ts` behoben.
+- Client-kontrollierbarer `Host`-Header im iCal-Link (`622b0d3`) — durch `VERCEL_URL` ersetzt statt empirisch die Ausnutzbarkeit über Vercels Edge-Routing zu verifizieren; robusterer Fix unabhängig vom tatsächlichen Risiko.
+
+**Offener Folgepunkt, bewusst zurückgestellt:** CSP-Nonce-Migration für `script-src` + `style-src` gemeinsam (nicht nur `style-src` allein, wie ursprünglich vermutet) — deutlich über den Umfang eines Low/Info-Fixes hinaus, da ein Nonce-Ansatz app-weit dynamisches Rendering erzwingen würde, inklusive Next.js' eigener Hydration-Scripts. Eigener, künftiger Task, kein Teil dieses Abschlusses.
+
+Damit ist der komplette Code-Track fertig: Critical/High (14/14), Medium (11/11), Low/Info (5/5 + 3 Zusatzfunde). Bekannte, unabhängig verifizierte Restpunkte, die bewusst offen bleiben: CSP-Nonce-Migration (oben), `cron-status-race.spec.ts`-Restfragilität ~17 % (Medium-Track), Migrationshistorie-Lücke für den Fall einer komplett neu provisionierten DB (Medium-Track, gehört zu Track B).
