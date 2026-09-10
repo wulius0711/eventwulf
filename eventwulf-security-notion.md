@@ -202,7 +202,7 @@ Fund 6, 7 — gemeinsamer Nenner: eine clientseitige Prüfung wurde nie durch ei
 
 **Fund 7 (negative Teilnehmerzahlen) — erledigt, in zwei unabhängigen Commits.** `personenAnzahl` wurde vor jeder Validierung mit `parseInt()` geparst, was nicht-ganzzahlige Eingaben stillschweigend abgeschnitten hätte (`parseInt("1.5") === 1`) — neue Validierung (`lib/validate.ts`) prüft den Rohwert. Zweiter, unabhängiger Fund beim Verifizieren der Audit-Beschreibung: `participantCount` fließt entgegen der ursprünglichen Audit-Annahme nicht direkt in Rechnungspositionen — es befüllt nur ein clientseitig frei überschreibbares Formularfeld. Die eigentliche Lücke war größer: `app/api/admin/invoices` validierte `lineItems` serverseitig überhaupt nicht (weder `quantity` noch `unitPrice`). Beide Stellen jetzt abgesichert. Tests: `__tests__/validation/participant-count.spec.ts`, `__tests__/validation/invoice-line-items.spec.ts`.
 
-Mit Abschluss von Block C sind alle 12 ursprünglichen Critical/High-Launch-Blocker sowie die beiden unterwegs gefundenen Zusatz-Findings (Cron-Auth, Invoices-Kapazität) bearbeitet.
+(Block D und Fund 11 waren zu diesem Zeitpunkt noch offen — vollständiger Abschluss des Critical/High-Tracks siehe Zusammenfassung am Ende dieses Dokuments.)
 
 ---
 
@@ -213,3 +213,35 @@ Mit Abschluss von Block C sind alle 12 ursprünglichen Critical/High-Launch-Bloc
 - Slug-Sanitierung mit Regex `/^[a-z0-9-]+$/`
 - bcryptjs mit cost factor 12
 - Status-Wert-Validierung im Inquiries-Endpunkt
+
+---
+
+## Abschluss — kompletter Critical/High-Track (Launch-Readiness-Audit, September 2026)
+
+Alle 12 ursprünglichen Critical/High-Launch-Blocker aus dem Audit-Bericht sowie 2 während der Umsetzung zusätzlich gefundene Findings sind bearbeitet. Einmal an einer Stelle nachschlagbar, statt durch die einzelnen Block-Vermerke oben blättern zu müssen:
+
+| Finding | Commit(s) |
+|---|---|
+| Block A — Next.js/sharp-CVEs (deckte mehrere der 12 Original-Punkte ab, als ein Dependency-Fix zusammengefasst) | `5fe2088` |
+| Fund 9 — Gast erhielt 500 trotz erfolgreich gespeicherter Anfrage | `e31b712` |
+| Fund 10 — keine automatisierte Testabdeckung (Infrastruktur + Cross-Tenant-IDOR-Test + Advisory-Lock-Race-Test) | `433e9a8`, `75c74cd`, `7e244aa` |
+| Fund 3 — Event-Kapazitäts-Leak bei Timeout | `1198731` |
+| Fund 4 — Cron überschreibt bestätigte Buchung | `5cfff39` |
+| Fund 5 — kein Konfliktschutz bei Multi-Admin-Bearbeitung | `f54ef22` |
+| Fund 6 — Raumkapazität serverseitig durchgesetzt | `8944e9c` |
+| Fund 7 — negative Teilnehmerzahlen (Eingabe + Rechnungs-Line-Items, zwei Commits) | `4530e97`, `e6b09d1` |
+| Fund 8 — Config-Fallback-System + Injection-Lücken | `6d1104a` |
+| Fund 11 — Migration-vor-Deploy erzwungen | `c970913` |
+| Zusatzfund — Cron-Endpunkte ohne funktionierende Authentifizierung (Auth-Header-Mismatch, nicht Teil der 12 Original-Findings) | `9d9f50a` |
+| Zusatzfund — fehlende Kapazitätsreservierung bei Angebots-Erstellung für nicht gehaltene Anfragen (nicht Teil der 12 Original-Findings, im selben Commit wie Fund 5) | `f54ef22` |
+
+**Wiederkehrendes Muster, selbst eine Erkenntnis für den nächsten Audit-Durchlauf:** In praktisch jedem Block hat die eigene Verifikation gegen den tatsächlichen Code vor dem Schreiben des Fixes etwas Größeres oder Zusätzliches offengelegt, als die ursprüngliche Audit-Beschreibung nahelegte — nie kleiner. Beispiele: der tote Kompensationscode in B1, die zweite ungeschützte Schreibstelle in B3, die von 2 auf ~15 Felder gewachsene Escaping-Lücke in Fund 8, die falsche `vercel-build`-Annahme bei Fund 11, der Cron-Auth-Fund selbst. Für künftige Audits heißt das: Findings-Beschreibungen sind ein guter Ausgangspunkt, aber der tatsächliche Umsetzungsumfang war in dieser Session durchgehend größer als die erste Beschreibung — entsprechend Puffer einplanen, nicht die Erstschätzung als Obergrenze behandeln.
+
+**Bewusst offen, nicht Teil dieser Code-Session:**
+- Die 11 Medium-Findings ("vor Launch empfohlen") aus dem Audit — noch nicht priorisiert oder begonnen.
+- Die Low/Info-Liste aus dem Audit.
+- Track B (Rechtliches, Betrieb/Monitoring) — nie Teil dieser Code-Session, weiterhin unbeantwortet.
+- Konkret vorgemerkte Einzelfunde aus dieser Session:
+  - `app/api/cron/reminders/route.ts` hat dasselbe unescaped-Interpolations-Muster für gastseitig übermittelte Werte wie der ursprüngliche Fund-8-Teil in `invoiceTemplate.ts` — andere Datei, anderer Ausgabekanal (E-Mail statt servierte Webseite), bewusst nicht mitgezogen.
+  - Rechnungsnummern-Lücke bei einem `409`-Konflikt in der Angebots-Erstellung (kein Doppelvergabe-Risiko, nur eine Nummerierungslücke) — aus B3.
+  - Die systematische IDOR-Prüfung aller ID-basierten Endpunkte (Audit Abschnitt 1) über den bereits gefundenen `/api/submit`-Fall hinaus — aus Fund 10/Phase 2.
