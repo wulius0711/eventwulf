@@ -79,7 +79,7 @@ model Invoice {
   inquiryId  String
   inquiry    Inquiry   @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
   type       String // "angebot" | "rechnung"
-  number     String    @unique
+  number     String
   status     String    @default("offen") // "offen" | "bezahlt" | "storniert"
   lineItems  String // JSON: [{description, quantity, unitPrice}]
   taxRate    Float     @default(0.20)
@@ -89,6 +89,10 @@ model Invoice {
   sentAt     DateTime?
   issuedAt   DateTime  @default(now())
   createdAt  DateTime  @default(now())
+
+  // Invoice numbers are now scoped per client (Medium finding 7) — two
+  // different clients can both legitimately have "ANB-2026-0001".
+  @@unique([clientId, number])
 }
 
 model InvoiceCounter {

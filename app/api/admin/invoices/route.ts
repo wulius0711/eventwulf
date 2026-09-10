@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
   const config = await loadConfigFromDB(session.clientSlug);
   const taxRate = body.taxRate ?? config.billing?.taxRate ?? 0.20;
-  const number = await nextInvoiceNumber();
+  const number = await nextInvoiceNumber(clientId);
 
   const validityDays = config.billing?.validityDays ?? 30;
   const defaultValidUntil = new Date();
