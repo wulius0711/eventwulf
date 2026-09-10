@@ -1,4 +1,7 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+
+type Tx = Prisma.TransactionClient;
 
 // Inquiry statuses that keep an Event's capacity hold in place.
 export const HELD_STATUSES = ["neu", "in_pruefung", "angebot_versendet", "bestaetigt"];
@@ -9,11 +12,16 @@ export function isHeld(status: string): boolean {
 
 export const HOLD_DURATION_MS = 48 * 60 * 60 * 1000; // 48h
 
+export class CapacityExceededError extends Error {}
+
 // Atomic conditional update — the WHERE clause plus the row lock taken by
 // UPDATE itself guarantee correctness under concurrent requests, no
-// separate transaction/version field needed.
-export async function reserveEventCapacity(eventId: string, count: number): Promise<boolean> {
-  const affected = await prisma.$executeRaw`
+// separate transaction/version field needed. Accepts an optional transaction
+// client so callers that also write an Inquiry in the same operation (submit,
+// admin status update) can make both writes atomic — see callers for why
+// that matters (a crash between the two would otherwise leak capacity).
+export async function reserveEventCapacity(eventId: string, count: number, client: Tx | typeof prisma = prisma): Promise<boolean> {
+  const affected = await client.$executeRaw`
     UPDATE "Event" SET "bookedCount" = "bookedCount" + ${count}
     WHERE id = ${eventId}
       AND "isActive" = true
@@ -22,8 +30,8 @@ export async function reserveEventCapacity(eventId: string, count: number): Prom
   return affected === 1;
 }
 
-export async function releaseEventCapacity(eventId: string, count: number): Promise<void> {
-  await prisma.$executeRaw`
+export async function releaseEventCapacity(eventId: string, count: number, client: Tx | typeof prisma = prisma): Promise<void> {
+  await client.$executeRaw`
     UPDATE "Event" SET "bookedCount" = GREATEST("bookedCount" - ${count}, 0)
     WHERE id = ${eventId}
   `;
