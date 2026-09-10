@@ -152,6 +152,20 @@ Der oben erwähnte vollständige Codebase-Audit wurde als 3-Durchgänge-Review �
 
 ---
 
+## Nachtrag — Launch-Readiness-Audit (September 2026), Phase 2
+
+Fund 10 („keine automatisierte Testabdeckung im Repo, insbesondere kein Regressionstest für den bereits real ausgenutzten Cross-Tenant-IDOR und keiner für die Advisory-Lock-Race-Condition") — Mindest-Sicherheitsnetz für die zwei Stellen, an denen der als nächstes geplante Block B (Nebenläufigkeit) am ehesten stille Regressionen einbaut.
+
+**Infrastruktur:** `@playwright/test` als echte Dependency, `playwright.config.ts` mit `webServer` gegen einen dedizierten Neon-Test-Branch (kein Zugriff auf Dev-/Produktions-DB), bewusst ungültigem `RESEND_API_KEY` (sicher dank Fund-9-Fix oben) und einem Test-Env-Bypass für den Rate-Limiter in `lib/ratelimit.ts` — verifiziert per Gegen-Check, dass das produktive Rate-Limiting (5 Requests/10min) außerhalb der Tests unverändert bleibt.
+
+**Automatisiert abgesichert:**
+- **Cross-Tenant-IDOR** (`__tests__/security/cross-tenant-idor.spec.ts`): Raum- und Event-Fall separat, je mit Positivfall-Gegenprobe.
+- **Advisory-Lock-Race-Condition** (`__tests__/concurrency/room-advisory-lock.spec.ts`): echte parallele Requests (2er- und 5er-Fall) auf denselben Raum/Zeitraum — genau einer erfolgreich, Rest `409`, kein `500`, kein stiller Doppel-Erfolg. Flakiness-Kontrolle über 10 Läufe: 0 geflackerte Assertions.
+
+**Offen:** Die systematische IDOR-Prüfung aller ID-basierten Endpunkte (Audit Abschnitt 1, über den bereits gefundenen `/api/submit`-Fall hinaus) sowie ein Test für Fund 3 (Event-Kapazitäts-Leak bei Vercel-Timeout) stehen weiterhin aus — beide bewusst nicht Teil dieser Phase.
+
+---
+
 ## Bereits korrekt implementiert (vor dem Audit)
 
 - HMAC-Autologin mit `timingSafeEqual` (verhindert Timing-Angriffe)
