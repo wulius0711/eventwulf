@@ -11,6 +11,19 @@ export function isValidHexColor(val: unknown): val is string {
   return typeof val === "string" && HEX_COLOR_RE.test(val);
 }
 
+// Shared by every HTML template that interpolates free-text values (invoice
+// page, reminder/confirmation/operator emails) — originally only lived in
+// lib/invoiceTemplate.ts, moved here so it has one shared home instead of
+// being reimplemented per template.
+export function escapeHtml(val: unknown): string {
+  return String(val ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function isSafeCssColor(val: unknown): val is string {
   return typeof val === "string" && SAFE_CSS_COLOR_RE.test(val);
 }

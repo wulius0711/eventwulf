@@ -1,20 +1,6 @@
 import type { EventConfig, InvoiceLineItem } from "@/lib/types";
-import { isValidHexColor } from "@/lib/validate";
+import { isValidHexColor, escapeHtml } from "@/lib/validate";
 import { DEFAULT_PRIMARY_COLOR } from "@/lib/theme";
-
-// This template is rendered straight to a `text/html` response (the actual
-// offer page a customer opens/prints) — every dynamic value below is
-// free-text (company name, notes, line item descriptions, etc.) and must be
-// escaped, not interpolated raw, or a saved config/invoice value containing
-// `<`/`"` could inject markup into a page shown to guests.
-function escapeHtml(val: unknown): string {
-  return String(val ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 interface TemplateData {
   number: string;

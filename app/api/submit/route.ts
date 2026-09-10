@@ -6,7 +6,7 @@ import { loadConfigFromDB } from "@/lib/loadConfig";
 import { prisma } from "@/lib/db";
 import type { InquiryFormData } from "@/lib/types";
 import { rateLimit, getIp } from "@/lib/ratelimit";
-import { validateSubmit } from "@/lib/validate";
+import { validateSubmit, escapeHtml } from "@/lib/validate";
 import { reserveEventCapacity, HOLD_DURATION_MS, CapacityExceededError } from "@/lib/eventCapacity";
 import { assertRoomAvailable, RoomConflictError } from "@/lib/roomAvailability";
 
@@ -20,9 +20,15 @@ function yesNo(val: boolean | null) {
   return "–";
 }
 
-function row(label: string, value: string) {
+// value is whatever the guest submitted (or a DB-looked-up event/room name)
+// interpolated straight into an HTML email — escaped here once, for every
+// call site, rather than at each of the ~20 calls below (label is always a
+// hardcoded string literal, never needs escaping). Exported so the escaping
+// can be verified directly against the actual rendered markup — the emails
+// this builds never come back as an HTTP response body to assert on.
+export function row(label: string, value: string) {
   if (!value || value === "–") return "";
-  return `<tr><td style="padding:6px 12px 6px 0;color:#6b6256;font-size:0.85rem;white-space:nowrap;vertical-align:top">${label}</td><td style="padding:6px 0;font-size:0.85rem;color:#1a1612">${value}</td></tr>`;
+  return `<tr><td style="padding:6px 12px 6px 0;color:#6b6256;font-size:0.85rem;white-space:nowrap;vertical-align:top">${label}</td><td style="padding:6px 0;font-size:0.85rem;color:#1a1612">${escapeHtml(value)}</td></tr>`;
 }
 
 function fmt(iso: string) {
@@ -122,16 +128,29 @@ export async function POST(req: NextRequest) {
     row("Wie gefunden", body.quelle),
   ].filter(Boolean).join("\n");
 
+  // Guest-submitted (artTitel, nameGruppenleitung) and admin-configured
+  // (company.*) values alike — escaped regardless of source, same as the
+  // row() values above and the invoiceTemplate.ts precedent this reuses
+  // escapeHtml from.
+  const safeArtTitel = escapeHtml(body.artTitel);
+  const safeGruppenleitung = escapeHtml(body.nameGruppenleitung);
+  const safeCompanyName = escapeHtml(config.company.name);
+  const safeTagline = escapeHtml(config.company.tagline);
+  const safeAddress = escapeHtml(config.company.address);
+  const safePhone = escapeHtml(config.company.phone);
+  const safeCompanyEmail = escapeHtml(config.company.email);
+  const safeWebsite = escapeHtml(config.company.website);
+
   const operatorHtml = `
     <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:2rem">
       <h2 style="margin:0 0 1.5rem;font-size:1.3rem;color:#1a1612">
-        Neue Anfrage – ${body.artTitel || "Retreat"}
+        Neue Anfrage – ${safeArtTitel || "Retreat"}
       </h2>
       <table style="border-collapse:collapse;width:100%">
         ${rows}
       </table>
       <p style="margin-top:2rem;font-size:0.8rem;color:#6b6256">
-        Gesendet über ${config.company.name}
+        Gesendet über ${safeCompanyName}
       </p>
     </div>
   `;
@@ -140,14 +159,14 @@ export async function POST(req: NextRequest) {
     <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:2rem">
       <h2 style="margin:0 0 0.5rem;font-size:1.3rem;color:#1a1612">Ihre Anfrage ist eingegangen</h2>
       <p style="margin:0 0 1.5rem;color:#6b6256;font-size:0.9rem">
-        Vielen Dank, ${body.nameGruppenleitung}! Wir haben Ihre Anfrage erhalten und melden uns in Kürze.
+        Vielen Dank, ${safeGruppenleitung}! Wir haben Ihre Anfrage erhalten und melden uns in Kürze.
       </p>
       <table style="border-collapse:collapse;width:100%">
         ${rows}
       </table>
       <p style="margin-top:2rem;font-size:0.8rem;color:#6b6256">
-        ${config.company.name}${config.company.tagline ? ` – ${config.company.tagline}` : ""}<br/>
-        ${[config.company.address, config.company.phone, config.company.email, config.company.website].filter(Boolean).join(" · ")}
+        ${safeCompanyName}${safeTagline ? ` – ${safeTagline}` : ""}<br/>
+        ${[safeAddress, safePhone, safeCompanyEmail, safeWebsite].filter(Boolean).join(" · ")}
       </p>
     </div>
   `;
