@@ -3,6 +3,7 @@ import sanitizeHtml from "sanitize-html";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
+import { validateMinParticipants } from "@/lib/validate";
 
 function sanitizeDescription(html: string): string {
   return sanitizeHtml(html, {
@@ -107,10 +108,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Startdatum darf nicht in der Vergangenheit liegen" }, { status: 400 });
   }
 
-  const min = Number(minParticipants) || 1;
+  const min = minParticipants === undefined || minParticipants === "" ? 1 : Number(minParticipants);
   const max = parseMaxParticipants(maxParticipants, null);
-  if (max !== null && min > max) {
-    return NextResponse.json({ error: "Min. Teilnehmer darf nicht über Max. Teilnehmer liegen" }, { status: 400 });
+  const minError = validateMinParticipants(min, max);
+  if (minError) {
+    return NextResponse.json({ error: minError }, { status: 400 });
   }
 
   const resolvedRoomId = await validateRoomId(clientId, roomId ?? null);
@@ -182,8 +184,9 @@ export async function PATCH(req: NextRequest) {
 
   const min = minParticipants !== undefined ? Number(minParticipants) : existing.minParticipants;
   const max = parseMaxParticipants(maxParticipants, existing.maxParticipants);
-  if (max !== null && min > max) {
-    return NextResponse.json({ error: "Min. Teilnehmer darf nicht über Max. Teilnehmer liegen" }, { status: 400 });
+  const minError = validateMinParticipants(min, max);
+  if (minError) {
+    return NextResponse.json({ error: minError }, { status: 400 });
   }
   if (max !== null && existing.bookedCount > max) {
     return NextResponse.json({ error: `Es sind bereits ${existing.bookedCount} Plätze belegt — Max. Teilnehmer kann nicht darunter gesetzt werden` }, { status: 400 });

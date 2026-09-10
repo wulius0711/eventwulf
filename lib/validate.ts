@@ -33,6 +33,22 @@ export function isValidParticipantCount(val: unknown): boolean {
   return Number.isInteger(n) && n > 0 && n <= MAX_PARTICIPANT_COUNT;
 }
 
+// Shared between Event create and edit (Medium finding 5, Durchgang 3 part 1)
+// — create silently coerced non-positive/non-numeric input to 1 via
+// `Number(x) || 1`, which missed negative values entirely; edit had no
+// coercion or validation at all, writing 0, negative numbers, or even NaN
+// straight to the DB. Both paths now reject invalid input explicitly instead
+// of silently defaulting or writing garbage.
+export function validateMinParticipants(min: number, max: number | null): string | null {
+  if (!Number.isInteger(min) || min < 1) {
+    return "Min. Teilnehmer muss eine positive ganze Zahl sein";
+  }
+  if (max !== null && min > max) {
+    return "Min. Teilnehmer darf nicht über Max. Teilnehmer liegen";
+  }
+  return null;
+}
+
 // Line items are fully admin-editable free-form input (the participantCount
 // value only pre-fills the create form client-side) — validated on whatever
 // was actually submitted, not on an assumption about where quantity came from.
