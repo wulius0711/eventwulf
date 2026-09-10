@@ -1,4 +1,20 @@
 import type { EventConfig, InvoiceLineItem } from "@/lib/types";
+import { isValidHexColor } from "@/lib/validate";
+import { DEFAULT_PRIMARY_COLOR } from "@/lib/theme";
+
+// This template is rendered straight to a `text/html` response (the actual
+// offer page a customer opens/prints) — every dynamic value below is
+// free-text (company name, notes, line item descriptions, etc.) and must be
+// escaped, not interpolated raw, or a saved config/invoice value containing
+// `<`/`"` could inject markup into a page shown to guests.
+function escapeHtml(val: unknown): string {
+  return String(val ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 interface TemplateData {
   number: string;
@@ -29,13 +45,29 @@ export function renderInvoiceHtml(data: TemplateData): string {
   const gross = net + tax;
   const taxPct = Math.round(taxRate * 100);
 
-  const primaryColor = config.company.primaryColor || "#6b4f3a";
+  // primaryColor is a CSS value, not free text — validated against the same
+  // hex format as everywhere else, not merely escaped (a non-hex string could
+  // still be visually broken even if HTML-safe).
+  const primaryColor = isValidHexColor(config.company.primaryColor) ? config.company.primaryColor : DEFAULT_PRIMARY_COLOR;
+
+  // Everything else below is free text a customer could end up viewing on
+  // this served HTML page — escaped, not interpolated raw.
+  const companyName = escapeHtml(config.company.name);
+  const tagline = escapeHtml(config.company.tagline);
+  const address = escapeHtml(config.company.address);
+  const phone = escapeHtml(config.company.phone);
+  const email = escapeHtml(config.company.email);
+  const safeNumber = escapeHtml(number);
+  const safeEventTitle = escapeHtml(eventTitle);
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeRecipientEmail = escapeHtml(recipientEmail);
+  const safeNotes = escapeHtml(notes);
 
   const rows = lineItems.map((item) => {
     const total = item.quantity * item.unitPrice;
     return `
       <tr>
-        <td style="padding:0.6rem 0.75rem;border-bottom:1px solid #e5e7eb;font-size:0.875rem">${item.description}</td>
+        <td style="padding:0.6rem 0.75rem;border-bottom:1px solid #e5e7eb;font-size:0.875rem">${escapeHtml(item.description)}</td>
         <td style="padding:0.6rem 0.75rem;border-bottom:1px solid #e5e7eb;font-size:0.875rem;text-align:center">${item.quantity}</td>
         <td style="padding:0.6rem 0.75rem;border-bottom:1px solid #e5e7eb;font-size:0.875rem;text-align:right">${fmtCurrency(item.unitPrice)}</td>
         <td style="padding:0.6rem 0.75rem;border-bottom:1px solid #e5e7eb;font-size:0.875rem;text-align:right;font-weight:500">${fmtCurrency(total)}</td>
@@ -47,7 +79,7 @@ export function renderInvoiceHtml(data: TemplateData): string {
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Angebot ${number}</title>
+<title>Angebot ${safeNumber}</title>
 <style>
   @media print {
     body { margin: 0; }
@@ -70,13 +102,13 @@ export function renderInvoiceHtml(data: TemplateData): string {
   <!-- Header -->
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2.5rem">
     <div>
-      <div style="font-size:1.4rem;font-weight:700;color:${primaryColor}">${config.company.name}</div>
-      ${config.company.tagline ? `<div style="font-size:0.85rem;color:#6b7280;margin-top:0.2rem">${config.company.tagline}</div>` : ""}
+      <div style="font-size:1.4rem;font-weight:700;color:${primaryColor}">${companyName}</div>
+      ${tagline ? `<div style="font-size:0.85rem;color:#6b7280;margin-top:0.2rem">${tagline}</div>` : ""}
     </div>
     <div style="text-align:right;font-size:0.8rem;color:#6b7280;line-height:1.6">
-      ${config.company.address ? `<div>${config.company.address}</div>` : ""}
-      ${config.company.phone ? `<div>${config.company.phone}</div>` : ""}
-      ${config.company.email ? `<div>${config.company.email}</div>` : ""}
+      ${address ? `<div>${address}</div>` : ""}
+      ${phone ? `<div>${phone}</div>` : ""}
+      ${email ? `<div>${email}</div>` : ""}
     </div>
   </div>
 
@@ -87,16 +119,16 @@ export function renderInvoiceHtml(data: TemplateData): string {
     <div>
       <div style="font-size:1.5rem;font-weight:700;margin-bottom:0.5rem">Angebot</div>
       <div style="font-size:0.875rem;color:#374151;line-height:1.8">
-        <div><strong>Angebot-Nr.:</strong> ${number}</div>
+        <div><strong>Angebot-Nr.:</strong> ${safeNumber}</div>
         <div><strong>Datum:</strong> ${fmtDate(issuedAt)}</div>
         ${validUntil ? `<div><strong>Gültig bis:</strong> ${fmtDate(validUntil)}</div>` : ""}
-        ${eventTitle ? `<div><strong>Betreff:</strong> ${eventTitle}</div>` : ""}
+        ${safeEventTitle ? `<div><strong>Betreff:</strong> ${safeEventTitle}</div>` : ""}
       </div>
     </div>
     <div style="font-size:0.875rem;color:#374151;line-height:1.8;text-align:right">
       <div style="font-size:0.75rem;color:#9ca3af;margin-bottom:0.25rem">An:</div>
-      <div style="font-weight:600">${recipientName}</div>
-      ${recipientEmail ? `<div style="color:#6b7280">${recipientEmail}</div>` : ""}
+      <div style="font-weight:600">${safeRecipientName}</div>
+      ${safeRecipientEmail ? `<div style="color:#6b7280">${safeRecipientEmail}</div>` : ""}
     </div>
   </div>
 
@@ -131,12 +163,12 @@ export function renderInvoiceHtml(data: TemplateData): string {
     </table>
   </div>
 
-  ${notes ? `<div style="margin-bottom:1.5rem;padding:1rem 1.25rem;background:#f9fafb;border-radius:6px;font-size:0.85rem;color:#374151;white-space:pre-line">${notes}</div>` : ""}
+  ${safeNotes ? `<div style="margin-bottom:1.5rem;padding:1rem 1.25rem;background:#f9fafb;border-radius:6px;font-size:0.85rem;color:#374151;white-space:pre-line">${safeNotes}</div>` : ""}
 
   <p style="margin-top:2rem;font-size:0.78rem;color:#9ca3af">Dies ist ein unverbindliches Angebot. Preise verstehen sich zzgl. ${taxPct}% MwSt.</p>
 
   <div style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e5e7eb;font-size:0.75rem;color:#9ca3af;text-align:center">
-    ${config.company.name}${config.company.address ? ` · ${config.company.address}` : ""}${config.company.email ? ` · ${config.company.email}` : ""}
+    ${companyName}${address ? ` · ${address}` : ""}${email ? ` · ${email}` : ""}
   </div>
 </div>
 </body>

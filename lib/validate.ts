@@ -1,5 +1,19 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+// formBgColor is a general CSS color (e.g. "transparent", "rgba(0,0,0,.4)"),
+// not restricted to hex like primaryColor — this allowlists characters that
+// can't break out of the `<style>{`body { background: ${pageBg}; }`}</style>`
+// template literal it's interpolated into (no `;`, `{`, `}`, `<`, `/`, etc.).
+const SAFE_CSS_COLOR_RE = /^[a-zA-Z0-9#(),.%\s-]{1,100}$/;
+
+export function isValidHexColor(val: unknown): val is string {
+  return typeof val === "string" && HEX_COLOR_RE.test(val);
+}
+
+export function isSafeCssColor(val: unknown): val is string {
+  return typeof val === "string" && SAFE_CSS_COLOR_RE.test(val);
+}
 
 export function isValidEmail(val: unknown): val is string {
   return typeof val === "string" && EMAIL_RE.test(val) && val.length <= 254;
@@ -64,7 +78,13 @@ export function validateConfig(body: unknown): string | null {
   if (!b.company || typeof b.company !== "object" || Array.isArray(b.company)) return "company fehlt";
   const c = b.company as Record<string, unknown>;
   if (!str(c.name, 200)) return "company.name ungültig";
+  if (c.primaryColor !== undefined && !isValidHexColor(c.primaryColor)) {
+    return "company.primaryColor muss ein Hex-Farbwert sein (z.B. #6366f1)";
+  }
   if (b.formTitle !== undefined && str(b.formTitle, 200) === null) return "formTitle zu lang";
+  if (b.formBgColor !== undefined && b.formBgColor !== "" && !isSafeCssColor(b.formBgColor)) {
+    return "formBgColor ungültig";
+  }
   if (b.notifyEmail !== undefined && b.notifyEmail !== "" && !isValidEmail(b.notifyEmail)) return "notifyEmail ungültig";
   for (const key of ["verpflegungOptions", "zimmerwunschOptions", "abrechnungOptions", "ausstattungOptions", "anreiseOptions", "zahlungOptions", "budgetOptions", "quelleOptions"] as const) {
     if (b[key] !== undefined && !isStringArray(b[key])) return `${key} muss ein String-Array sein`;

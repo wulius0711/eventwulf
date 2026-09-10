@@ -1,5 +1,6 @@
 import { loadConfigFromDB } from "@/lib/loadConfig";
-import { buildThemeVars } from "@/lib/theme";
+import { buildThemeVars, DEFAULT_PRIMARY_COLOR } from "@/lib/theme";
+import { isSafeCssColor } from "@/lib/validate";
 import Wizard from "@/components/Wizard";
 import IframeResizer from "@/components/IframeResizer";
 
@@ -24,7 +25,7 @@ export default async function Home({ searchParams }: Props) {
   const slug = kunde ?? process.env.SUPERADMIN_SLUG ?? "default";
   const config = await loadConfigFromDB(slug);
 
-  const themeVars = buildThemeVars(config.company.primaryColor);
+  const themeVars = buildThemeVars(config.company.primaryColor ?? DEFAULT_PRIMARY_COLOR);
 
   const titleFont = config.formTitleFont ?? "Cormorant Garamond";
   const bodyFont  = config.formBodyFont ?? "";
@@ -38,7 +39,9 @@ export default async function Home({ searchParams }: Props) {
     : null;
 
   const bodyFontFamily = bodyFont ? `'${bodyFont}', system-ui, sans-serif` : undefined;
-  const pageBg = config.formBgColor || "transparent";
+  // Defense in depth alongside the validateConfig check on save — interpolated
+  // raw into the <style> tag below, so an unsafe value here would be CSS injection.
+  const pageBg = config.formBgColor && isSafeCssColor(config.formBgColor) ? config.formBgColor : "transparent";
 
   return (
     <div id="embed-root" style={themeVars as React.CSSProperties}>
@@ -47,7 +50,7 @@ export default async function Home({ searchParams }: Props) {
       <style>{`body { background: ${pageBg}; }`}</style>
       <IframeResizer />
       {googleFontUrl && <link rel="stylesheet" href={googleFontUrl} />}
-      <div className="ew-widget-wrap" style={{ padding: "2rem 1.5rem", background: config.formBgColor || "transparent", fontFamily: bodyFontFamily }}>
+      <div className="ew-widget-wrap" style={{ padding: "2rem 1.5rem", background: pageBg, fontFamily: bodyFontFamily }}>
         {config.formTitle && (
           <h2
             className="ew-widget-title"

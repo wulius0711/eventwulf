@@ -1,3 +1,8 @@
+import { isValidHexColor } from "@/lib/validate";
+
+// Matches the fallback already used in cron/reminders and invoiceTemplate.ts.
+export const DEFAULT_PRIMARY_COLOR = "#6366f1";
+
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace("#", "").padEnd(6, "0");
   return [
@@ -40,15 +45,19 @@ function ensureTextContrast(hex: string): string {
 }
 
 export function buildThemeVars(primary: string): Record<string, string> {
-  const btnText = luminance(primary) > 0.35 ? "#111111" : "#ffffff";
+  // Defense in depth: even with a correct config fallback upstream, this
+  // guards against undefined/malformed input reaching hexToRgb (which would
+  // throw) or landing unvalidated in a CSS custom property.
+  const safePrimary = isValidHexColor(primary) ? primary : DEFAULT_PRIMARY_COLOR;
+  const btnText = luminance(safePrimary) > 0.35 ? "#111111" : "#ffffff";
   return {
-    "--primary":      primary,
-    "--primary-dark": darken(primary, 0.2),
-    "--primary-tint": rgba(primary, 0.10),
-    "--primary-dim":  rgba(primary, 0.18),
-    "--primary-text": ensureTextContrast(primary),
+    "--primary":      safePrimary,
+    "--primary-dark": darken(safePrimary, 0.2),
+    "--primary-tint": rgba(safePrimary, 0.10),
+    "--primary-dim":  rgba(safePrimary, 0.18),
+    "--primary-text": ensureTextContrast(safePrimary),
     "--btn-text":     btnText,
-    "--blocked-bg":   primary,
+    "--blocked-bg":   safePrimary,
     "--blocked-text": btnText,
   };
 }
