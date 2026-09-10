@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHmac, timingSafeEqual } from 'crypto';
+import { Prisma } from '@prisma/client';
+import { createHash, createHmac, timingSafeEqual } from 'crypto';
 import { prisma } from '@/lib/db';
 import { signToken, cookieName, cookieOptions } from '@/lib/auth';
 
@@ -42,6 +43,26 @@ export async function GET(req: NextRequest) {
 
   if (!valid) {
     return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+  }
+
+  // Replay guard: the INSERT with a unique constraint on tokenHash is itself
+  // the atomic check-and-insert — two near-simultaneous requests for the
+  // same token can't both succeed, one always loses to the constraint
+  // (same principle as Block B's conditional updates, applied to an insert
+  // instead of an update). sig is unforgeable without bookingAppKey and
+  // unique per (orgId, ts), so hashing it (not storing it raw) is the
+  // natural replay key here — there's no single opaque "the token" value in
+  // this HMAC-query-param scheme.
+  const tokenHash = createHash('sha256').update(sig).digest('hex');
+  try {
+    await prisma.usedAutologinToken.create({
+      data: { tokenHash, expiresAt: new Date(timestamp + TOKEN_TTL_MS + 5_000) },
+    });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      return NextResponse.json({ error: 'Token already used' }, { status: 401 });
+    }
+    throw e;
   }
 
   const user = org.users[0];

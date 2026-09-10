@@ -101,6 +101,16 @@ model InvoiceCounter {
   counter Int    @default(0)
 }
 
+// One row per autologin token actually used, keyed by a hash of its HMAC
+// signature — the unique constraint on tokenHash is the replay guard itself
+// (Medium finding 9): a second use of the same token fails this insert.
+// expiresAt mirrors the token's own short TTL, used only to let a cleanup
+// pass drop rows that can no longer matter.
+model UsedAutologinToken {
+  tokenHash String   @id
+  expiresAt DateTime
+}
+
 model Room {
   id          String   @id @default(cuid())
   clientId    String
