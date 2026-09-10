@@ -9,3 +9,6 @@ prisma/dev.db-journal
 .vercel
 .DS_Store
 /pics
+/test-results
+/playwright-report
+/blob-report
