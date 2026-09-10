@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { Resend } from "resend";
 import { randomBytes } from "crypto";
 import { loadConfigFromDB } from "@/lib/loadConfig";
@@ -195,6 +196,14 @@ export async function POST(req: NextRequest) {
     }
     if (e instanceof RoomConflictError) {
       return NextResponse.json({ error: "Dieser Raum ist im gewählten Zeitraum leider bereits belegt" }, { status: 409 });
+    }
+    // The room (or event) passed its pre-check above but was deleted by an
+    // admin before this transaction's insert ran — Inquiry.roomId/eventId's
+    // FK constraint rejects the now-stale id. Narrow to this specific code so
+    // any other, unrelated DB error still falls through to the generic 500
+    // below instead of being misreported as "room/event gone".
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003") {
+      return NextResponse.json({ error: "Dieser Raum oder dieses Event ist inzwischen leider nicht mehr verfügbar" }, { status: 409 });
     }
     console.error("Failed to save inquiry:", e);
     // Guard: emails must not be sent if the inquiry was not persisted
