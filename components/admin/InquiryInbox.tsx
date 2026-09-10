@@ -8,6 +8,7 @@ interface Inquiry {
   data: string;
   status: string;
   createdAt: string;
+  updatedAt: string;
   participantCount: number;
   eventId: string | null;
 }
@@ -66,13 +67,22 @@ export default function InquiryInbox() {
   }, []);
 
   async function setStatus(id: string, status: string) {
+    const current = inquiries.find((i) => i.id === id);
+    if (!current) return;
     const res = await fetch("/api/admin/inquiries", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status }),
+      body: JSON.stringify({ id, status, updatedAt: current.updatedAt }),
     });
     if (res.ok) {
-      setInquiries((prev) => prev.map((i) => i.id === id ? { ...i, status } : i));
+      const updated = await res.json() as Inquiry;
+      setInquiries((prev) => prev.map((i) => i.id === id ? { ...i, status: updated.status, updatedAt: updated.updatedAt } : i));
+    } else {
+      const d = await res.json().catch(() => ({})) as { error?: string };
+      window.alert(d.error ?? "Fehler beim Ändern des Status");
+      if (res.status === 409) {
+        fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
+      }
     }
   }
 
@@ -152,9 +162,10 @@ export default function InquiryInbox() {
 
                 <InvoicePanel
                   inquiryId={inq.id}
+                  inquiryUpdatedAt={inq.updatedAt}
                   participantCount={inq.participantCount}
-                  onStatusChange={(newStatus) =>
-                    setInquiries((prev) => prev.map((i) => i.id === inq.id ? { ...i, status: newStatus } : i))
+                  onStatusChange={(newStatus, newUpdatedAt) =>
+                    setInquiries((prev) => prev.map((i) => i.id === inq.id ? { ...i, status: newStatus, updatedAt: newUpdatedAt } : i))
                   }
                 />
 

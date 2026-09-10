@@ -5,10 +5,11 @@ import Toggle from "@/components/admin/Toggle";
 
 interface Props {
   inquiryId: string;
+  inquiryUpdatedAt: string;
   participantCount: number;
   packageName?: string;
   pricePerPerson?: number;
-  onStatusChange?: (newInquiryStatus: string) => void;
+  onStatusChange?: (newInquiryStatus: string, newInquiryUpdatedAt: string) => void;
 }
 
 const STATUS_LABELS: Record<string, string> = { offen: "Offen", storniert: "Storniert" };
@@ -21,7 +22,7 @@ function emptyItem(): InvoiceLineItem {
   return { description: "", quantity: 1, unitPrice: 0 };
 }
 
-export default function InvoicePanel({ inquiryId, participantCount, packageName, pricePerPerson, onStatusChange }: Props) {
+export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantCount, packageName, pricePerPerson, onStatusChange }: Props) {
   const [invoices, setInvoices] = useState<InvoiceEntry[]>([]);
   const [creating, setCreating] = useState(false);
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([emptyItem()]);
@@ -68,12 +69,16 @@ export default function InvoicePanel({ inquiryId, participantCount, packageName,
     const res = await fetch("/api/admin/invoices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inquiryId, lineItems, notes, sendEmail }),
+      body: JSON.stringify({ inquiryId, updatedAt: inquiryUpdatedAt, lineItems, notes, sendEmail }),
     });
     if (res.ok) {
-      const inv = await res.json() as InvoiceEntry;
+      const inv = await res.json() as InvoiceEntry & { inquiryUpdatedAt: string };
       setInvoices((prev) => [inv, ...prev]);
-      if (sendEmail) onStatusChange?.("angebot_versendet");
+      // The server always sets status to "angebot_versendet" here (and always
+      // bumps updatedAt), independent of sendEmail — keep the parent's local
+      // copy in sync regardless, or the next action on this inquiry would
+      // 409 against a stale updatedAt the UI itself caused.
+      onStatusChange?.("angebot_versendet", inv.inquiryUpdatedAt);
       setCreating(false);
     } else {
       const d = await res.json().catch(() => ({})) as { error?: string };

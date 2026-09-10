@@ -6,6 +6,8 @@ import { renderInvoiceHtml } from "@/lib/invoiceTemplate";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import type { InvoiceLineItem, InquiryFormData } from "@/lib/types";
 import { Resend } from "resend";
+import { isHeld, reserveEventCapacity, CapacityExceededError } from "@/lib/eventCapacity";
+import { ConflictError } from "@/lib/concurrency";
 
 function serialize(inv: {
   id: string; inquiryId: string; number: string; status: string;
@@ -55,6 +57,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json() as {
     inquiryId: string;
+    updatedAt?: string;
     lineItems: InvoiceLineItem[];
     taxRate?: number;
     validUntil?: string;
@@ -68,6 +71,9 @@ export async function POST(req: NextRequest) {
   if (!body.lineItems?.length) {
     return NextResponse.json({ error: "Mindestens eine Position erforderlich" }, { status: 400 });
   }
+  if (!body.updatedAt) {
+    return NextResponse.json({ error: "updatedAt fehlt" }, { status: 400 });
+  }
 
   const inquiry = await prisma.inquiry.findFirst({ where: { id: body.inquiryId, clientId } });
   if (!inquiry) return NextResponse.json({ error: "Anfrage nicht gefunden" }, { status: 404 });
@@ -80,21 +86,59 @@ export async function POST(req: NextRequest) {
   const defaultValidUntil = new Date();
   defaultValidUntil.setDate(defaultValidUntil.getDate() + validityDays);
 
-  const invoice = await prisma.invoice.create({
-    data: {
-      clientId,
-      inquiryId: body.inquiryId,
-      type: "angebot",
-      number,
-      lineItems: JSON.stringify(body.lineItems),
-      taxRate,
-      validUntil: body.validUntil ? new Date(body.validUntil) : defaultValidUntil,
-      notes: body.notes ?? "",
-      sentAt: body.sendEmail ? new Date() : null,
-    },
-  });
+  let invoice;
+  let inquiryUpdatedAt: Date;
+  try {
+    ({ invoice, inquiryUpdatedAt } = await prisma.$transaction(async (tx) => {
+      const created = await tx.invoice.create({
+        data: {
+          clientId,
+          inquiryId: body.inquiryId,
+          type: "angebot",
+          number,
+          lineItems: JSON.stringify(body.lineItems),
+          taxRate,
+          validUntil: body.validUntil ? new Date(body.validUntil) : defaultValidUntil,
+          notes: body.notes ?? "",
+          sentAt: body.sendEmail ? new Date() : null,
+        },
+      });
 
-  await prisma.inquiry.update({ where: { id: body.inquiryId }, data: { status: "angebot_versendet" } });
+      // Same optimistic-concurrency guard as the PATCH handler in
+      // admin/inquiries (Fund 5) — this is a second, independent place that
+      // writes Inquiry.status and needs the same protection.
+      const result = await tx.inquiry.updateMany({
+        where: { id: body.inquiryId, clientId, updatedAt: new Date(body.updatedAt!) },
+        data: { status: "angebot_versendet" },
+      });
+      if (result.count === 0) throw new ConflictError();
+
+      // "angebot_versendet" is itself a held status. Creating an offer for an
+      // inquiry that wasn't already held (e.g. previously rejected or expired)
+      // must reserve capacity for it, or the event's bookedCount silently
+      // undercounts what's actually held — reachable with a single click, no
+      // concurrency needed, since the UI never blocks creating an offer based
+      // on the inquiry's current status.
+      if (inquiry.eventId && inquiry.participantCount > 0 && !isHeld(inquiry.status)) {
+        const reserved = await reserveEventCapacity(inquiry.eventId, inquiry.participantCount, tx);
+        if (!reserved) throw new CapacityExceededError();
+      }
+
+      const updatedInquiry = await tx.inquiry.findUniqueOrThrow({ where: { id: body.inquiryId } });
+      return { invoice: created, inquiryUpdatedAt: updatedInquiry.updatedAt };
+    }));
+  } catch (e) {
+    if (e instanceof ConflictError) {
+      return NextResponse.json(
+        { error: "Diese Anfrage wurde inzwischen von jemand anderem geändert — bitte neu laden." },
+        { status: 409 }
+      );
+    }
+    if (e instanceof CapacityExceededError) {
+      return NextResponse.json({ error: "Für diesen Status reicht die freie Kapazität des Events nicht mehr aus" }, { status: 400 });
+    }
+    throw e;
+  }
 
   // Send email if requested
   if (body.sendEmail) {
@@ -127,5 +171,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json(serialize(invoice));
+  return NextResponse.json({ ...serialize(invoice), inquiryUpdatedAt: inquiryUpdatedAt.toISOString() });
 }
