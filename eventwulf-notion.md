@@ -233,6 +233,8 @@ Ladereihenfolge: DB → `config/clients/{slug}.json` → `config/clients/default
 
 **Kein Auto-Deploy bei Git-Push.** Der Betreiber deployt manuell über `vercel --prod` (CLI-Login nötig, `vercel login`). Das Vercel-Projekt heißt intern (URL-Slug) "eventwulf-app", der öffentliche Alias ist weiterhin `eventwulf.vercel.app` — keine zwei getrennten Projekte, nur ein abweichender interner Slug-Name.
 
+**Migrationen laufen automatisch mit jedem Build** (`npm run build` → `prisma generate && node scripts/migrate-deploy-unpooled.js && next build`) — kein separater manueller `prisma migrate deploy`-Schritt vor `vercel --prod` mehr nötig. Ein fehlgeschlagener Migrationsversuch lässt den Build (und damit den Deploy) fehlschlagen, statt stillschweigend gegen ein veraltetes Schema zu deployen.
+
 ---
 
 ## Changelog
