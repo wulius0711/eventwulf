@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     where: { id: orgId },
     include: {
       clients: { select: { slug: true }, orderBy: { createdAt: 'asc' }, take: 1 },
-      users: { select: { id: true, email: true }, take: 1 },
+      users: { select: { id: true, email: true, passwordChangedAt: true }, take: 1 },
     },
   });
 
@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
     organizationId: org.id,
     clientSlug,
     email: user.email,
+    pwChangedAt: user.passwordChangedAt?.getTime() ?? 0,
   });
 
   const res = NextResponse.redirect(new URL('/admin', req.url));

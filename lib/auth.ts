@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/db";
 
 function getSecret() {
   const s = process.env.JWT_SECRET;
@@ -13,6 +14,11 @@ export interface AdminSession {
   organizationId: string;
   clientSlug: string;
   email: string;
+  // Snapshot of the user's passwordChangedAt at token issuance (0 if never
+  // changed) — compared against the live DB value on every session check, so
+  // a password change invalidates every token issued before it, not just
+  // ones that happen to expire naturally up to 7 days later (Medium finding 8).
+  pwChangedAt: number;
 }
 
 export async function signToken(payload: AdminSession): Promise<string> {
@@ -35,7 +41,24 @@ export async function getSession(): Promise<AdminSession | null> {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
-  return verifyToken(token);
+
+  const session = await verifyToken(token);
+  if (!session) return null;
+
+  // Extra DB read on every authenticated request — the deliberate cost of
+  // being able to invalidate a session at all, not just let it expire on its
+  // own. Also closes a related gap for free: a deleted user's token stops
+  // working immediately instead of staying valid until it naturally expires.
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { passwordChangedAt: true },
+  });
+  if (!user) return null;
+
+  const currentPwChangedAt = user.passwordChangedAt?.getTime() ?? 0;
+  if (session.pwChangedAt !== currentPwChangedAt) return null;
+
+  return session;
 }
 
 export function cookieName() {

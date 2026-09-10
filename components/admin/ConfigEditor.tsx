@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { EventConfig } from "@/lib/types";
 
 interface Props {
@@ -35,6 +36,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default function ConfigEditor({ initialConfig }: Props) {
+  const router = useRouter();
   const [config, setConfig] = useState<EventConfig>(initialConfig);
   const [tab, setTab] = useState<Tab>("firma");
   const [saving, setSaving] = useState(false);
@@ -84,9 +86,14 @@ export default function ConfigEditor({ initialConfig }: Props) {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      setPwMsg("Passwort geändert.");
+      // The password change invalidates the current session too — no
+      // exception for the admin's own active login. Send them back to log
+      // in again with the new password instead of leaving them on a page
+      // whose next request would just 401 unexpectedly.
+      setPwMsg("Passwort geändert. Du wirst zum Login weitergeleitet …");
       setCurrentPw("");
       setNewPw("");
+      setTimeout(() => router.push("/admin/login"), 1200);
     } else {
       setPwMsg(data.error ?? "Fehler");
     }

@@ -34,12 +34,13 @@ model Client {
 }
 
 model User {
-  id             String        @id @default(cuid())
-  email          String        @unique
-  password       String // bcrypt hash
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  createdAt      DateTime      @default(now())
+  id                String        @id @default(cuid())
+  email             String        @unique
+  password          String // bcrypt hash
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime      @default(now())
+  passwordChangedAt DateTime?
 }
 
 model BlockedDate {

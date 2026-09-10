@@ -21,7 +21,7 @@ export async function PUT(req: NextRequest) {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { password: hashSync(newPassword, 12) },
+    data: { password: hashSync(newPassword, 12), passwordChangedAt: new Date() },
   });
 
   return NextResponse.json({ ok: true });

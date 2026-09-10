@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       },
     },
   });
+  const pwChangedAt = user?.passwordChangedAt?.getTime() ?? 0;
 
   if (!user || !compareSync(password, user.password)) {
     return NextResponse.json({ error: "Ungültige Anmeldedaten" }, { status: 401 });
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
     organizationId: user.organization.id,
     clientSlug,
     email: user.email,
+    pwChangedAt,
   });
 
   const res = NextResponse.json({ ok: true });
