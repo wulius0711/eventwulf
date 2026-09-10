@@ -245,3 +245,25 @@ Alle 12 ursprünglichen Critical/High-Launch-Blocker aus dem Audit-Bericht sowie
   - `app/api/cron/reminders/route.ts` hat dasselbe unescaped-Interpolations-Muster für gastseitig übermittelte Werte wie der ursprüngliche Fund-8-Teil in `invoiceTemplate.ts` — andere Datei, anderer Ausgabekanal (E-Mail statt servierte Webseite), bewusst nicht mitgezogen.
   - Rechnungsnummern-Lücke bei einem `409`-Konflikt in der Angebots-Erstellung (kein Doppelvergabe-Risiko, nur eine Nummerierungslücke) — aus B3.
   - Die systematische IDOR-Prüfung aller ID-basierten Endpunkte (Audit Abschnitt 1) über den bereits gefundenen `/api/submit`-Fall hinaus — aus Fund 10/Phase 2.
+
+## Medium-Durchgang 1 abgeschlossen — Löschungen & Cron-Robustheit (Punkte 1–4)
+
+Umfang: Die ersten vier von elf Medium-Findings aus dem Launch-Readiness-Audit. Alle vier zeigten sich beim Umsetzen konkreter oder anders als die ursprüngliche Kurzfassung im Bericht — Details unten.
+
+**Punkt 1 — Doppelte Kapazitätsfreigabe bei zeitgleichem Storno+Cron** (Commit: `ed54c52`)
+Ursprünglich als vermutlich bereits durch Fund 4/5 abgesichert eingestuft — größtenteils bestätigt, aber mit einer schmalen Restlücke: der PATCH-Handler las `inquiry.status` per `findFirst` außerhalb der Transaktion, bevor der `updatedAt`-Guard griff. Ein Cron-Commit in diesem schmalen Fenster (zwischen `findFirst` und Transaktionsstart) hätte trotz Guard eine veraltete `wasHeld`-Annahme durchrutschen lassen können. Gehärtet mit `SELECT ... FOR UPDATE` als erstem Schritt innerhalb der Transaktion — sperrt die Zeile, statt sich auf einen Pre-Transaktions-Snapshot zu verlassen. Empirisch bestätigt, dass Cron-SQL `updatedAt` nie berührt (`@updatedAt` ist reines Prisma-Client-Feature, kein DB-Trigger), bevor der Fix geschrieben wurde.
+
+**Punkt 2 — Cron-Schleife nicht transaktional** (Commit: `70494dc`)
+Bestätigt als echter, bereits in Produktion befindlicher Bug in Fund-4-Code: ein inneres try/catch verschluckte Fehler bei `releaseEventCapacity` pro Zeile, während die äußere Transaktion trotzdem committete — Status konnte auf „abgelaufen" wechseln, während `bookedCount` fälschlich hoch blieb. Gefixt durch eine eigene kleine Transaktion pro Zeile statt einer gemeinsamen für die ganze Schleife (verhindert, dass eine kaputte Zeile den gesamten Cron-Lauf für alle anderen Kunden blockiert). `releaseEventCapacity` signalisiert jetzt Erfolg/Misserfolg (boolean) statt `void` zurückzugeben — Voraussetzung dafür, dass der Fix überhaupt greifen kann. Nebenfund: Schema-Drift zwischen `schema.prisma` und der tatsächlichen Migration (`onDelete: SetNull` fehlte im Schema-File), korrigiert im selben Commit.
+
+**Punkt 3 — Raum-Löschung während laufendem Gast-Submit** (Commit: `9964e19`)
+Bestätigt: Foreign-Key-Verletzung (P2003) führte zu unbehandeltem 500. Gezielt auf `e.code === "P2003"` abgefangen, 409 mit gästefreundlicher Meldung, andere Fehler an derselben Stelle weiterhin unverändert als 500 behandelt. Getestet über einen echten `Promise.all()`-Race (nicht nur sequenziell — der bestehende Pre-Check hätte einen rein sequenziellen Testfall immer schon vor der Transaktion abgefangen, der eigentliche Fehlerpfad wäre so nie getestet worden).
+
+**Punkt 4 — Raum-Löschung ohne Warnung über Event-Blockierverhalten** (Commit: `6c16e4a`)
+Bestätigt: die DELETE-Route für Räume kannte zugeordnete Events vorher überhaupt nicht (kein bestehender count) — `onDelete: SetNull` lief rein auf DB-Ebene, unbemerkt vom Handler. Route zählt jetzt aktive zugeordnete Events vor dem Löschen; bei mindestens einem wird 409 mit der echten Zahl zurückgegeben, Admin-UI zeigt einen zweiten Bestätigungsdialog mit dieser Zahl, bevor mit `confirmed: true` erneut gelöscht wird. Inaktive Events zählen bewusst nicht mit (konsistent mit dem `isActive`-Gate in `/api/rooms`/`/api/availability`).
+
+**Offene Punkte, für später vorgemerkt (nicht Teil dieses Durchgangs):**
+- DELETE-Handler in `app/api/admin/inquiries/route.ts` hat dasselbe Grundmuster wie das ursprüngliche Punkt-1-Problem (Status außerhalb jeder Transaktion gelesen, kein `updatedAt`-Guard) — gefunden bei Punkt 1, nicht mitgefixt.
+- `app/api/cron/reminders/route.ts` hat denselben unescaped-Interpolationsfehler wie der ursprüngliche `invoiceTemplate.ts`-Fund aus Block D, anderer Ausgabekanal (E-Mail statt servierte Seite) — gefunden bei Fund 8, nicht mitgefixt.
+
+Nächster Schritt: Durchgang 2 (Auth- & Mandanten-Hygiene — Medium-Punkte 7, 8, 9).
