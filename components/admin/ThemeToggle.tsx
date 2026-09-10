@@ -17,11 +17,33 @@ const MoonIcon = () => (
   </svg>
 );
 
+// localStorage can throw (Safari ITP, Chrome third-party-storage phaseout,
+// private browsing, or the public widget's iframe-embedding context) —
+// falls back to a default instead of crashing the component. The theme
+// itself still works for the current session either way, only persistence
+// across sessions is affected.
+export function getStoredTheme(): boolean {
+  try {
+    return localStorage.getItem("admin-theme") === "dark";
+  } catch {
+    return false;
+  }
+}
+
+export function setStoredTheme(dark: boolean) {
+  try {
+    localStorage.setItem("admin-theme", dark ? "dark" : "light");
+  } catch {
+    // Persistence failed — the in-memory state change (and the DOM
+    // attribute it drives) still applies for this session.
+  }
+}
+
 export default function ThemeToggle() {
   const [dark, setDark] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("admin-theme") === "dark";
+    const saved = getStoredTheme();
     setDark(saved);
     const el = document.querySelector(".admin-shell");
     if (saved) el?.setAttribute("data-theme", "dark");
@@ -31,7 +53,7 @@ export default function ThemeToggle() {
   function toggle() {
     const next = !dark;
     setDark(next);
-    localStorage.setItem("admin-theme", next ? "dark" : "light");
+    setStoredTheme(next);
     const el = document.querySelector(".admin-shell");
     if (next) el?.setAttribute("data-theme", "dark");
     else el?.removeAttribute("data-theme");
