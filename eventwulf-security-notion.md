@@ -194,6 +194,18 @@ Fund 3, 4, 5 — gemeinsamer Nenner: ein Zustandsübergang, der sich auf einen z
 
 ---
 
+## Nachtrag — Launch-Readiness-Audit (September 2026), Block C (fehlende serverseitige Validierung)
+
+Fund 6, 7 — gemeinsamer Nenner: eine clientseitige Prüfung wurde nie durch eine serverseitige Gegenprüfung abgesichert. Anders als Block B kein Nebenläufigkeitsthema.
+
+**Fund 6 (Raumkapazität nicht serverseitig durchgesetzt) — erledigt.** `/api/submit` prüfte `room.capacity` gar nicht — nur ein nicht-blockierender Hinweis im Gäste-Formular. Produktentscheidung bewusst getroffen: Hard-Block, konsistent mit der bereits bestehenden serverseitigen Durchsetzung von Event-Kapazität; die Doku-Aussage „kein Hard-Block, nur Hinweis" bezog sich nachweislich nur auf die Frontend-UX, nicht auf serverseitiges Verhalten. Check sitzt als reiner, nicht-race-anfälliger Read direkt bei der bestehenden `room.isActive`-Prüfung, keine Transaktion nötig. `capacity: null` bleibt unbegrenzt. Test: `__tests__/validation/room-capacity.spec.ts`.
+
+**Fund 7 (negative Teilnehmerzahlen) — erledigt, in zwei unabhängigen Commits.** `personenAnzahl` wurde vor jeder Validierung mit `parseInt()` geparst, was nicht-ganzzahlige Eingaben stillschweigend abgeschnitten hätte (`parseInt("1.5") === 1`) — neue Validierung (`lib/validate.ts`) prüft den Rohwert. Zweiter, unabhängiger Fund beim Verifizieren der Audit-Beschreibung: `participantCount` fließt entgegen der ursprünglichen Audit-Annahme nicht direkt in Rechnungspositionen — es befüllt nur ein clientseitig frei überschreibbares Formularfeld. Die eigentliche Lücke war größer: `app/api/admin/invoices` validierte `lineItems` serverseitig überhaupt nicht (weder `quantity` noch `unitPrice`). Beide Stellen jetzt abgesichert. Tests: `__tests__/validation/participant-count.spec.ts`, `__tests__/validation/invoice-line-items.spec.ts`.
+
+Mit Abschluss von Block C sind alle 12 ursprünglichen Critical/High-Launch-Blocker sowie die beiden unterwegs gefundenen Zusatz-Findings (Cron-Auth, Invoices-Kapazität) bearbeitet.
+
+---
+
 ## Bereits korrekt implementiert (vor dem Audit)
 
 - HMAC-Autologin mit `timingSafeEqual` (verhindert Timing-Angriffe)
