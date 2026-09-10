@@ -19,6 +19,24 @@ export function isValidParticipantCount(val: unknown): boolean {
   return Number.isInteger(n) && n > 0 && n <= MAX_PARTICIPANT_COUNT;
 }
 
+// Line items are fully admin-editable free-form input (the participantCount
+// value only pre-fills the create form client-side) — validated on whatever
+// was actually submitted, not on an assumption about where quantity came from.
+export function validateInvoiceLineItems(val: unknown): string | null {
+  if (!Array.isArray(val) || val.length === 0) return "Mindestens eine Position erforderlich";
+  for (const item of val) {
+    if (!item || typeof item !== "object") return "Position ungültig";
+    const i = item as Record<string, unknown>;
+    if (!Number.isInteger(i.quantity) || (i.quantity as number) <= 0) {
+      return "Menge muss eine positive ganze Zahl sein";
+    }
+    if (typeof i.unitPrice !== "number" || !Number.isFinite(i.unitPrice) || i.unitPrice < 0) {
+      return "Preis darf nicht negativ sein";
+    }
+  }
+  return null;
+}
+
 function todayIso(): string {
   return new Date().toISOString().substring(0, 10);
 }
