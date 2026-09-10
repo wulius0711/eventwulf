@@ -10,6 +10,16 @@ import { validateSubmit, escapeHtml, sanitizeEmailHeader } from "@/lib/validate"
 import { reserveEventCapacity, HOLD_DURATION_MS, CapacityExceededError } from "@/lib/eventCapacity";
 import { assertRoomAvailable, RoomConflictError } from "@/lib/roomAvailability";
 
+// Exported for direct testing — VERCEL_URL is only actually set on Vercel,
+// so this can't be exercised end-to-end against the local test server; the
+// choice of source (deployment env var vs. request header) is what's under
+// test, not anything HTTP-observable.
+export function resolveBaseUrl(vercelUrl: string | undefined, headerHost: string): { host: string; proto: string } {
+  const host = vercelUrl ?? headerHost;
+  const proto = vercelUrl ? "https" : host.startsWith("localhost") ? "http" : "https";
+  return { host, proto };
+}
+
 function yesNo(val: boolean | null) {
   if (val === true) return "Ja";
   if (val === false) return "Nein";
@@ -225,8 +235,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Anfrage konnte nicht gespeichert werden" }, { status: 500 });
   }
 
-  const host = req.headers.get("host") ?? "";
-  const proto = host.startsWith("localhost") ? "http" : "https";
+  // VERCEL_URL (the actual deployment's own domain — preview or production,
+  // whichever this request is actually running on) instead of the request's
+  // Host header, which Vercel documents as reflecting whatever the client
+  // sent, not something it validates against the deployment's real domain
+  // (https://vercel.com/docs/headers/request-headers#host). A crafted Host
+  // header would otherwise flow straight into these email links' href
+  // attributes. Only set on Vercel, so local dev still falls back to the
+  // request header (harmless there — there's no untrusted client to spoof
+  // it against).
+  const { host, proto } = resolveBaseUrl(process.env.VERCEL_URL, req.headers.get("host") ?? "");
 
   const icalLink = inquiryId
     ? `<p style="margin-top:1.5rem;display:flex;gap:10px;flex-wrap:wrap"><a href="${proto}://${host}/api/ical/${inquiryId}" style="display:inline-block;padding:10px 20px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-size:0.875rem;font-weight:600">📅 Zum Kalender hinzufügen</a>${savedCancelToken ? `<a href="${proto}://${host}/api/cancel/${savedCancelToken}" style="display:inline-block;padding:10px 20px;background:transparent;color:#6b7280;border:1px solid #e5e7eb;border-radius:8px;text-decoration:none;font-size:0.875rem;font-weight:600">Anfrage stornieren</a>` : ""}</p>`
