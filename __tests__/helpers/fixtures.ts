@@ -48,6 +48,30 @@ export async function createTestEvent(
   });
 }
 
+export async function createTestInquiry(
+  clientId: string,
+  overrides?: {
+    eventId?: string;
+    roomId?: string;
+    status?: string;
+    participantCount?: number;
+    holdExpiresAt?: Date | null;
+  }
+) {
+  return prisma.inquiry.create({
+    data: {
+      clientId,
+      data: JSON.stringify({ datumVon: isoDateInDays(20), datumBis: isoDateInDays(20) }),
+      status: overrides?.status ?? "neu",
+      participantCount: overrides?.participantCount ?? 1,
+      cancelToken: randomBytes(24).toString("hex"),
+      ...(overrides?.eventId ? { eventId: overrides.eventId } : {}),
+      ...(overrides?.roomId ? { roomId: overrides.roomId } : {}),
+      holdExpiresAt: overrides?.holdExpiresAt ?? null,
+    },
+  });
+}
+
 // Deletes in FK-safe order: Inquiry has no onDelete on its Client relation
 // (Room/Event do cascade), so it must go first or the Client delete fails.
 export async function deleteTestClient(clientId: string) {

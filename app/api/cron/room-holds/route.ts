@@ -7,31 +7,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const expired = await prisma.inquiry.findMany({
+  // No capacity to release — a room's availability is computed live from
+  // non-cancelled inquiries, so flipping the status alone frees the slot.
+  // Single conditional UPDATE (not read-then-write) so a booking an admin
+  // confirmed moments earlier can't be raced past.
+  const { count: released } = await prisma.inquiry.updateMany({
     where: {
       status: { in: ["neu", "in_pruefung", "angebot_versendet"] },
       holdExpiresAt: { lt: new Date() },
       roomId: { not: null },
     },
-    select: { id: true },
+    data: { status: "abgelaufen", holdExpiresAt: null },
   });
 
-  let released = 0;
-  const errors: string[] = [];
-
-  for (const inq of expired) {
-    try {
-      // No capacity to release — a room's availability is computed live from
-      // non-cancelled inquiries, so flipping the status alone frees the slot.
-      await prisma.inquiry.update({
-        where: { id: inq.id },
-        data: { status: "abgelaufen", holdExpiresAt: null },
-      });
-      released++;
-    } catch (e) {
-      errors.push(`${inq.id}: ${e}`);
-    }
-  }
-
-  return NextResponse.json({ released, errors });
+  return NextResponse.json({ released, errors: [] });
 }
