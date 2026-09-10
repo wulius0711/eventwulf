@@ -28,6 +28,16 @@ export function isSafeCssColor(val: unknown): val is string {
   return typeof val === "string" && SAFE_CSS_COLOR_RE.test(val);
 }
 
+// Strips CR/LF/tab so a value can't inject an extra header line into an
+// email (header injection — e.g. a crafted value adding its own Bcc:) when
+// interpolated into a subject/from/replyTo. Originally only lived in
+// app/api/submit/route.ts and was only ever applied to subject/replyTo
+// there, never to from — moved here so it has one shared home and can be
+// consistently applied everywhere a header is built from a dynamic value.
+export function sanitizeEmailHeader(val: unknown): string {
+  return String(val ?? "").replace(/[\r\n\t]/g, " ").trim();
+}
+
 export function isValidEmail(val: unknown): val is string {
   return typeof val === "string" && EMAIL_RE.test(val) && val.length <= 254;
 }

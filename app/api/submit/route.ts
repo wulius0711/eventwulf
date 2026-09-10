@@ -6,13 +6,9 @@ import { loadConfigFromDB } from "@/lib/loadConfig";
 import { prisma } from "@/lib/db";
 import type { InquiryFormData } from "@/lib/types";
 import { rateLimit, getIp } from "@/lib/ratelimit";
-import { validateSubmit, escapeHtml } from "@/lib/validate";
+import { validateSubmit, escapeHtml, sanitizeEmailHeader } from "@/lib/validate";
 import { reserveEventCapacity, HOLD_DURATION_MS, CapacityExceededError } from "@/lib/eventCapacity";
 import { assertRoomAvailable, RoomConflictError } from "@/lib/roomAvailability";
-
-function sanitize(val: unknown): string {
-  return String(val ?? "").replace(/[\r\n\t]/g, " ").trim();
-}
 
 function yesNo(val: boolean | null) {
   if (val === true) return "Ja";
@@ -251,10 +247,10 @@ export async function POST(req: NextRequest) {
   // transient failure gets one retry before being logged as missed.
   const sendOperatorEmail = resend.emails
     .send({
-      from: `${config.company.name} <onboarding@resend.dev>`,
+      from: `${sanitizeEmailHeader(config.company.name)} <onboarding@resend.dev>`,
       to: notifyEmail,
-      replyTo: body.email ? sanitize(body.email) : undefined,
-      subject: `Neue Anfrage: ${sanitize(body.artTitel) || "Retreat"} – ${sanitize(body.nameGruppenleitung)}`,
+      replyTo: body.email ? sanitizeEmailHeader(body.email) : undefined,
+      subject: `Neue Anfrage: ${sanitizeEmailHeader(body.artTitel) || "Retreat"} – ${sanitizeEmailHeader(body.nameGruppenleitung)}`,
       html: operatorHtml,
     })
     .then(({ error }) => {
@@ -263,10 +259,10 @@ export async function POST(req: NextRequest) {
     .catch(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const { error } = await resend.emails.send({
-        from: `${config.company.name} <onboarding@resend.dev>`,
+        from: `${sanitizeEmailHeader(config.company.name)} <onboarding@resend.dev>`,
         to: notifyEmail,
-        replyTo: body.email ? sanitize(body.email) : undefined,
-        subject: `Neue Anfrage: ${sanitize(body.artTitel) || "Retreat"} – ${sanitize(body.nameGruppenleitung)}`,
+        replyTo: body.email ? sanitizeEmailHeader(body.email) : undefined,
+        subject: `Neue Anfrage: ${sanitizeEmailHeader(body.artTitel) || "Retreat"} – ${sanitizeEmailHeader(body.nameGruppenleitung)}`,
         html: operatorHtml,
       });
       if (error) throw error;
@@ -278,9 +274,9 @@ export async function POST(req: NextRequest) {
   const sendConfirmationEmail = body.email
     ? resend.emails
         .send({
-          from: `${config.company.name} <onboarding@resend.dev>`,
+          from: `${sanitizeEmailHeader(config.company.name)} <onboarding@resend.dev>`,
           to: body.email,
-          subject: `Anfrage erhalten – ${sanitize(body.artTitel) || "Retreat"}`,
+          subject: `Anfrage erhalten – ${sanitizeEmailHeader(body.artTitel) || "Retreat"}`,
           html: confirmationHtmlWithIcal,
         })
         .then(({ error }) => {

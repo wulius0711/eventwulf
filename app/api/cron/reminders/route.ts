@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import type { InquiryFormData } from "@/lib/types";
 import { isAuthorizedCronRequest } from "@/lib/cronAuth";
-import { escapeHtml } from "@/lib/validate";
+import { escapeHtml, sanitizeEmailHeader } from "@/lib/validate";
 
 function fmt(iso: string) {
   const [y, m, d] = iso.split("-");
@@ -95,9 +95,9 @@ export async function GET(req: NextRequest) {
       const html = renderReminderHtml(data, config);
 
       await resend.emails.send({
-        from: `${companyName} <noreply@resend.dev>`,
+        from: `${sanitizeEmailHeader(companyName)} <noreply@resend.dev>`,
         to: data.email,
-        subject: `Erinnerung: ${data.artTitel} morgen – ${companyName}`,
+        subject: `Erinnerung: ${sanitizeEmailHeader(data.artTitel)} morgen – ${sanitizeEmailHeader(companyName)}`,
         html,
       });
 
