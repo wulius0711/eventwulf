@@ -166,6 +166,16 @@ Fund 10 („keine automatisierte Testabdeckung im Repo, insbesondere kein Regres
 
 ---
 
+## Zusätzlicher Fund (September 2026, während Block B) — Cron-Endpunkte ohne funktionierende Authentifizierung
+
+Kein Teil der ursprünglichen 12 Audit-Findings, sondern entdeckt bei der Frage, ob Fund 4 in Produktion überhaupt wirksam werden kann — deshalb hier separat dokumentiert statt rückwirkend in Fund 4 verschmolzen: es sind zwei unabhängige Probleme (Race Condition beim Status-Übergang **und** ein kaputter Auth-Mechanismus, der den Cron überhaupt erst zum Laufen bringen muss).
+
+**Problem:** Alle drei Cron-Routen (`event-holds`, `room-holds`, `reminders`) prüften einen selbst erfundenen `x-cron-secret`-Header. Vercels tatsächlicher Cron-Trigger sendet laut offizieller Doku aber `Authorization: Bearer <CRON_SECRET>` — einen Header, den der Code nie gelesen hat. `CRON_SECRET` ist in der Vercel-Produktionsumgebung seit 130 Tagen korrekt gesetzt (verifiziert per `vercel env ls`), das war also nicht die Ursache. Ergebnis: jeder echte, geplante Cron-Aufruf bekam `401` und lief nie durch — unabhängig von Fund 4, seit die Endpunkte existieren. Damit war effektiv auch der ursprüngliche Track-B-Punkt aus Abschnitt 12 des Audits („sind `CRON_SECRET`/`BUNNY_*` in Produktion tatsächlich gesetzt?") beantwortet, aber mit einem gravierenderen Folgefund: gesetzt zu sein reichte nicht, weil der Header-Name nicht passte.
+
+**Fix:** Neuer gemeinsamer Helper `lib/cronAuth.ts` (`isAuthorizedCronRequest`), der den `Authorization: Bearer`-Header korrekt liest und per `timingSafeEqual` vergleicht (gleiches Muster wie der bestehende HMAC-Check in `app/api/autologin/route.ts`). In allen drei Cron-Routen eingesetzt. Regressionstests ergänzt, die explizit den alten `x-cron-secret`-Header senden und `401` erwarten — dokumentiert, dass der alte Mechanismus bewusst nicht mehr greift, nicht nur zufällig durch Auslassung nicht mehr existiert.
+
+---
+
 ## Bereits korrekt implementiert (vor dem Audit)
 
 - HMAC-Autologin mit `timingSafeEqual` (verhindert Timing-Angriffe)
