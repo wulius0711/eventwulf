@@ -141,9 +141,22 @@ export async function DELETE(req: NextRequest) {
   const access = await requireRoomsAccess();
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
-  const { id } = await req.json();
+  const { id, confirmed } = await req.json();
   const existing = await prisma.room.findFirst({ where: { id, clientId: access.clientId } });
   if (!existing) return NextResponse.json({ ok: true }); // already gone
+
+  // Event.room has onDelete: SetNull — deleting the Room silently unassigns
+  // it from any Event instead of failing, which would otherwise change that
+  // Event's calendar-blocking behavior (an Event with a Room only blocks
+  // that Room's calendar; without one, "intern" blocks the whole general
+  // calendar again — see components/Calendar.tsx) with no visible trace.
+  // Require an explicit confirmation once there's something to lose.
+  if (!confirmed) {
+    const eventCount = await prisma.event.count({ where: { roomId: id, isActive: true } });
+    if (eventCount > 0) {
+      return NextResponse.json({ requiresConfirmation: true, eventCount }, { status: 409 });
+    }
+  }
 
   await prisma.room.delete({ where: { id } });
   if (existing.image) {

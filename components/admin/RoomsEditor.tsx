@@ -111,11 +111,30 @@ export default function RoomsEditor() {
   async function handleDelete(room: RoomEntry) {
     if (!window.confirm(`Raum „${room.name}" wirklich löschen?`)) return;
     const id = room.id;
-    const res = await fetch("/api/admin/rooms", {
+
+    let res = await fetch("/api/admin/rooms", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
+
+    if (res.status === 409) {
+      const { eventCount } = await res.json().catch(() => ({ eventCount: 0 }));
+      const plural = eventCount === 1 ? "einem Event" : `${eventCount} Events`;
+      if (
+        !window.confirm(
+          `Diesem Raum ist noch ${plural} zugeordnet. Beim Löschen bleiben die Events erhalten, verlieren aber ihre Raumzuordnung — der Kalender blockiert diesen Raum dann nicht mehr dafür. Trotzdem löschen?`
+        )
+      ) {
+        return;
+      }
+      res = await fetch("/api/admin/rooms", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, confirmed: true }),
+      });
+    }
+
     if (res.ok) {
       setRooms((prev) => prev.filter((r) => r.id !== id));
       if (editingId === id) cancelEdit();
