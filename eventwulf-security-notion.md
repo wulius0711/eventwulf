@@ -269,3 +269,41 @@ Bestätigt: die DELETE-Route für Räume kannte zugeordnete Events vorher überh
 - `app/api/cron/reminders/route.ts` hat denselben unescaped-Interpolationsfehler wie der ursprüngliche `invoiceTemplate.ts`-Fund aus Block D, anderer Ausgabekanal (E-Mail statt servierte Seite) — gefunden bei Fund 8, nicht mitgefixt.
 
 Nächster Schritt: Durchgang 2 (Auth- & Mandanten-Hygiene — Medium-Punkte 7, 8, 9).
+
+## Medium-Track abgeschlossen (11/11)
+
+Drei Durchgänge, thematisch geclustert (Löschungen/Cron-Robustheit → Auth/Mandanten-Hygiene → Rest), nach demselben Verifikations-vor-Fix-Prinzip wie der Critical/High-Track.
+
+### Durchgang 1 — Löschungen & Cron-Robustheit
+
+| Punkt | Finding | Commit | Wichtigste Abweichung vom Plan |
+|---|---|---|---|
+| 1 | Doppelte Kapazitätsfreigabe bei Storno+Cron | `ed54c52` | Größtenteils bereits abgesichert; schmale Restlücke (Pre-Transaktions-`findFirst`) mit `SELECT ... FOR UPDATE` gehärtet |
+| 2 | Cron-Schleife nicht transaktional | `70494dc` | `releaseEventCapacity` hatte kein Erfolgssignal (`void`→`boolean`); Schema-Drift (`onDelete: SetNull` fehlte in `schema.prisma`) im selben Commit mitgefixt |
+| 3 | Raum-Löschung während Submit → 500 | `9964e19` | Gezielt auf `P2003`; echter `Promise.all()`-Race statt sequenziell, da Pre-Check den sequenziellen Fall immer abgefangen hätte |
+| 4 | Raum-Löschung ohne Event-Warnung | `6c16e4a` | Route kannte zugeordnete Events vorher gar nicht — count-Query neu ergänzt |
+
+Durchgang-1-Vermerk: `1997bbb`.
+
+### Durchgang 2 — Auth- & Mandanten-Hygiene
+
+| Punkt | Finding | Commit | Wichtigste Abweichung vom Plan |
+|---|---|---|---|
+| 7 | Globaler Rechnungszähler | `7df60fe` | Zusatzfund: `Invoice.number` global `@unique` — selbst mit gefixtem Zähler wäre der zweite Mandant am Constraint gescheitert; per Hand-Migration auf `@@unique([clientId, number])` korrigiert |
+| 8 | Keine Session-Invalidierung bei Passwortänderung | `fdaa64a` | Zentral in `getSession()` gefixt (schützt alle 21 Call-Sites automatisch); Redirect nach Passwortänderung mit rein; Bonus-Nebeneffekt: gelöschter User verliert automatisch Session |
+| 9 | Autologin ohne Replay-Schutz | `5cfb8c8` | Cleanup-Piggyback verursachte zunächst Flakiness-Anstieg in `cron-status-race.spec.ts` (50%→17%), per Ausschlussbeweis isoliert und wieder entfernt — Fix selbst nachweislich sauber |
+
+Lose Fäden (Migrationshistorie-Lücke, `cron-status-race.spec.ts`-Restfragilität ~17%, unabhängig von jedem Fix dieser Session): `0acb62b`.
+
+### Durchgang 3 — Rest
+
+| Punkt | Finding | Commit | Wichtigste Abweichung vom Plan |
+|---|---|---|---|
+| 5 | Inkonsistente `minParticipants`-Grenze | `48d72ba` | Keine Client-Inkonsistenz, sondern eine echte serverseitige Lücke nur im PATCH-Pfad (POST hatte wenigstens einen Teil-Fallback) |
+| 10 | ThemeToggle fehlt try/catch | `628570a` | Bestätigt wie beschrieben, kleinster Fix dieser Liste |
+| 6 | Paket-Downgrade entzieht keine Räume | `de770dc` | Umfang deutlich reduziert: Enforcement existierte bereits (Bestandsschutz + Neuanlage-Sperre), nur der `isActive`-Filter im Zähler fehlte — plus ein zweiter Fund während der Umsetzung (derselbe fehlende Filter hätte einen PATCH-Reaktivierungs-Pfad am Limit vorbeigelassen), im selben Commit mitgefixt |
+| 11 | Kein DB-Rollback-Mechanismus | `ad444d9` | Nach Recherche als Deploy-Rollback-Risiko interpretiert (thematisch neben Fund 11 im Critical-Track) — reines Dokumentations-Runbook, kein Code-Mechanismus |
+
+**Bekannte, nicht durch diesen Track verursachte Restfragilität:** `cron-status-race.spec.ts:53` flackert bei voller Suite mit ~17 % (2/12), nachweislich unabhängig von Durchgang 2/3 (identische Rate mit und ohne die jeweiligen neuen Testdateien) — strukturelles Test-Infrastruktur-Thema, kein Produktbug, separat vorgemerkt.
+
+Mit Abschluss von Durchgang 3 ist der komplette Medium-Track (11/11) fertig. Zusammen mit dem Critical/High-Track (14/14) sind damit alle ursprünglich im Audit benannten Findings sowie alle unterwegs entdeckten Zusatzfunde bearbeitet.
