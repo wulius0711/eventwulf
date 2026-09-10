@@ -61,7 +61,12 @@ const nextConfig: NextConfig = {
       { source: "/events",         headers: widgetHeaders },
       { source: "/admin/(.*)",     headers: adminHeaders },
       { source: "/api/submit",     headers: submitHeaders },
-      { source: "/api/(.*)",       headers: adminHeaders },
+      // Excludes /api/submit — Next.js merges ALL matching header rules for a
+      // path rather than letting the first/more-specific one win, so without
+      // this exclusion /api/submit silently also inherited adminHeaders'
+      // X-Frame-Options and admin Content-Security-Policy on top of its own
+      // (Low/Info: redundant headers).
+      { source: "/api/((?!submit).*)", headers: adminHeaders },
     ];
   },
 };
