@@ -3,10 +3,12 @@ import { randomBytes } from 'crypto';
 import { hashSync } from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { loadConfig } from '@/lib/loadConfig';
+import { timingSafeEqualStrings } from '@/lib/cronAuth';
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('authorization')?.replace('Bearer ', '');
-  if (!secret || secret !== process.env.PROVISIONING_SECRET) {
+  const expected = process.env.PROVISIONING_SECRET;
+  if (!secret || !expected || !timingSafeEqualStrings(secret, expected)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

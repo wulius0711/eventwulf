@@ -35,6 +35,8 @@ export default defineConfig({
       // Not set anywhere else locally, so cron endpoints 401 without this —
       // fixed value only for the test server, never used against real data.
       CRON_SECRET: "test-cron-secret",
+      // Same reasoning as CRON_SECRET, for /api/provision.
+      PROVISIONING_SECRET: "test-provisioning-secret",
     },
   },
 });
