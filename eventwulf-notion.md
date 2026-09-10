@@ -235,6 +235,13 @@ Ladereihenfolge: DB → `config/clients/{slug}.json` → `config/clients/default
 
 **Migrationen laufen automatisch mit jedem Build** (`npm run build` → `prisma generate && node scripts/migrate-deploy-unpooled.js && next build`) — kein separater manueller `prisma migrate deploy`-Schritt vor `vercel --prod` mehr nötig. Ein fehlgeschlagener Migrationsversuch lässt den Build (und damit den Deploy) fehlschlagen, statt stillschweigend gegen ein veraltetes Schema zu deployen.
 
+**Manueller Rollback nach einem fehlgeschlagenen Deploy (kein automatisierter Mechanismus):** Da Migrationen jetzt automatisch mit jedem Build laufen, kann ein Rollback auf eine vorherige Vercel-Deployment-Version die zugehörige Schema-Änderung nicht mit zurückrollen — die Migration ist zu diesem Zeitpunkt bereits angewendet. Ein automatisierter DB-Rollback ist bewusst nicht gebaut (Down-Migrationen sind bei laufenden Schema-Änderungen grundsätzlich heikel und riskieren eher Datenverlust, als sie verhindern). Vorgehen im Ernstfall:
+1. Betroffenes Deployment in Vercel zurückrollen (frühere Version als "Production" markieren).
+2. Prüfen, ob die zuletzt angewendete Migration additiv war (neue Spalte/Tabelle, nichts gelöscht oder umbenannt) oder breaking (Spalte/Tabelle entfernt, Typ geändert, Constraint verschärft) — `prisma/migrations/`, jüngste Migration ansehen.
+3. **Additiv:** meist unkritisch — die zurückgerollte (ältere) App-Version ignoriert das neue Schema-Element einfach, kein Handlungsbedarf. Nur bei einer neuen `NOT NULL`-Spalte ohne Default prüfen, ob die ältere App-Version beim Schreiben noch funktioniert.
+4. **Breaking:** die ältere App-Version passt nicht mehr zum aktuellen Schema — manuell entscheiden, ob eine kompensierende Migration (z.B. gelöschte Spalte wiederherstellen) sauberer ist als ein Restore aus dem Backup. Kein pauschales Vorgehen möglich, abhängig von der konkreten Änderung.
+5. Nur wenn beides nicht praktikabel ist (z.B. Datenverlust durch die Migration selbst): Restore aus dem letzten Backup — siehe dazu den offenen Punkt in der Security-Doku zu Datenbank-Backups mit getesteter Restore-Prozedur (Track B), der diesen Fall mit abdeckt.
+
 ---
 
 ## Changelog
