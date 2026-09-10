@@ -176,6 +176,24 @@ Kein Teil der ursprünglichen 12 Audit-Findings, sondern entdeckt bei der Frage,
 
 ---
 
+## Nachtrag — Launch-Readiness-Audit (September 2026), Block B (Nebenläufigkeit)
+
+Fund 3, 4, 5 — gemeinsamer Nenner: ein Zustandsübergang, der sich auf einen zuvor gelesenen Wert verlässt, ohne beim Schreiben erneut zu prüfen, ob sich der Wert zwischenzeitlich geändert hat. Fix-Prinzip durchgehend: atomare bedingte Schreiboperation statt Read-then-Write.
+
+**Fund 3 (Event-Kapazitäts-Leak bei Timeout) — erledigt.** `reserveEventCapacity` war bereits eine atomare bedingte UPDATE-Query, lief aber als eigenständiger Aufruf getrennt von der `Inquiry`-Speicher-Transaktion — ein Absturz dazwischen ließ `bookedCount` dauerhaft erhöht ohne zugehörige Anfrage zurück. Jetzt Teil derselben Transaktion; drei zuvor nötige manuelle Kompensationsaufrufe in `/api/submit` entfernt (eine vierte Stelle war bereits unerreichbarer Dead Code, per Kontrollfluss-Beweis verifiziert). Neuer Test `__tests__/concurrency/event-capacity.spec.ts`, inkl. echtem Rollback-Beweis (Kapazität reserviert, danach Raum-Konflikt in derselben Transaktion → Kapazität korrekt zurückgerollt).
+
+**Fund 4 (Cron überschreibt bestätigte Buchung) — erledigt.** `event-holds`-Cron nutzt jetzt eine einzelne `UPDATE ... RETURNING`, gebündelt mit der Kapazitätsfreigabe in einer Transaktion; `room-holds` vereinfacht auf ein bedingtes `updateMany`. Idempotenz bei doppeltem Cron-Lauf explizit getestet, nicht nur unterstellt. Test: `__tests__/concurrency/cron-status-race.spec.ts`.
+
+**Fund 5 (kein Konfliktschutz bei Multi-Admin-Bearbeitung) — erledigt.** `Inquiry.updatedAt` ergänzt (Migration, Backfill aus `createdAt`). Zwei unabhängige Schreibstellen abgesichert: der PATCH-Handler in `/api/admin/inquiries` und — als eigenständiger Fund während der Umsetzung entdeckt — der POST-Handler in `/api/admin/invoices`, der denselben ungeschützten Read-then-Write-Fehler hatte. Beide gaten ihre Event-Kapazitäts-Logik jetzt hinter demselben `updatedAt`-Guard in einer Transaktion. Test: `__tests__/concurrency/inquiry-conflict.spec.ts`, inkl. zweier echter Parallelitäts-Tests (PATCH und Invoice-POST), beide vor dem jeweiligen Fix nachweislich rot (Kapazität hätte sich verdoppelt: 12 statt 6, zwei statt ein `Invoice`-Datensatz).
+
+**Zusätzlicher Fund (kein Teil der ursprünglichen 12 Audit-Findings, keine Nebenläufigkeitsfrage — bewusst getrennt von Fund 5 dokumentiert):** Ein Angebot für eine Anfrage zu erstellen, die nicht bereits in einem gehaltenen Status war (z.B. eine zuvor abgelehnte), setzte den Status auf `angebot_versendet` — selbst ein gehaltener Status — ohne dafür Kapazität zu reservieren. Reproduzierbar mit einem einzigen Klick, keine Nebenläufigkeit nötig. Produktentscheidung dazu bewusst getroffen: Angebotserstellung bleibt für jeden Status möglich (keine neue UI-Sperre, passt zur bestehenden Philosophie der frei wählbaren Status-Buttons), Kapazität ist der alleinige Schutzmechanismus, mit klarer Ablehnung bei zu wenig Kapazität. Fix im selben Commit wie Fund 5, da derselbe Codepfad.
+
+**Offen, nicht blockierend:**
+- Migration für `Inquiry.updatedAt` bisher nur gegen den Neon-Test-Branch angewendet — muss vor dem nächsten `vercel --prod` manuell gegen Produktion laufen (Fund 11 [Migration-vor-Deploy-Prozess] ist noch offen, kein automatischer Prozess dafür).
+- Rechnungsnummern-Zähler (`nextInvoiceNumber()`) läuft in einer eigenen, bereits committeten Transaktion vor der äußeren Invoice-Transaktion — bei einem `409`-Konflikt bleibt die verbrauchte Nummer als Lücke stehen. Kein Doppelvergabe-Risiko, rechtlich i.d.R. unproblematisch (Lücken durch fehlgeschlagene Vorgänge sind normal), aber vorgemerkt für einen späteren Blick.
+
+---
+
 ## Bereits korrekt implementiert (vor dem Audit)
 
 - HMAC-Autologin mit `timingSafeEqual` (verhindert Timing-Angriffe)
