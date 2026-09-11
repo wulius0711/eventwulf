@@ -239,6 +239,9 @@ button:active:not(:disabled) {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 400;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
 }
 .ew-checkbox-option[data-checked] { border-color: var(--primary); background: var(--primary-tint); font-weight: 500; }
 .ew-checkbox-option input[type="checkbox"] { width: auto; }
