@@ -7,20 +7,29 @@ export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug");
   if (!slug) return NextResponse.json([], { status: 200 });
 
-  const client = await prisma.client.findUnique({ where: { slug }, select: { id: true } });
-  if (!client) return NextResponse.json([], { status: 200 });
-
-  const rooms = await prisma.room.findMany({
-    where: { clientId: client.id, isActive: true },
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+  // Client lookup and its rooms combined into one round trip (nested select)
+  // instead of two sequential queries — this endpoint is on the critical path
+  // for the room picker's initial render.
+  const client = await prisma.client.findUnique({
+    where: { slug },
     select: {
       id: true,
-      name: true,
-      description: true,
-      image: true,
-      capacity: true,
+      rooms: {
+        where: { isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          image: true,
+          capacity: true,
+        },
+      },
     },
   });
+  if (!client) return NextResponse.json([], { status: 200 });
+
+  const rooms = client.rooms;
 
   // Optional: annotate each room with whether it's free for a given date range, so
   // the room picker can gray out rooms already occupied before a room is chosen.

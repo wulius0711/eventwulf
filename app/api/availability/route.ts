@@ -10,23 +10,32 @@ export async function GET(req: NextRequest) {
 
   try {
     const { prisma } = await import("@/lib/db");
-    const client = await prisma.client.findUnique({ where: { slug } });
+    // Client lookup combined with blockedDates/events/room-inquiries into one
+    // round trip (nested select) instead of a lookup followed by three more
+    // queries — this endpoint fires on every calendar render.
+    const client = await prisma.client.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        blockedDates: { orderBy: { startDate: "asc" } },
+        events: {
+          where: { isActive: true },
+          orderBy: { startDate: "asc" },
+          include: { room: { select: { name: true } } },
+        },
+        inquiries: roomId
+          ? {
+              where: { roomId, status: { notIn: ["storniert", "abgelehnt", "abgelaufen"] } },
+              select: { id: true, data: true },
+            }
+          : false,
+      },
+    });
     if (!client) return NextResponse.json([]);
 
-    const [blocked, events, roomInquiries] = await Promise.all([
-      prisma.blockedDate.findMany({ where: { clientId: client.id }, orderBy: { startDate: "asc" } }),
-      prisma.event.findMany({
-        where: { clientId: client.id, isActive: true },
-        orderBy: { startDate: "asc" },
-        include: { room: { select: { name: true } } },
-      }),
-      roomId
-        ? prisma.inquiry.findMany({
-            where: { clientId: client.id, roomId, status: { notIn: ["storniert", "abgelehnt", "abgelaufen"] } },
-            select: { id: true, data: true },
-          })
-        : Promise.resolve([]),
-    ]);
+    const blocked = client.blockedDates;
+    const events = client.events;
+    const roomInquiries = client.inquiries ?? [];
 
     // A room's occupied date ranges live inside each Inquiry's JSON `data` blob
     // (datumVon/datumBis), not as real columns — parse them here rather than in
