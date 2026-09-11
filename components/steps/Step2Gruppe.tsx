@@ -34,7 +34,7 @@ export default function Step2Gruppe({ config }: Props) {
         {show(config, "personenAnzahl") && (
           <div className="ew-field">
             <input type="text" placeholder=" " value={form.personenAnzahl} onChange={(e) => setField("personenAnzahl", e.target.value)} />
-            <label>Anzahl Teilnehmer:innen</label>
+            <label>Anzahl Teilnehmer:innen *</label>
           </div>
         )}
       </div>

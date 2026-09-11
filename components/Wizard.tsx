@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useFormStore, TOTAL_STEPS } from "@/store/form";
 import type { EventConfig } from "@/lib/types";
+import { isValidParticipantCount } from "@/lib/validate";
 import Step1Veranstaltung from "@/components/steps/Step1Veranstaltung";
 import Step2Gruppe from "@/components/steps/Step2Gruppe";
 import Step3Ausstattung from "@/components/steps/Step3Ausstattung";
@@ -19,11 +20,19 @@ type SubmitState = "idle" | "loading" | "success" | "error";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validate(step: number, form: import("@/lib/types").InquiryFormData): string {
+function validate(step: number, form: import("@/lib/types").InquiryFormData, config: EventConfig): string {
   if (step === 1 && !form.artTitel.trim()) return "Bitte Veranstaltungstitel eingeben.";
   if (step === 2 && !form.nameGruppenleitung.trim()) return "Bitte Name der Gruppenleitung eingeben.";
   if (step === 2 && !form.email.trim()) return "Bitte E-Mail-Adresse eingeben.";
   if (step === 2 && form.email.trim() && !EMAIL_RE.test(form.email)) return "Bitte gültige E-Mail-Adresse eingeben.";
+  // Mirrors the server-side check in lib/validate.ts's validateSubmit — the
+  // field was already effectively required (the server always rejected an
+  // invalid value), this just surfaces that on the step where it's actually
+  // entered instead of only after the final submit. Skipped when the field
+  // is hidden for this client (same show() condition as Step2Gruppe.tsx).
+  if (step === 2 && config.formFields?.personenAnzahl !== false && !isValidParticipantCount(form.personenAnzahl)) {
+    return "Bitte gültige Teilnehmerzahl eingeben.";
+  }
   return "";
 }
 
@@ -56,7 +65,7 @@ export default function Wizard({ config, slug }: Props) {
   }
 
   function handleNext() {
-    const err = validate(step, form);
+    const err = validate(step, form, config);
     if (err) { setError(err); return; }
     setError("");
     nextStep();
