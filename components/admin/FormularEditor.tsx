@@ -292,7 +292,7 @@ export default function FormularEditor({ initialConfig }: Props) {
                 const enabled = fieldEnabled(key);
                 return (
                   <div key={key}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
+                    <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
                       <Toggle checked={enabled} onChange={(v) => setFormField(key, v)} />
                       <span style={{ fontSize: "0.875rem", lineHeight: 1.4 }}>
                         {label}
