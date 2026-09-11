@@ -1,30 +1,37 @@
+// Most fields are just shown/hidden (boolean). A field can also be marked
+// "required" — shown *and* mandatory. personenAnzahl and raum are
+// deliberately plain booleans: their required-ness is a structural system
+// invariant (capacity math, double-booking protection), not a per-client
+// preference, so they're not part of the configurable-required system.
+type FieldState = boolean | "required";
+
 export interface FormFields {
   // Step 1
-  uhrzeiten?: boolean;
+  uhrzeiten?: FieldState;
   raum?: boolean;
   // Step 2
   personenAnzahl?: boolean;
-  leiterinnen?: boolean;
-  telefon?: boolean;
-  sprache?: boolean;
+  leiterinnen?: FieldState;
+  telefon?: FieldState;
+  sprache?: FieldState;
   // Step 3
   bestuhlung?: boolean;
   tische?: boolean;
   beamer?: boolean;
   soundanlage?: boolean;
   aussenbereich?: boolean;
-  sonstigesEquipment?: boolean;
+  sonstigesEquipment?: FieldState;
   // Step 4
-  verpflegung?: boolean;
-  zimmerwunsch?: boolean;
+  verpflegung?: FieldState;
+  zimmerwunsch?: FieldState;
   // Step 5
-  wuenscheRahmenprogramm?: boolean;
-  abrechnung?: boolean;
-  zahlung?: boolean;
-  anreise?: boolean;
-  barrierefreiheit?: boolean;
-  budget?: boolean;
-  quelle?: boolean;
+  wuenscheRahmenprogramm?: FieldState;
+  abrechnung?: FieldState;
+  zahlung?: FieldState;
+  anreise?: FieldState;
+  barrierefreiheit?: FieldState;
+  budget?: FieldState;
+  quelle?: FieldState;
 }
 
 export interface EventConfig {

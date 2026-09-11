@@ -49,12 +49,16 @@ export default function FormularEditor({ initialConfig }: Props) {
     setConfig((c) => ({ ...c, company: { ...c.company, [key]: value } }));
   }
 
-  function setFormField(field: keyof NonNullable<EventConfig["formFields"]>, value: boolean) {
+  function setFormField(field: keyof NonNullable<EventConfig["formFields"]>, value: boolean | "required") {
     setConfig((c) => ({ ...c, formFields: { ...c.formFields, [field]: value } }));
   }
 
   function fieldEnabled(field: keyof NonNullable<EventConfig["formFields"]>) {
     return config.formFields?.[field] !== false;
+  }
+
+  function fieldRequired(field: keyof NonNullable<EventConfig["formFields"]>) {
+    return config.formFields?.[field] === "required";
   }
 
   function setListItem(field: OptionsField, idx: number, value: string) {
@@ -235,45 +239,45 @@ export default function FormularEditor({ initialConfig }: Props) {
           {
             label: "Schritt 1 – Veranstaltung",
             fields: [
-              { key: "uhrzeiten" as const, label: "Uhrzeiten (Beginn / Ende)" },
-              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind" },
+              { key: "uhrzeiten" as const, label: "Uhrzeiten (Beginn / Ende)", requirable: true },
+              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind — dann automatisch Pflichtfeld" },
             ],
           },
           {
             label: "Schritt 2 – Gruppe",
             fields: [
-              { key: "personenAnzahl" as const, label: "Anzahl Teilnehmer:innen" },
-              { key: "leiterinnen" as const,    label: "Leiter:innen" },
-              { key: "telefon" as const,        label: "Telefon" },
-              { key: "sprache" as const,        label: "Sprache der Gruppe" },
+              { key: "personenAnzahl" as const, label: "Anzahl Teilnehmer:innen", hint: "Immer Pflichtfeld, sobald sichtbar" },
+              { key: "leiterinnen" as const,    label: "Leiter:innen",           requirable: true },
+              { key: "telefon" as const,        label: "Telefon",                requirable: true },
+              { key: "sprache" as const,        label: "Sprache der Gruppe",     requirable: true },
             ],
           },
           {
             label: "Schritt 3 – Ausstattung",
             fields: [
-              { key: "sonstigesEquipment" as const, label: "Sonstiges Equipment (Freitextfeld)" },
+              { key: "sonstigesEquipment" as const, label: "Sonstiges Equipment (Freitextfeld)", requirable: true },
             ],
           },
           {
             label: "Schritt 4 – Unterkunft",
             fields: [
-              { key: "verpflegung" as const,  label: "Verpflegung",  hint: "Optionen unten wählbar" },
-              { key: "zimmerwunsch" as const,  label: "Zimmerwunsch", hint: "Optionen unten wählbar" },
+              { key: "verpflegung" as const,  label: "Verpflegung",  hint: "Optionen unten wählbar", requirable: true },
+              { key: "zimmerwunsch" as const,  label: "Zimmerwunsch", hint: "Optionen unten wählbar", requirable: true },
             ],
           },
           {
             label: "Schritt 5 – Abschluss",
             fields: [
-              { key: "wuenscheRahmenprogramm" as const, label: "Wünsche Rahmenprogramm" },
-              { key: "abrechnung" as const,             label: "Abrechnung",                  hint: "Optionen unten wählbar" },
-              { key: "zahlung" as const,                label: "Zahlung",                      hint: "Optionen unten wählbar" },
-              { key: "anreise" as const,                label: "Anreise",                      hint: "Optionen unten wählbar" },
-              { key: "barrierefreiheit" as const,       label: "Besondere Bedürfnisse" },
-              { key: "budget" as const,                 label: "Budgetrahmen",                 hint: "Optionen unten wählbar" },
-              { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen unten wählbar" },
+              { key: "wuenscheRahmenprogramm" as const, label: "Wünsche Rahmenprogramm", requirable: true },
+              { key: "abrechnung" as const,             label: "Abrechnung",                  hint: "Optionen unten wählbar", requirable: true },
+              { key: "zahlung" as const,                label: "Zahlung",                      hint: "Optionen unten wählbar", requirable: true },
+              { key: "anreise" as const,                label: "Anreise",                      hint: "Optionen unten wählbar", requirable: true },
+              { key: "barrierefreiheit" as const,       label: "Besondere Bedürfnisse", requirable: true },
+              { key: "budget" as const,                 label: "Budgetrahmen",                 hint: "Optionen unten wählbar", requirable: true },
+              { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen unten wählbar", requirable: true },
             ],
           },
-        ] as { label: string; fields: { key: keyof NonNullable<EventConfig["formFields"]>; label: string; hint?: string }[] }[]).map((step) => (
+        ] as { label: string; fields: { key: keyof NonNullable<EventConfig["formFields"]>; label: string; hint?: string; requirable?: boolean }[] }[]).map((step) => (
           <div key={step.label} style={{ marginBottom: "2.5rem" }}>
             <div style={{
               fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
@@ -284,15 +288,30 @@ export default function FormularEditor({ initialConfig }: Props) {
               {step.label}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, 100%), 1fr))", gap: "0.5rem 1.5rem" }}>
-              {step.fields.map(({ key, label, hint }) => (
-                <label key={key} style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
-                  <Toggle checked={fieldEnabled(key)} onChange={(v) => setFormField(key, v)} />
-                  <span style={{ fontSize: "0.875rem", lineHeight: 1.4 }}>
-                    {label}
-                    {hint && <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>}
-                  </span>
-                </label>
-              ))}
+              {step.fields.map(({ key, label, hint, requirable }) => {
+                const enabled = fieldEnabled(key);
+                return (
+                  <div key={key}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
+                      <Toggle checked={enabled} onChange={(v) => setFormField(key, v)} />
+                      <span style={{ fontSize: "0.875rem", lineHeight: 1.4 }}>
+                        {label}
+                        {hint && <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>}
+                      </span>
+                    </label>
+                    {requirable && enabled && (
+                      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginLeft: "3rem", marginTop: "0.3rem", fontSize: "0.78rem", color: "var(--muted)", cursor: "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={fieldRequired(key)}
+                          onChange={(e) => setFormField(key, e.target.checked ? "required" : true)}
+                        />
+                        Pflichtfeld
+                      </label>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}

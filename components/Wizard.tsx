@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useFormStore, TOTAL_STEPS } from "@/store/form";
 import type { EventConfig } from "@/lib/types";
-import { isValidParticipantCount } from "@/lib/validate";
+import { isValidParticipantCount, findMissingRequiredField } from "@/lib/validate";
 import Step1Veranstaltung from "@/components/steps/Step1Veranstaltung";
 import Step2Gruppe from "@/components/steps/Step2Gruppe";
 import Step3Ausstattung from "@/components/steps/Step3Ausstattung";
@@ -32,6 +32,8 @@ function validate(step: number, form: import("@/lib/types").InquiryFormData, con
   if (step === 2 && !form.nameGruppenleitung.trim()) return "Bitte Name der Gruppenleitung eingeben.";
   if (step === 2 && !form.email.trim()) return "Bitte E-Mail-Adresse eingeben.";
   if (step === 2 && form.email.trim() && !EMAIL_RE.test(form.email)) return "Bitte gültige E-Mail-Adresse eingeben.";
+  const missing = findMissingRequiredField(config, form, step);
+  if (missing) return `Bitte „${missing.label}" ausfüllen.`;
   // Mirrors the server-side check in lib/validate.ts's validateSubmit — the
   // field was already effectively required (the server always rejected an
   // invalid value), this just surfaces that on the step where it's actually

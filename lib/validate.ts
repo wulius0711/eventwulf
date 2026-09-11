@@ -1,3 +1,5 @@
+import type { EventConfig, FormFields, InquiryFormData } from "@/lib/types";
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
@@ -157,6 +159,54 @@ export function validateSubmit(body: unknown): string | null {
   ];
   for (const [field, max] of textFields) {
     if (b[field] !== undefined && str(b[field], max) === null) return `${field} zu lang`;
+  }
+  return null;
+}
+
+interface RequirableField {
+  dataKey: keyof InquiryFormData;
+  formFieldKey: keyof FormFields;
+  step: number;
+  label: string;
+  // Mirrors each step component's own render condition — a field an admin
+  // marked "required" but that (e.g. via an emptied options list) wouldn't
+  // actually be shown to the guest must never block submission.
+  isShown: (config: EventConfig) => boolean;
+}
+
+export const REQUIRABLE_FIELDS: RequirableField[] = [
+  { dataKey: "zeitVon", formFieldKey: "uhrzeiten", step: 1, label: "Veranstaltungsbeginn (Uhrzeit)", isShown: (c) => c.formFields?.uhrzeiten !== false },
+  { dataKey: "zeitBis", formFieldKey: "uhrzeiten", step: 1, label: "Veranstaltungsende (Uhrzeit)", isShown: (c) => c.formFields?.uhrzeiten !== false },
+  { dataKey: "leiterinnen", formFieldKey: "leiterinnen", step: 2, label: "Leiter:innen", isShown: (c) => c.formFields?.leiterinnen !== false },
+  { dataKey: "telefon", formFieldKey: "telefon", step: 2, label: "Telefon", isShown: (c) => c.formFields?.telefon !== false },
+  { dataKey: "sprache", formFieldKey: "sprache", step: 2, label: "Sprache der Gruppe", isShown: (c) => c.formFields?.sprache !== false },
+  { dataKey: "sonstigesEquipment", formFieldKey: "sonstigesEquipment", step: 3, label: "Sonstiges Equipment", isShown: (c) => c.formFields?.sonstigesEquipment !== false },
+  { dataKey: "verpflegung", formFieldKey: "verpflegung", step: 4, label: "Verpflegung", isShown: (c) => c.formFields?.verpflegung !== false && c.verpflegungOptions?.length > 0 },
+  { dataKey: "zimmerwunsch", formFieldKey: "zimmerwunsch", step: 4, label: "Zimmerwunsch", isShown: (c) => c.formFields?.zimmerwunsch !== false && c.zimmerwunschOptions?.length > 0 },
+  { dataKey: "wuenscheRahmenprogramm", formFieldKey: "wuenscheRahmenprogramm", step: 5, label: "Wünsche Rahmenprogramm", isShown: (c) => c.formFields?.wuenscheRahmenprogramm !== false },
+  { dataKey: "abrechnung", formFieldKey: "abrechnung", step: 5, label: "Abrechnung", isShown: (c) => c.formFields?.abrechnung !== false && c.abrechnungOptions?.length > 0 },
+  { dataKey: "zahlung", formFieldKey: "zahlung", step: 5, label: "Zahlung", isShown: (c) => c.formFields?.zahlung !== false && c.zahlungOptions?.length > 0 },
+  { dataKey: "anreise", formFieldKey: "anreise", step: 5, label: "Anreise", isShown: (c) => c.formFields?.anreise !== false },
+  { dataKey: "barrierefreiheit", formFieldKey: "barrierefreiheit", step: 5, label: "Besondere Bedürfnisse", isShown: (c) => c.formFields?.barrierefreiheit !== false },
+  { dataKey: "budget", formFieldKey: "budget", step: 5, label: "Budgetrahmen", isShown: (c) => c.formFields?.budget !== false && c.budgetOptions?.length > 0 },
+  { dataKey: "quelle", formFieldKey: "quelle", step: 5, label: "Wie habt ihr uns gefunden?", isShown: (c) => c.formFields?.quelle !== false && c.quelleOptions?.length > 0 },
+];
+
+// Shared by the wizard (per-step, client-side) and /api/submit (all fields,
+// server-side) — one place defining which fields an admin can mark
+// "required" actually enforces that. `step` narrows to one wizard step;
+// omitted, every field is checked (the server's use case).
+export function findMissingRequiredField(
+  config: EventConfig,
+  data: Partial<Record<keyof InquiryFormData, unknown>>,
+  step?: number
+): RequirableField | null {
+  for (const field of REQUIRABLE_FIELDS) {
+    if (step !== undefined && field.step !== step) continue;
+    if (config.formFields?.[field.formFieldKey] !== "required") continue;
+    if (!field.isShown(config)) continue;
+    const val = data[field.dataKey];
+    if (typeof val !== "string" || !val.trim()) return field;
   }
   return null;
 }

@@ -6,7 +6,7 @@ import { loadConfigFromDB } from "@/lib/loadConfig";
 import { prisma } from "@/lib/db";
 import type { InquiryFormData } from "@/lib/types";
 import { rateLimit, getIp } from "@/lib/ratelimit";
-import { validateSubmit, escapeHtml, sanitizeEmailHeader } from "@/lib/validate";
+import { validateSubmit, escapeHtml, sanitizeEmailHeader, findMissingRequiredField } from "@/lib/validate";
 import { reserveEventCapacity, HOLD_DURATION_MS, CapacityExceededError } from "@/lib/eventCapacity";
 import { assertRoomAvailable, RoomConflictError } from "@/lib/roomAvailability";
 
@@ -56,6 +56,18 @@ export async function POST(req: NextRequest) {
   const body = raw as InquiryFormData & { slug?: string };
   const slug = body.slug ?? "default";
   const config = await loadConfigFromDB(slug);
+
+  // Event bookings come from the separate EventsList widget, which only ever
+  // collects name/email/participant count — none of the requirable fields
+  // below exist in that flow, so the check would otherwise block every
+  // event booking as soon as a client has any field marked required.
+  if (!body.eventId) {
+    const missingRequired = findMissingRequiredField(config, body);
+    if (missingRequired) {
+      return NextResponse.json({ error: `Bitte „${missingRequired.label}" ausfüllen.` }, { status: 400 });
+    }
+  }
+
   // Resolved once, up front, so eventId/roomId below are always looked up scoped to
   // this client — otherwise a submission to Client A's public form could reference
   // Client B's Event/Room by id (both are just public, enumerable cuids).
@@ -98,11 +110,14 @@ export async function POST(req: NextRequest) {
       );
     }
     roomName = room.name;
-  } else if (client && config.formFields?.raum !== false) {
+  } else if (client && !body.eventId && config.formFields?.raum !== false) {
     // Mirrors the RoomPicker's own visibility condition (rooms.length > 0) —
     // if the guest was shown a room picker, a room must actually be chosen,
     // otherwise the inquiry bypasses the double-booking protection entirely
     // (assertRoomAvailable/capacity-hold below only run when roomId is set).
+    // Skipped for event bookings (body.eventId set): those come from the
+    // separate EventsList flow, which has no room picker at all — a room
+    // there, if any, is the event's own (Event.roomId), not the guest's pick.
     const activeRoomCount = await prisma.room.count({ where: { clientId: client.id, isActive: true } });
     if (activeRoomCount > 0) {
       return NextResponse.json({ error: "Bitte einen Raum auswählen." }, { status: 400 });
