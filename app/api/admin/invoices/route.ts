@@ -8,7 +8,7 @@ import type { InvoiceLineItem, InquiryFormData } from "@/lib/types";
 import { Resend } from "resend";
 import { isHeld, reserveEventCapacity, CapacityExceededError } from "@/lib/eventCapacity";
 import { ConflictError } from "@/lib/concurrency";
-import { validateInvoiceLineItems } from "@/lib/validate";
+import { validateInvoiceLineItems, sanitizeEmailHeader } from "@/lib/validate";
 
 function serialize(inv: {
   id: string; inquiryId: string; number: string; status: string;
@@ -162,9 +162,9 @@ export async function POST(req: NextRequest) {
         });
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: `${config.company.name} <noreply@resend.dev>`,
+          from: `${sanitizeEmailHeader(config.company.name)} <anfrage@eventwulf.at>`,
           to: recipientEmail,
-          subject: `Angebot ${number} – ${config.company.name}`,
+          subject: `Angebot ${sanitizeEmailHeader(number)} – ${sanitizeEmailHeader(config.company.name)}`,
           html,
         });
       }

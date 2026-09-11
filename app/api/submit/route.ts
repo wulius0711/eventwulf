@@ -265,7 +265,7 @@ export async function POST(req: NextRequest) {
   // transient failure gets one retry before being logged as missed.
   const sendOperatorEmail = resend.emails
     .send({
-      from: `${sanitizeEmailHeader(config.company.name)} <onboarding@resend.dev>`,
+      from: `${sanitizeEmailHeader(config.company.name)} <anfrage@eventwulf.at>`,
       to: notifyEmail,
       replyTo: body.email ? sanitizeEmailHeader(body.email) : undefined,
       subject: `Neue Anfrage: ${sanitizeEmailHeader(body.artTitel) || "Retreat"} – ${sanitizeEmailHeader(body.nameGruppenleitung)}`,
@@ -277,7 +277,7 @@ export async function POST(req: NextRequest) {
     .catch(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const { error } = await resend.emails.send({
-        from: `${sanitizeEmailHeader(config.company.name)} <onboarding@resend.dev>`,
+        from: `${sanitizeEmailHeader(config.company.name)} <anfrage@eventwulf.at>`,
         to: notifyEmail,
         replyTo: body.email ? sanitizeEmailHeader(body.email) : undefined,
         subject: `Neue Anfrage: ${sanitizeEmailHeader(body.artTitel) || "Retreat"} – ${sanitizeEmailHeader(body.nameGruppenleitung)}`,
@@ -292,8 +292,9 @@ export async function POST(req: NextRequest) {
   const sendConfirmationEmail = body.email
     ? resend.emails
         .send({
-          from: `${sanitizeEmailHeader(config.company.name)} <onboarding@resend.dev>`,
+          from: `${sanitizeEmailHeader(config.company.name)} <anfrage@eventwulf.at>`,
           to: body.email,
+          replyTo: notifyEmail,
           subject: `Anfrage erhalten – ${sanitizeEmailHeader(body.artTitel) || "Retreat"}`,
           html: confirmationHtmlWithIcal,
         })

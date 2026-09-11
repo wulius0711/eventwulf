@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import type { InquiryFormData } from "@/lib/types";
 import { isHeld, releaseEventCapacity } from "@/lib/eventCapacity";
+import { escapeHtml, sanitizeEmailHeader } from "@/lib/validate";
 
 function fmt(iso: string) {
   const [y, m, d] = iso.split("-");
@@ -46,9 +47,9 @@ export async function GET(
       const data = JSON.parse(inquiry.data) as InquiryFormData;
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: `${config.company.name} <noreply@resend.dev>`,
+        from: `${sanitizeEmailHeader(config.company.name)} <anfrage@eventwulf.at>`,
         to: notifyEmail,
-        subject: `Anfrage storniert: ${data.artTitel} – ${data.nameGruppenleitung}`,
+        subject: `Anfrage storniert: ${sanitizeEmailHeader(data.artTitel)} – ${sanitizeEmailHeader(data.nameGruppenleitung)}`,
         html: `
           <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:2rem">
             <h2 style="margin:0 0 0.5rem;font-size:1.2rem;color:#1a1612">Anfrage storniert</h2>
@@ -56,11 +57,11 @@ export async function GET(
               Der Anfragende hat seine Buchungsanfrage selbst storniert.
             </p>
             <table style="border-collapse:collapse;width:100%">
-              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">Veranstaltung</td><td style="padding:5px 0;font-size:0.85rem;font-weight:600">${data.artTitel}</td></tr>
-              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">Gruppenleitung</td><td style="padding:5px 0;font-size:0.85rem">${data.nameGruppenleitung}</td></tr>
-              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">E-Mail</td><td style="padding:5px 0;font-size:0.85rem">${data.email}</td></tr>
-              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">Zeitraum</td><td style="padding:5px 0;font-size:0.85rem">${fmt(data.datumVon)} – ${fmt(data.datumBis)}</td></tr>
-              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">Teilnehmer</td><td style="padding:5px 0;font-size:0.85rem">${data.personenAnzahl}</td></tr>
+              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">Veranstaltung</td><td style="padding:5px 0;font-size:0.85rem;font-weight:600">${escapeHtml(data.artTitel)}</td></tr>
+              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">Gruppenleitung</td><td style="padding:5px 0;font-size:0.85rem">${escapeHtml(data.nameGruppenleitung)}</td></tr>
+              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">E-Mail</td><td style="padding:5px 0;font-size:0.85rem">${escapeHtml(data.email)}</td></tr>
+              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">Zeitraum</td><td style="padding:5px 0;font-size:0.85rem">${escapeHtml(fmt(data.datumVon))} – ${escapeHtml(fmt(data.datumBis))}</td></tr>
+              <tr><td style="padding:5px 12px 5px 0;color:#6b7280;font-size:0.85rem">Teilnehmer</td><td style="padding:5px 0;font-size:0.85rem">${escapeHtml(data.personenAnzahl)}</td></tr>
             </table>
           </div>
         `,

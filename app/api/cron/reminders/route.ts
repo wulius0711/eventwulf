@@ -95,8 +95,9 @@ export async function GET(req: NextRequest) {
       const html = renderReminderHtml(data, config);
 
       await resend.emails.send({
-        from: `${sanitizeEmailHeader(companyName)} <noreply@resend.dev>`,
+        from: `${sanitizeEmailHeader(companyName)} <anfrage@eventwulf.at>`,
         to: data.email,
+        replyTo: config.notifyEmail || undefined,
         subject: `Erinnerung: ${sanitizeEmailHeader(data.artTitel)} morgen – ${sanitizeEmailHeader(companyName)}`,
         html,
       });
