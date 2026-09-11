@@ -14,14 +14,21 @@ const STEP_LABELS = ["Veranstaltung", "Gruppe", "Ausstattung", "Verpflegung", "A
 interface Props {
   config: EventConfig;
   slug: string;
+  hasRooms: boolean;
 }
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validate(step: number, form: import("@/lib/types").InquiryFormData, config: EventConfig): string {
+function validate(step: number, form: import("@/lib/types").InquiryFormData, config: EventConfig, hasRooms: boolean): string {
   if (step === 1 && !form.artTitel.trim()) return "Bitte Veranstaltungstitel eingeben.";
+  // Mirrors the RoomPicker's own visibility condition — if it was shown, a
+  // choice is required, otherwise the inquiry skips the double-booking
+  // protection server-side (assertRoomAvailable only runs when roomId is set).
+  if (step === 1 && hasRooms && config.formFields?.raum !== false && !form.roomId) {
+    return "Bitte einen Raum auswählen.";
+  }
   if (step === 2 && !form.nameGruppenleitung.trim()) return "Bitte Name der Gruppenleitung eingeben.";
   if (step === 2 && !form.email.trim()) return "Bitte E-Mail-Adresse eingeben.";
   if (step === 2 && form.email.trim() && !EMAIL_RE.test(form.email)) return "Bitte gültige E-Mail-Adresse eingeben.";
@@ -36,7 +43,7 @@ function validate(step: number, form: import("@/lib/types").InquiryFormData, con
   return "";
 }
 
-export default function Wizard({ config, slug }: Props) {
+export default function Wizard({ config, slug, hasRooms }: Props) {
   const { form, step, maxStep, nextStep, prevStep, goToStep, reset } = useFormStore();
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
@@ -65,7 +72,7 @@ export default function Wizard({ config, slug }: Props) {
   }
 
   function handleNext() {
-    const err = validate(step, form, config);
+    const err = validate(step, form, config, hasRooms);
     if (err) { setError(err); return; }
     setError("");
     nextStep();

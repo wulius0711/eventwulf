@@ -1,6 +1,7 @@
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import { buildThemeVars, DEFAULT_PRIMARY_COLOR } from "@/lib/theme";
 import { isSafeCssColor } from "@/lib/validate";
+import { prisma } from "@/lib/db";
 import Wizard from "@/components/Wizard";
 import IframeResizer from "@/components/IframeResizer";
 
@@ -24,6 +25,11 @@ export default async function Home({ searchParams }: Props) {
   const { kunde } = await searchParams;
   const slug = kunde ?? process.env.SUPERADMIN_SLUG ?? "default";
   const config = await loadConfigFromDB(slug);
+
+  const client = await prisma.client.findUnique({ where: { slug }, select: { id: true } });
+  const hasRooms = client
+    ? (await prisma.room.count({ where: { clientId: client.id, isActive: true } })) > 0
+    : false;
 
   const themeVars = buildThemeVars(config.company.primaryColor ?? DEFAULT_PRIMARY_COLOR);
 
@@ -69,7 +75,7 @@ export default async function Home({ searchParams }: Props) {
             {config.formTitle}
           </h2>
         )}
-        <Wizard config={config} slug={slug} />
+        <Wizard config={config} slug={slug} hasRooms={hasRooms} />
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ function RoomPicker({ slug, config }: { slug: string; config: EventConfig }) {
 
   return (
     <div>
-      <label style={{ marginBottom: "0.5rem", display: "block" }}>Raum wählen</label>
+      <label style={{ marginBottom: "0.5rem", display: "block" }}>Raum wählen *</label>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(180px, 100%), 1fr))", gap: "0.75rem" }}>
         {rooms.map((room) => {
           const selected = form.roomId === room.id;
@@ -116,8 +116,6 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
         <label>Art / Titel der Veranstaltung *</label>
       </div>
 
-      <RoomPicker slug={slug} config={config} />
-
       <div>
         <label style={{ marginBottom: "0.5rem", display: "block" }}>Zeitraum wählen</label>
         <Calendar
@@ -131,6 +129,8 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
           </p>
         )}
       </div>
+
+      <RoomPicker slug={slug} config={config} />
 
       <div className="ew-date-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", background: hasRange ? "var(--primary-tint)" : "var(--bg2)", border: `1px solid ${hasRange ? "var(--primary-dim)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", padding: "0.85rem 1rem", transition: "all 0.2s" }}>
         <div>

@@ -98,6 +98,15 @@ export async function POST(req: NextRequest) {
       );
     }
     roomName = room.name;
+  } else if (client && config.formFields?.raum !== false) {
+    // Mirrors the RoomPicker's own visibility condition (rooms.length > 0) —
+    // if the guest was shown a room picker, a room must actually be chosen,
+    // otherwise the inquiry bypasses the double-booking protection entirely
+    // (assertRoomAvailable/capacity-hold below only run when roomId is set).
+    const activeRoomCount = await prisma.room.count({ where: { clientId: client.id, isActive: true } });
+    if (activeRoomCount > 0) {
+      return NextResponse.json({ error: "Bitte einen Raum auswählen." }, { status: 400 });
+    }
   }
 
   const notifyEmail = config.notifyEmail ?? process.env.NOTIFY_EMAIL ?? "";
