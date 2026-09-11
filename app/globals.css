@@ -117,8 +117,8 @@ label {
 }
 .ew-field > label {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 1rem;
+  transform: translateY(0);
   left: 1rem;
   font-size: 0.85rem;
   color: var(--muted);
