@@ -5,6 +5,7 @@ interface Props {
   isSuperAdmin: boolean;
   slugs: string[];
   activeSlug: string;
+  newInquiryCount: number;
   onNavigate?: () => void;
 }
 
@@ -18,7 +19,7 @@ const links = [
   { href: "/admin/handbuch",     label: "Handbuch" },
 ];
 
-export default function AdminNav({ isSuperAdmin, slugs, activeSlug, onNavigate }: Props) {
+export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCount, onNavigate }: Props) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -36,6 +37,17 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, onNavigate }
       {links.map(({ href, label }) => (
         <a key={href} href={href} className={`ew-nav-link${pathname.startsWith(href) ? " active" : ""}`} onClick={onNavigate}>
           {label}
+          {href === "/admin/inquiries" && newInquiryCount > 0 && (
+            <span
+              style={{
+                marginLeft: "0.5rem", background: "#dc2626", color: "#fff", borderRadius: "999px",
+                fontSize: "0.72rem", fontWeight: 700, lineHeight: 1, padding: "0.2rem 0.45rem", minWidth: "1.1rem",
+                textAlign: "center", display: "inline-block",
+              }}
+            >
+              {newInquiryCount}
+            </span>
+          )}
         </a>
       ))}
 
