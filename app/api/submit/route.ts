@@ -255,6 +255,9 @@ export async function POST(req: NextRequest) {
     `${icalLink}</div>`
   );
 
+  const adminLink = `<p style="margin-top:1.5rem"><a href="${proto}://${host}/admin/inquiries" style="display:inline-block;padding:10px 20px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-size:0.875rem;font-weight:600">Anfrage im Admin ansehen</a></p>`;
+  const operatorHtmlWithLink = operatorHtml.replace("</div>", `${adminLink}</div>`);
+
   // The inquiry is already saved at this point — email delivery is a side effect,
   // not part of the guest-facing success criteria. A failure here must be logged,
   // not turned into a 500, or the guest would retry and create a duplicate inquiry.
@@ -269,7 +272,7 @@ export async function POST(req: NextRequest) {
       to: notifyEmail,
       replyTo: body.email ? sanitizeEmailHeader(body.email) : undefined,
       subject: `Neue Anfrage: ${sanitizeEmailHeader(body.artTitel) || "Retreat"} – ${sanitizeEmailHeader(body.nameGruppenleitung)}`,
-      html: operatorHtml,
+      html: operatorHtmlWithLink,
     })
     .then(({ error }) => {
       if (error) throw error;
@@ -281,7 +284,7 @@ export async function POST(req: NextRequest) {
         to: notifyEmail,
         replyTo: body.email ? sanitizeEmailHeader(body.email) : undefined,
         subject: `Neue Anfrage: ${sanitizeEmailHeader(body.artTitel) || "Retreat"} – ${sanitizeEmailHeader(body.nameGruppenleitung)}`,
-        html: operatorHtml,
+        html: operatorHtmlWithLink,
       });
       if (error) throw error;
     })
