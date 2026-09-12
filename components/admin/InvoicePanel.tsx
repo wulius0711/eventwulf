@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import type { InvoiceEntry, InvoiceLineItem } from "@/lib/types";
 import Toggle from "@/components/admin/Toggle";
 
@@ -149,33 +149,33 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
 
           {/* Line items */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 100px auto", gap: "0.4rem" }}>
-              <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Leistung</span>
-              <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Menge</span>
-              <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Preis</span>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 100px auto", gap: "0.4rem 0.4rem", alignItems: "center" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--muted)", paddingLeft: "0.75rem" }}>Leistung</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--muted)", paddingLeft: "0.75rem" }}>Anzahl</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--muted)", paddingLeft: "0.75rem" }}>Preis</span>
               <span />
+              {lineItems.map((item, idx) => (
+                <Fragment key={idx}>
+                  <input
+                    type="text" placeholder="Leistung" value={item.description}
+                    onChange={(e) => setItem(idx, "description", e.target.value)}
+                    style={{ fontSize: "0.82rem" }}
+                  />
+                  <input
+                    type="number" min="1" placeholder="Anzahl" value={item.quantity}
+                    onChange={(e) => setItem(idx, "quantity", parseInt(e.target.value) || 1)}
+                    style={{ fontSize: "0.82rem" }}
+                  />
+                  <input
+                    type="number" min="0" step="0.01" placeholder="Preis €" value={item.unitPrice}
+                    onChange={(e) => setItem(idx, "unitPrice", parseFloat(e.target.value) || 0)}
+                    style={{ fontSize: "0.82rem" }}
+                  />
+                  <button onClick={() => removeItem(idx)} disabled={lineItems.length === 1}
+                    style={{ ...btnBase, color: "var(--error)", opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
+                </Fragment>
+              ))}
             </div>
-            {lineItems.map((item, idx) => (
-              <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 70px 100px auto", gap: "0.4rem", alignItems: "center" }}>
-                <input
-                  type="text" placeholder="Leistung" value={item.description}
-                  onChange={(e) => setItem(idx, "description", e.target.value)}
-                  style={{ fontSize: "0.82rem" }}
-                />
-                <input
-                  type="number" min="1" placeholder="Menge" value={item.quantity}
-                  onChange={(e) => setItem(idx, "quantity", parseInt(e.target.value) || 1)}
-                  style={{ fontSize: "0.82rem" }}
-                />
-                <input
-                  type="number" min="0" step="0.01" placeholder="Preis €" value={item.unitPrice}
-                  onChange={(e) => setItem(idx, "unitPrice", parseFloat(e.target.value) || 0)}
-                  style={{ fontSize: "0.82rem" }}
-                />
-                <button onClick={() => removeItem(idx)} disabled={lineItems.length === 1}
-                  style={{ ...btnBase, color: "var(--error)", opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
-              </div>
-            ))}
             <button onClick={addItem} style={{ ...btnBase, color: "var(--muted)", alignSelf: "flex-start" }}>+ Position</button>
           </div>
 
@@ -193,7 +193,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
             />
           </div>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.82rem", cursor: "pointer" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.82rem", cursor: "pointer", alignSelf: "flex-end" }}>
             Per E-Mail an Anfragenden senden
             <Toggle checked={sendEmail} onChange={setSendEmail} />
           </label>
