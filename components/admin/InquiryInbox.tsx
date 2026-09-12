@@ -11,6 +11,7 @@ interface Inquiry {
   updatedAt: string;
   participantCount: number;
   eventId: string | null;
+  holdExpiresAt: string | null;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -36,6 +37,19 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
 function fmt(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+// holdExpiresAt is only set while an inquiry is still "neu"/"in_pruefung"/
+// "angebot_versendet" (see PATCH handler in app/api/admin/inquiries/route.ts) —
+// its mere presence already implies the inquiry is still pending.
+function fmtHoldRemaining(iso: string): string {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return "läuft gleich ab";
+  const hours = Math.round(ms / (60 * 60 * 1000));
+  if (hours < 1) return "läuft in Kürze ab";
+  if (hours < 24) return `läuft ab in ${hours} Std.`;
+  const days = Math.round(hours / 24);
+  return `läuft ab in ${days} Tag${days === 1 ? "" : "en"}`;
 }
 
 function fmtDate(isoDate: string) {
@@ -130,6 +144,11 @@ export default function InquiryInbox() {
               <span style={{ fontWeight: 600, fontSize: "0.9rem", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {d.artTitel || "Retreat"} — {d.nameGruppenleitung}
               </span>
+              {inq.holdExpiresAt && (
+                <span style={{ color: "var(--badge-pending-text)", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
+                  ⏱ {fmtHoldRemaining(inq.holdExpiresAt)}
+                </span>
+              )}
               <span style={{ fontSize: "0.78rem", color: "var(--muted)", flexShrink: 0 }}>
                 {d.datumVon ? fmtDate(d.datumVon) : "–"}
               </span>
@@ -158,6 +177,12 @@ export default function InquiryInbox() {
                   <DetailRow label="Zimmerwunsch" value={d.zimmerwunsch} />
                   <DetailRow label="Rahmenprogramm" value={d.wuenscheRahmenprogramm} />
                   <DetailRow label="Abrechnung" value={d.abrechnung} />
+                  {inq.holdExpiresAt && (
+                    <DetailRow
+                      label="Frist"
+                      value={`${fmtHoldRemaining(inq.holdExpiresAt)} (${new Date(inq.holdExpiresAt).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })} Uhr)`}
+                    />
+                  )}
                 </div>
 
                 <InvoicePanel
