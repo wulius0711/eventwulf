@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit, getIp } from "@/lib/ratelimit";
+import { BLOCKING_STATUSES } from "@/lib/roomAvailability";
 
 export async function GET(req: NextRequest) {
   if (!rateLimit(`availability:${getIp(req)}`, 30, 60 * 1000)) {
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
         },
         inquiries: roomId
           ? {
-              where: { roomId, status: { notIn: ["storniert", "abgelehnt", "abgelaufen"] } },
+              where: { roomId, status: { in: BLOCKING_STATUSES } },
               select: { id: true, data: true },
             }
           : false,

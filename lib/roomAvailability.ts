@@ -3,7 +3,11 @@ import { prisma } from "@/lib/db";
 
 type Tx = Prisma.TransactionClient;
 
-const INACTIVE_STATUSES = ["storniert", "abgelehnt", "abgelaufen"];
+// A room only counts as occupied once an inquiry is actually confirmed — an
+// unconfirmed inquiry ("neu", "in_pruefung", "angebot_versendet") no longer
+// blocks the room/date for other guests, so the operator can receive and
+// choose between multiple competing inquiries for the same slot.
+export const BLOCKING_STATUSES = ["bestaetigt"];
 
 export class RoomConflictError extends Error {}
 
@@ -36,7 +40,7 @@ export async function assertRoomAvailable(
   const newEnd = new Date(datumBis).getTime();
 
   const existing = await tx.inquiry.findMany({
-    where: { roomId, status: { notIn: INACTIVE_STATUSES } },
+    where: { roomId, status: { in: BLOCKING_STATUSES } },
     select: { data: true },
   });
 
@@ -66,7 +70,7 @@ export async function findUnavailableRoomIds(
 
   const [inquiries, events] = await Promise.all([
     prisma.inquiry.findMany({
-      where: { roomId: { in: roomIds }, status: { notIn: INACTIVE_STATUSES } },
+      where: { roomId: { in: roomIds }, status: { in: BLOCKING_STATUSES } },
       select: { roomId: true, data: true },
     }),
     prisma.event.findMany({

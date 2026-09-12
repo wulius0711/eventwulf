@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { test, expect, type APIRequestContext } from "@playwright/test";
 import { prisma } from "../helpers/testDb";
 import { createTestClient, createTestRoom, createTestEvent, deleteTestClient, isoDateInDays } from "../helpers/fixtures";
@@ -72,18 +73,27 @@ test.describe("Event capacity reservation atomicity in /api/submit", () => {
   test("rolls back the capacity reservation when a later step in the same transaction fails", async ({ request }) => {
     // Unlimited event capacity, so the reservation itself never blocks — the
     // failure comes purely from a room conflict that happens *after* the
-    // capacity UPDATE has already run inside the transaction. If the two
-    // weren't atomic, the failed second request's capacity increment would
-    // survive even though its inquiry was never saved.
+    // capacity UPDATE has already run inside the transaction. Only a
+    // "bestaetigt" inquiry blocks a room (see lib/roomAvailability.ts), so we
+    // seed one directly rather than via a first live submission. If the
+    // capacity reservation and the room check weren't atomic, the failed
+    // request's capacity increment would survive even though its inquiry was
+    // never saved.
     const event = await createTestEvent(client.id, { minParticipants: 1, maxParticipants: null });
     const room = await createTestRoom(client.id);
     const datumVon = isoDateInDays(25);
     const datumBis = isoDateInDays(25);
 
-    const first = await request.post("/api/submit", {
-      data: payload(event.id, 4, { roomId: room.id, datumVon, datumBis }),
+    await prisma.inquiry.create({
+      data: {
+        clientId: client.id,
+        data: JSON.stringify({ datumVon, datumBis }),
+        status: "bestaetigt",
+        participantCount: 1,
+        cancelToken: randomBytes(24).toString("hex"),
+        roomId: room.id,
+      },
     });
-    expect(first.status()).toBe(200);
 
     const second = await request.post("/api/submit", {
       data: payload(event.id, 5, { roomId: room.id, datumVon, datumBis }),
@@ -91,9 +101,9 @@ test.describe("Event capacity reservation atomicity in /api/submit", () => {
     expect(second.status()).toBe(409);
 
     const reloaded = await prisma.event.findUniqueOrThrow({ where: { id: event.id } });
-    expect(reloaded.bookedCount).toBe(4);
+    expect(reloaded.bookedCount).toBe(0);
 
     const saved = await prisma.inquiry.findMany({ where: { eventId: event.id } });
-    expect(saved).toHaveLength(1);
+    expect(saved).toHaveLength(0);
   });
 });
