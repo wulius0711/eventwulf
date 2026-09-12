@@ -15,6 +15,7 @@ export default function RoomsEditor() {
   const [lockedMessage, setLockedMessage] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm());
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -50,6 +51,7 @@ export default function RoomsEditor() {
       isActive: room.isActive, sortOrder: String(room.sortOrder),
     });
     setError("");
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -57,6 +59,7 @@ export default function RoomsEditor() {
     setEditingId(null);
     setForm(emptyForm());
     setError("");
+    setShowForm(false);
   }
 
   async function handleUpload(file: File) {
@@ -178,12 +181,26 @@ export default function RoomsEditor() {
           Aktuell sind mehr aktive Räume angelegt ({rooms.filter((r) => r.isActive).length}), als das gebuchte Paket erlaubt ({roomLimit}) — z.B. nach einem Paket-Wechsel. Bestehende Räume bleiben nutzbar, aber es können keine weiteren angelegt werden, solange das so ist.
         </div>
       )}
-      <form onSubmit={handleSubmit} style={{
+      <div style={{
         background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`,
-        borderRadius: "var(--radius)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem",
+        borderRadius: "var(--radius)",
       }}>
-        {editingId && <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--primary)", fontWeight: 600 }}>Raum wird bearbeitet</p>}
-
+        <button
+          type="button"
+          onClick={() => (showForm ? cancelEdit() : setShowForm(true))}
+          style={{
+            width: "100%", textAlign: "left", padding: "1rem 1.5rem", background: "none",
+            border: "none", borderTop: "none", borderLeft: "none", borderRight: "none",
+            borderBottom: showForm ? "1px solid var(--border)" : "none",
+            cursor: "pointer", fontWeight: 600, fontSize: "0.95rem", color: "var(--text)",
+          }}
+        >
+          {showForm ? "▾" : "▸"} {editingId ? "Raum wird bearbeitet" : "Neuen Raum anlegen"}
+        </button>
+        {showForm && (
+      <form onSubmit={handleSubmit} style={{
+        padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem",
+      }}>
         <div>
           <label>Raum-Name *</label>
           <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="z.B. Großer Saal" required />
@@ -258,6 +275,8 @@ export default function RoomsEditor() {
           </button>
         </div>
       </form>
+        )}
+      </div>
 
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
         <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid var(--border)", fontWeight: 600, fontSize: "0.95rem" }}>

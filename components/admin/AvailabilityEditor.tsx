@@ -20,6 +20,7 @@ function isoDate(iso: string) {
 export default function AvailabilityEditor() {
   const [entries, setEntries]     = useState<BlockedRow[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showForm, setShowForm]   = useState(false);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate]     = useState("");
@@ -40,6 +41,7 @@ export default function AvailabilityEditor() {
     setEndDate(isoDate(entry.endDate));
     setLabel(entry.label);
     setError("");
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -47,6 +49,7 @@ export default function AvailabilityEditor() {
     setEditingId(null);
     setStartDate(""); setEndDate(""); setLabel("");
     setError("");
+    setShowForm(false);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -105,17 +108,27 @@ export default function AvailabilityEditor() {
         Markiere Zeiträume als „nicht verfügbar" — sie werden im Kalender angezeigt.
       </p>
 
-      <form onSubmit={handleSubmit} style={{
+      <div style={{
         background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`,
-        borderRadius: "var(--radius)", padding: "1.5rem",
-        display: "flex", flexDirection: "column", gap: "1rem",
+        borderRadius: "var(--radius)",
       }}>
-        {editingId && (
-          <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--primary)", fontWeight: 600 }}>
-            Eintrag wird bearbeitet
-          </p>
-        )}
-
+        <button
+          type="button"
+          onClick={() => (showForm ? cancelEdit() : setShowForm(true))}
+          style={{
+            width: "100%", textAlign: "left", padding: "1rem 1.5rem", background: "none",
+            border: "none", borderTop: "none", borderLeft: "none", borderRight: "none",
+            borderBottom: showForm ? "1px solid var(--border)" : "none",
+            cursor: "pointer", fontWeight: 600, fontSize: "0.95rem", color: "var(--text)",
+          }}
+        >
+          {showForm ? "▾" : "▸"} {editingId ? "Eintrag wird bearbeitet" : "Zeitraum sperren"}
+        </button>
+        {showForm && (
+      <form onSubmit={handleSubmit} style={{
+        padding: "1.5rem",
+        display: "flex", flexDirection: "column", gap: "1.5rem",
+      }}>
         <div className="ew-date-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
           <div>
             <label>Von</label>
@@ -153,6 +166,8 @@ export default function AvailabilityEditor() {
           </button>
         </div>
       </form>
+        )}
+      </div>
 
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
         <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid var(--border)", fontWeight: 600, fontSize: "0.95rem" }}>
