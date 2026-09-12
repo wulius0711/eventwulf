@@ -149,7 +149,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
 
           {/* Line items */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 100px auto", gap: "0.4rem 0.4rem", alignItems: "center" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 100px 42px", gap: "0.4rem 0.4rem", alignItems: "center" }}>
               <span style={{ fontSize: "0.75rem", color: "var(--muted)", paddingLeft: "0.75rem" }}>Leistung</span>
               <span style={{ fontSize: "0.75rem", color: "var(--muted)", paddingLeft: "0.75rem" }}>Anzahl</span>
               <span style={{ fontSize: "0.75rem", color: "var(--muted)", paddingLeft: "0.75rem" }}>Preis</span>
@@ -175,44 +175,47 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
                     />
                   </div>
                   <button onClick={() => removeItem(idx)} disabled={lineItems.length === 1}
-                    style={{ ...btnBase, color: "var(--error)", opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
+                    style={{ ...btnBase, padding: "0.3rem 0.65rem", fontSize: "1.1rem", lineHeight: 1, color: "var(--error)", opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
                 </Fragment>
               ))}
             </div>
             <button onClick={addItem} style={{ ...btnBase, color: "var(--muted)", alignSelf: "flex-start" }}>+ Position</button>
           </div>
 
-          <div style={{ fontSize: "0.82rem", color: "var(--muted)", textAlign: "right" }}>
-            Netto: <strong>{net.toLocaleString("de-AT", { style: "currency", currency: "EUR" })}</strong>
-            {" · "}Brutto (inkl. 20% MwSt.): <strong>{(net * 1.2).toLocaleString("de-AT", { style: "currency", currency: "EUR" })}</strong>
-          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginRight: "calc(42px + 0.4rem)" }}>
+            <div style={{ fontSize: "0.82rem", color: "var(--muted)", textAlign: "right" }}>
+              Netto: <strong>{net.toLocaleString("de-AT", { style: "currency", currency: "EUR" })}</strong>
+              <br />
+              Brutto (inkl. 20% MwSt.): <strong>{(net * 1.2).toLocaleString("de-AT", { style: "currency", currency: "EUR" })}</strong>
+            </div>
 
-          <div>
-            <label style={{ fontSize: "0.82rem", display: "block", marginBottom: "0.25rem" }}>Anmerkungen (optional)</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
-              style={{ width: "100%", boxSizing: "border-box", resize: "vertical", fontSize: "0.82rem",
-                fontFamily: "inherit", padding: "0.4rem 0.6rem", border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)", background: "var(--bg)", color: "var(--text)" }}
-            />
-          </div>
+            <div>
+              <label style={{ fontSize: "0.82rem", display: "block", marginBottom: "0.25rem" }}>Anmerkungen (optional)</label>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
+                style={{ width: "100%", boxSizing: "border-box", resize: "vertical", fontSize: "0.82rem",
+                  fontFamily: "inherit", padding: "0.4rem 0.6rem", border: "1px solid var(--border)",
+                  borderRadius: "var(--radius-sm)", background: "var(--bg)", color: "var(--text)" }}
+              />
+            </div>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.82rem", cursor: "pointer", alignSelf: "flex-end" }}>
-            Per E-Mail an Anfragenden senden
-            <Toggle checked={sendEmail} onChange={setSendEmail} />
-          </label>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.82rem", cursor: "pointer", alignSelf: "flex-end" }}>
+              Per E-Mail an Anfragenden senden
+              <Toggle checked={sendEmail} onChange={setSendEmail} />
+            </label>
 
-          {error && <p style={{ color: "var(--error)", fontSize: "0.8rem", margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: "var(--error)", fontSize: "0.8rem", margin: 0 }}>{error}</p>}
 
-          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-            <button style={{ ...btnBase, color: "var(--muted)" }} onClick={() => setCreating(false)}>Abbrechen</button>
-            <button
-              onClick={handleCreate} disabled={saving}
-              style={{ padding: "0.4rem 1.25rem", background: "var(--primary)", color: "var(--btn-text)",
-                border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600,
-                cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1, fontSize: "0.82rem" }}
-            >
-              {saving ? "Wird erstellt…" : "Angebot erstellen"}
-            </button>
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+              <button style={{ ...btnBase, color: "var(--muted)" }} onClick={() => setCreating(false)}>Abbrechen</button>
+              <button
+                onClick={handleCreate} disabled={saving}
+                style={{ padding: "0.4rem 1.25rem", background: "var(--primary)", color: "var(--btn-text)",
+                  border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600,
+                  cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1, fontSize: "0.82rem" }}
+              >
+                {saving ? "Wird erstellt…" : "Angebot erstellen"}
+              </button>
+            </div>
           </div>
         </div>
       )}
