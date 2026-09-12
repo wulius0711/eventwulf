@@ -34,6 +34,17 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   abgelaufen:        { bg: "var(--badge-neutral-bg)",   color: "var(--badge-neutral-text)" },
 };
 
+// "Erledigt" bündelt die drei toten Endzustände zu einer Gruppe, damit die
+// Filterleiste nicht drei kaum genutzte Einzel-Tabs braucht.
+const STATUS_GROUPS: { key: string; label: string; statuses: string[] | null }[] = [
+  { key: "alle",              label: "Alle",              statuses: null },
+  { key: "neu",                label: "Neu",               statuses: ["neu"] },
+  { key: "in_pruefung",        label: "In Prüfung",        statuses: ["in_pruefung"] },
+  { key: "angebot_versendet",  label: "Angebot versendet",  statuses: ["angebot_versendet"] },
+  { key: "bestaetigt",         label: "Bestätigt",         statuses: ["bestaetigt"] },
+  { key: "erledigt",           label: "Erledigt",          statuses: ["abgelehnt", "storniert", "abgelaufen"] },
+];
+
 function fmt(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -72,6 +83,8 @@ export default function InquiryInbox() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("alle");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/inquiries")
@@ -119,10 +132,55 @@ export default function InquiryInbox() {
     );
   }
 
+  const activeGroup = STATUS_GROUPS.find((g) => g.key === statusFilter) ?? STATUS_GROUPS[0];
+  const parsed = inquiries.map((inq) => ({ inq, d: JSON.parse(inq.data) as InquiryFormData }));
+  const filtered = parsed.filter(({ inq, d }) => {
+    if (activeGroup.statuses && !activeGroup.statuses.includes(inq.status)) return false;
+    if (search.trim()) {
+      const haystack = `${d.artTitel ?? ""} ${d.nameGruppenleitung ?? ""} ${d.email ?? ""}`.toLowerCase();
+      if (!haystack.includes(search.trim().toLowerCase())) return false;
+    }
+    return true;
+  });
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-      {inquiries.map((inq) => {
-        const d = JSON.parse(inq.data) as InquiryFormData;
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div className="ew-inq-filterbar" style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          {STATUS_GROUPS.map((g) => (
+            <button
+              key={g.key}
+              type="button"
+              onClick={() => setStatusFilter(g.key)}
+              style={{
+                padding: "0.35rem 0.85rem", borderRadius: "999px", fontSize: "0.8rem", fontWeight: 600,
+                border: `1px solid ${statusFilter === g.key ? "var(--primary)" : "var(--border)"}`,
+                background: statusFilter === g.key ? "var(--primary-tint)" : "none",
+                color: statusFilter === g.key ? "var(--primary-text)" : "var(--muted)",
+                cursor: "pointer",
+              }}
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Suche nach Titel, Name oder E-Mail…"
+          style={{ width: "auto", minWidth: "220px" }}
+        />
+      </div>
+
+      {filtered.length === 0 && (
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "2.5rem", textAlign: "center", color: "var(--muted)", fontSize: "0.9rem" }}>
+          Keine Anfragen für diese Auswahl.
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+      {filtered.map(({ inq, d }) => {
         const sc = STATUS_COLORS[inq.status] ?? STATUS_COLORS.neu;
         const isOpen = expanded === inq.id;
 
@@ -131,31 +189,37 @@ export default function InquiryInbox() {
             {/* Row summary */}
             <div
               onClick={() => setExpanded(isOpen ? null : inq.id)}
-              style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.9rem 1.25rem", cursor: "pointer" }}
+              style={{ display: "grid", gridTemplateColumns: "1fr 10rem 1fr", alignItems: "center", gap: "0.85rem", padding: "0.9rem 1.5rem", cursor: "pointer" }}
             >
-              <span style={{ background: sc.bg, color: sc.color, padding: "0.18rem 0.6rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600, flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", minWidth: 0 }}>
+                <span style={{ fontWeight: 600, fontSize: "0.9rem", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {d.artTitel || "Retreat"} — {d.nameGruppenleitung}
+                </span>
+                {inq.eventId && (
+                  <span style={{ display: "inline-flex", alignItems: "center", background: "var(--primary-tint)", color: "var(--primary-text)", padding: "0.18rem 0.5rem", borderRadius: "4px", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
+                    Event
+                  </span>
+                )}
+              </div>
+
+              <span style={{ display: "inline-flex", alignItems: "center", justifySelf: "start", background: sc.bg, color: sc.color, padding: "0.18rem 0.6rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600, flexShrink: 0 }}>
                 {STATUS_LABELS[inq.status] ?? inq.status}
               </span>
-              {inq.eventId && (
-                <span style={{ background: "var(--primary-tint)", color: "var(--primary-text)", padding: "0.18rem 0.5rem", borderRadius: "4px", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
-                  Event
+
+              <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", justifySelf: "end" }}>
+                {inq.holdExpiresAt && (
+                  <span style={{ color: "var(--badge-pending-text)", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
+                    ⏱ {fmtHoldRemaining(inq.holdExpiresAt)}
+                  </span>
+                )}
+                <span style={{ fontSize: "0.78rem", color: "var(--muted)", flexShrink: 0 }}>
+                  {d.datumVon ? fmtDate(d.datumVon) : "–"}
                 </span>
-              )}
-              <span style={{ fontWeight: 600, fontSize: "0.9rem", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {d.artTitel || "Retreat"} — {d.nameGruppenleitung}
-              </span>
-              {inq.holdExpiresAt && (
-                <span style={{ color: "var(--badge-pending-text)", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
-                  ⏱ {fmtHoldRemaining(inq.holdExpiresAt)}
+                <span className="ew-inq-created" style={{ fontSize: "0.75rem", color: "var(--muted)", flexShrink: 0 }}>
+                  {fmt(inq.createdAt)}
                 </span>
-              )}
-              <span style={{ fontSize: "0.78rem", color: "var(--muted)", flexShrink: 0 }}>
-                {d.datumVon ? fmtDate(d.datumVon) : "–"}
-              </span>
-              <span className="ew-inq-created" style={{ fontSize: "0.75rem", color: "var(--muted)", flexShrink: 0 }}>
-                {fmt(inq.createdAt)}
-              </span>
-              <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{isOpen ? "▲" : "▼"}</span>
+                <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{isOpen ? "▲" : "▼"}</span>
+              </div>
             </div>
 
             {/* Detail panel */}
@@ -227,6 +291,7 @@ export default function InquiryInbox() {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
