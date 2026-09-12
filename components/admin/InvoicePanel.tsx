@@ -166,11 +166,14 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
                     onChange={(e) => setItem(idx, "quantity", parseInt(e.target.value) || 1)}
                     style={{ fontSize: "0.82rem" }}
                   />
-                  <input
-                    type="number" min="0" step="0.01" placeholder="Preis €" value={item.unitPrice}
-                    onChange={(e) => setItem(idx, "unitPrice", parseFloat(e.target.value) || 0)}
-                    style={{ fontSize: "0.82rem" }}
-                  />
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", fontSize: "0.82rem", color: "var(--muted)", pointerEvents: "none" }}>€</span>
+                    <input
+                      type="number" min="0" step="0.01" value={item.unitPrice}
+                      onChange={(e) => setItem(idx, "unitPrice", parseFloat(e.target.value) || 0)}
+                      style={{ fontSize: "0.82rem", width: "100%", boxSizing: "border-box", paddingLeft: "1.6rem" }}
+                    />
+                  </div>
                   <button onClick={() => removeItem(idx)} disabled={lineItems.length === 1}
                     style={{ ...btnBase, color: "var(--error)", opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
                 </Fragment>
