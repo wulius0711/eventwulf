@@ -144,7 +144,7 @@ function EventCard({ event, slug, expanded, onToggle }: { event: EventItem; slug
             {soldOut ? (
               <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>Dieses Event ist bereits ausgebucht.</p>
             ) : done ? (
-              <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--primary-text)", fontWeight: 500 }}>
+              <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--success)", fontWeight: 500 }}>
                 Vielen Dank! Deine Anfrage ist eingegangen, wir melden uns in Kürze.
               </p>
             ) : (

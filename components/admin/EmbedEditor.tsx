@@ -165,7 +165,7 @@ export default function EmbedEditor({ slug }: Props) {
       />
       <EmbedSnippet
         title="Events"
-        description="Zeigt deine terminierten Events zum direkten Buchen (siehe Admin-Bereich „Events“). Getrennt vom Anfrageformular, kann auf einer eigenen Seite eingebettet werden:"
+        description="Zeigt deine terminierten Events zum direkten Anfragen (siehe Admin-Bereich „Events“). Getrennt vom Anfrageformular, kann auf einer eigenen Seite eingebettet werden:"
         src={`${origin}/events?kunde=${slug}`}
         origin={origin}
         iframeId="eventwulf-events-widget"

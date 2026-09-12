@@ -143,7 +143,8 @@ const content: Record<string, React.ReactNode> = {
             ["Bild", "Optional, JPEG/PNG/WebP, max. 5MB"],
             ["Von / Bis", "Zeitraum des Events"],
             ["Preis pro Person", "In Euro"],
-            ["Min./Max. Teilnehmer", "Max. leer lassen für unbegrenzt"],
+            ["Min. Teilnehmer", "Kleinste Personenzahl pro einzelner Anfrage"],
+            ["Max. Teilnehmer", "Gesamtkapazität des Events über alle Anfragen zusammen, nicht pro Anfrage — leer lassen für unbegrenzt"],
             ["Farbe", "Für die Anzeige im Kalender"],
             ["Intern", "Sperrt zusätzlich den Zeitraum im allgemeinen Kalender für andere Anfragen"],
             ["Aktiv", "Nur aktive Events erscheinen im Buchungswidget"],
@@ -185,7 +186,7 @@ const content: Record<string, React.ReactNode> = {
       <H3>Wie viele Räume sind erlaubt?</H3>
       <p>Im <strong>Pro-Paket</strong> können bis zu 3 Räume angelegt werden, im <strong>Premium-Paket</strong> unbegrenzt viele.</p>
       <H3>Doppelbuchungen & Ablauf</H3>
-      <p>Fragt ein Gast einen Raum für einen bereits belegten Zeitraum an, wird die Anfrage abgelehnt — auch wenn zwei Anfragen im selben Moment eingehen. Unbeantwortete Raum-Anfragen laufen wie bei Events nach 48 Stunden automatisch ab und geben den Raum wieder frei. Das Formularfeld „Raum-Auswahl" (unter Elemente → Formular → Felder) kann bei Bedarf ausgeblendet werden, auch wenn Räume angelegt sind.</p>
+      <p>Ein Raum blockiert für andere Gäste erst, sobald eine Anfrage dafür <strong>bestätigt</strong> ist — bis dahin können mehrere Gäste unabhängig voneinander für denselben Raum/Zeitraum anfragen, du entscheidest dann, welche Anfrage du bestätigst. Versuchst du, eine Anfrage zu bestätigen, während der Raum für diesen Zeitraum bereits durch eine andere bestätigte Anfrage belegt ist, wird das abgelehnt. Unbeantwortete Raum-Anfragen laufen nach 48 Stunden automatisch ab. Das Formularfeld „Raum-Auswahl" (unter Elemente → Formular → Felder) kann bei Bedarf ausgeblendet werden, auch wenn Räume angelegt sind.</p>
 
       <H2>Sperrzeiten</H2>
       <H3>Kalenderansicht</H3>
@@ -221,9 +222,9 @@ const content: Record<string, React.ReactNode> = {
           ))}
         </tbody>
       </table>
-      <Callout>Bei Event- und Raum-Buchungen wird der Platz bzw. Raum schon beim Absenden reserviert, nicht erst bei „Bestätigt". Setzt du eine Anfrage auf „Abgelehnt" oder „Storniert", wird er sofort wieder frei.</Callout>
+      <Callout>Event- und Raum-Anfragen verhalten sich unterschiedlich: Bei <strong>Events</strong> wird der Platz schon beim Absenden reserviert (Status „Neu") — die angezeigte Restkapazität sinkt also sofort mit jeder eingehenden Anfrage. Bei <strong>Räumen</strong> passiert das erst bei „Bestätigt" — mehrere Gäste können parallel für denselben Raum/Zeitraum anfragen, du wählst dann aus. Setzt du eine Anfrage auf „Abgelehnt" oder „Storniert", wird ein reservierter Event-Platz sofort wieder frei.</Callout>
       <H3>Automatischer Ablauf bei Event- und Raum-Buchungen</H3>
-      <p>Reagierst du 48 Stunden nicht auf eine Event- oder Raum-Anfrage, wird sie automatisch auf „Abgelaufen" gesetzt und der Platz bzw. Raum freigegeben — läuft stündlich im Hintergrund, ohne dass du etwas tun musst.</p>
+      <p>Reagierst du 48 Stunden nicht auf eine Event- oder Raum-Anfrage, wird sie automatisch auf „Abgelaufen" gesetzt. Bei Events wird dabei der reservierte Platz wieder freigegeben — läuft stündlich im Hintergrund, ohne dass du etwas tun musst.</p>
       <H3>Anfrage öffnen</H3>
       <p>Klick auf eine Anfrage öffnet die Detailansicht mit allen Formulardaten. Im rechten Bereich befindet sich das Angebots-Panel.</p>
     </>
@@ -242,7 +243,7 @@ const content: Record<string, React.ReactNode> = {
   ),
   einbetten: (
     <>
-      <p>Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Buchen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
+      <p>Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Anfragen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
       <Callout>Bei <strong>Framer</strong> funktioniert die automatische Höhenanpassung über den normalen HTML-Code nicht (Framer verpackt ihn in ein eigenes iFrame). Nutze stattdessen eine Code Component — den fertigen Code dafür findest du direkt weiter unten auf dieser Seite unter „Einbetten in Framer".</Callout>
     </>
   ),

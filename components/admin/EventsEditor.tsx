@@ -43,6 +43,14 @@ function fmtPrice(n: number) {
   return n.toLocaleString("de-AT", { style: "currency", currency: "EUR" });
 }
 
+function InfoTip({ text, align = "left" }: { text: string; align?: "left" | "right" }) {
+  return (
+    <span className={`ew-infotip${align === "right" ? " ew-infotip--right" : ""}`} data-tip={text}>
+      i
+    </span>
+  );
+}
+
 function emptyForm() {
   return {
     name: "", description: "", image: "", startDate: "", endDate: "",
@@ -61,6 +69,7 @@ export default function EventsEditor() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [showPast, setShowPast] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -86,6 +95,7 @@ export default function EventsEditor() {
       isActive: ev.isActive, roomId: ev.roomId ?? "",
     });
     setError("");
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -100,6 +110,7 @@ export default function EventsEditor() {
       isActive: true, roomId: ev.roomId ?? "",
     });
     setError("");
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -107,6 +118,7 @@ export default function EventsEditor() {
     setEditingId(null);
     setForm(emptyForm());
     setError("");
+    setShowForm(false);
   }
 
   async function handleUpload(file: File) {
@@ -260,13 +272,21 @@ export default function EventsEditor() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
       <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
-        Terminierte Angebote mit Preis und Kapazität — werden im Events-Widget angezeigt und können direkt gebucht werden.
+        Terminierte Angebote mit Preis und Kapazität — werden im Events-Widget angezeigt und können direkt angefragt werden.
       </p>
-      <form onSubmit={handleSubmit} style={{
-        background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`,
-        borderRadius: "var(--radius)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem",
-      }}>
-        {editingId && <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--primary)", fontWeight: 600 }}>Event wird bearbeitet</p>}
+      <div style={{ background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`, borderRadius: "var(--radius)", overflow: "hidden" }}>
+        <button
+          type="button"
+          onClick={() => (showForm ? cancelEdit() : setShowForm(true))}
+          style={{ width: "100%", textAlign: "left", padding: "1rem 1.5rem", borderTop: "none", borderLeft: "none", borderRight: "none", borderBottom: showForm ? "1px solid var(--border)" : "none", fontWeight: 600, fontSize: "0.95rem", background: "none", cursor: "pointer", color: editingId ? "var(--primary)" : "var(--text)" }}
+        >
+          {showForm ? "▾" : "▸"} {editingId ? "Event wird bearbeitet" : "Neues Event anlegen"}
+        </button>
+
+        {showForm && (
+        <form onSubmit={handleSubmit} style={{
+          padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem",
+        }}>
 
         <div>
           <label>Event-Name *</label>
@@ -327,31 +347,37 @@ export default function EventsEditor() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(160px, 100%), 1fr))", gap: "1rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(240px, 100%), 1fr))", gap: "1rem" }}>
           <div>
             <label>Preis pro Person (€)</label>
             <input type="number" min="0" step="0.01" value={form.pricePerPerson} onChange={(e) => set("pricePerPerson", e.target.value)} />
           </div>
           <div>
-            <label>Min. Teilnehmer</label>
+            <label>
+              Min. Teilnehmer pro Anfrage
+              <InfoTip text="Kleinste Personenzahl, die eine einzelne Anfrage für dieses Event umfassen muss." />
+            </label>
             <input type="number" min="1" value={form.minParticipants} onChange={(e) => set("minParticipants", e.target.value)} />
           </div>
           <div>
-            <label>Max. Teilnehmer</label>
+            <label>
+              Max. Teilnehmer gesamt
+              <InfoTip text="Gesamtkapazität des Events über alle Anfragen zusammen — nicht pro Anfrage." align="right" />
+            </label>
             <input type="number" min="1" value={form.maxParticipants} onChange={(e) => set("maxParticipants", e.target.value)} placeholder="unbegrenzt" />
           </div>
         </div>
 
         {rooms.length > 0 && (
           <div>
-            <label>Raum</label>
+            <label>
+              Raum
+              <InfoTip text="Blockiert diesen Raum für den Event-Zeitraum, auch in der normalen Raumwahl des Anfrageformulars." />
+            </label>
             <select value={form.roomId} onChange={(e) => set("roomId", e.target.value)}>
               <option value="">Kein bestimmter Raum</option>
               {rooms.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.3rem" }}>
-              Blockiert diesen Raum für den Event-Zeitraum, auch in der normalen Raumwahl des Anfrageformulars.
-            </span>
           </div>
         )}
 
@@ -398,7 +424,9 @@ export default function EventsEditor() {
             {loading ? "Speichern…" : editingId ? "Änderungen speichern" : "Event anlegen"}
           </button>
         </div>
-      </form>
+        </form>
+        )}
+      </div>
 
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
         <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid var(--border)", fontWeight: 600, fontSize: "0.95rem" }}>
@@ -411,7 +439,7 @@ export default function EventsEditor() {
 
       {past.length > 0 && (
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
-          <button onClick={() => setShowPast((v) => !v)} style={{ width: "100%", textAlign: "left", padding: "1rem 1.5rem", borderBottom: showPast ? "1px solid var(--border)" : "none", fontWeight: 600, fontSize: "0.95rem", background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}>
+          <button onClick={() => setShowPast((v) => !v)} style={{ width: "100%", textAlign: "left", padding: "1rem 1.5rem", borderTop: "none", borderLeft: "none", borderRight: "none", borderBottom: showPast ? "1px solid var(--border)" : "none", fontWeight: 600, fontSize: "0.95rem", background: "none", cursor: "pointer", color: "var(--text)" }}>
             {showPast ? "▾" : "▸"} Vergangene Events ({past.length})
           </button>
           {showPast && renderList(past)}
