@@ -149,6 +149,12 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
 
           {/* Line items */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 100px auto", gap: "0.4rem" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Leistung</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Menge</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Preis</span>
+              <span />
+            </div>
             {lineItems.map((item, idx) => (
               <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 70px 100px auto", gap: "0.4rem", alignItems: "center" }}>
                 <input
@@ -188,8 +194,8 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
           </div>
 
           <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.82rem", cursor: "pointer" }}>
-            <Toggle checked={sendEmail} onChange={setSendEmail} />
             Per E-Mail an Anfragenden senden
+            <Toggle checked={sendEmail} onChange={setSendEmail} />
           </label>
 
           {error && <p style={{ color: "var(--error)", fontSize: "0.8rem", margin: 0 }}>{error}</p>}
