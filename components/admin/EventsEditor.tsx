@@ -274,7 +274,7 @@ export default function EventsEditor() {
       <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
         Terminierte Angebote mit Preis und Kapazität — werden im Events-Widget angezeigt und können direkt angefragt werden.
       </p>
-      <div style={{ background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`, borderRadius: "var(--radius)", overflow: "hidden" }}>
+      <div style={{ background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`, borderRadius: "var(--radius)" }}>
         <button
           type="button"
           onClick={() => (showForm ? cancelEdit() : setShowForm(true))}

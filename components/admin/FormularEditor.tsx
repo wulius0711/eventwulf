@@ -20,21 +20,20 @@ function Section({ title, description, children }: { title: string; description?
         marginBottom: "1.25rem",
       }}
     >
-      <div style={{ padding: "1rem 1.5rem", borderBottom: open ? "1px solid var(--border)" : "none" }}>
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          style={{
-            width: "100%", textAlign: "left", padding: 0, background: "none",
-            border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.95rem", color: "var(--text)",
-          }}
-        >
-          {open ? "▾" : "▸"} {title}
-        </button>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          width: "100%", textAlign: "left", padding: "1rem 1.5rem", background: "none",
+          border: "none", borderBottom: open ? "1px solid var(--border)" : "none",
+          cursor: "pointer", display: "block",
+        }}
+      >
+        <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--text)" }}>{open ? "▾" : "▸"} {title}</span>
         {description && (
-          <p style={{ margin: "0.35rem 0 0", fontSize: "0.82rem", color: "var(--muted)" }}>{description}</p>
+          <span style={{ display: "block", margin: "0.35rem 0 0", fontSize: "0.82rem", color: "var(--muted)", fontWeight: 400 }}>{description}</span>
         )}
-      </div>
+      </button>
       {open && <div style={{ padding: "1.5rem" }}>{children}</div>}
     </div>
   );
