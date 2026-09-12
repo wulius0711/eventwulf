@@ -108,6 +108,7 @@ export async function GET(req: NextRequest) {
       color: e.color,
       maxCapacity: e.maxParticipants,
       bookedCount: e.bookedCount,
+      showCapacity: e.showCapacity,
       // Once an Event is tied to a specific room, its "intern" blocking is scoped to
       // that room (via roomEventBlockedEntries) — it must not also block every other
       // room's calendar or the general no-room-selected view. Only a room-less intern

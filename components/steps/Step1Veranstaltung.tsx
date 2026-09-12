@@ -120,7 +120,7 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
         <label style={{ marginBottom: "0.5rem", display: "block" }}>Zeitraum wählen</label>
         <Calendar
           slug={slug} selectedStart={selectedStart} selectedEnd={selectedEnd} onRangeChange={handleRangeChange}
-          showCapacity={config.showCapacity === true} roomId={form.roomId}
+          roomId={form.roomId}
           onInvalidSelectionCleared={() => setDateConflict(true)}
         />
         {dateConflict && (

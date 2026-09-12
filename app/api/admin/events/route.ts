@@ -17,7 +17,7 @@ function serialize(e: {
   id: string; name: string; description: string; image: string;
   startDate: Date; endDate: Date; color: string; intern: boolean;
   pricePerPerson: number; minParticipants: number; maxParticipants: number | null;
-  bookedCount: number; isActive: boolean; sortOrder: number;
+  bookedCount: number; showCapacity: boolean; isActive: boolean; sortOrder: number;
   roomId: string | null; room?: { name: string } | null;
 }) {
   return {
@@ -33,6 +33,7 @@ function serialize(e: {
     minParticipants: e.minParticipants,
     maxParticipants: e.maxParticipants,
     bookedCount: e.bookedCount,
+    showCapacity: e.showCapacity,
     isActive: e.isActive,
     sortOrder: e.sortOrder,
     roomId: e.roomId,
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     name, description, image, startDate, endDate, color, intern,
-    pricePerPerson, minParticipants, maxParticipants, isActive, sortOrder, roomId,
+    pricePerPerson, minParticipants, maxParticipants, showCapacity, isActive, sortOrder, roomId,
   } = body;
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -134,6 +135,7 @@ export async function POST(req: NextRequest) {
         pricePerPerson: Number(pricePerPerson) || 0,
         minParticipants: min,
         maxParticipants: max,
+        showCapacity: showCapacity !== false,
         isActive: isActive !== false,
         sortOrder: Number(sortOrder) || 0,
         roomId: resolvedRoomId,
@@ -156,7 +158,7 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const {
     id, name, description, image, startDate, endDate, color, intern,
-    pricePerPerson, minParticipants, maxParticipants, isActive, sortOrder, roomId,
+    pricePerPerson, minParticipants, maxParticipants, showCapacity, isActive, sortOrder, roomId,
   } = body;
 
   const existing = await prisma.event.findFirst({ where: { id, clientId } });
@@ -208,6 +210,7 @@ export async function PATCH(req: NextRequest) {
         pricePerPerson: pricePerPerson !== undefined ? Number(pricePerPerson) : existing.pricePerPerson,
         minParticipants: min,
         maxParticipants: max,
+        showCapacity: showCapacity !== undefined ? Boolean(showCapacity) : existing.showCapacity,
         isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
         sortOrder: sortOrder !== undefined ? Number(sortOrder) : existing.sortOrder,
         roomId: newRoomId,

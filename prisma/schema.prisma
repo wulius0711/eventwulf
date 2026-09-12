@@ -142,6 +142,7 @@ model Event {
   minParticipants Int       @default(1)
   maxParticipants Int? // null = unbegrenzt
   bookedCount     Int       @default(0)
+  showCapacity    Boolean   @default(true) // shows remaining spots for this event in the calendar/widget
   isActive        Boolean   @default(true)
   sortOrder       Int       @default(0)
   roomId          String?

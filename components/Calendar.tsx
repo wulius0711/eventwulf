@@ -13,7 +13,6 @@ interface Props {
   selectedStart?: Date | null;
   selectedEnd?: Date | null;
   onRangeChange?: (start: Date | null, end: Date | null) => void;
-  showCapacity?: boolean;
   roomId?: string;
   onInvalidSelectionCleared?: () => void;
 }
@@ -144,12 +143,12 @@ function weekEvents(week: CalendarDay[], entries: BlockedDateEntry[]) {
       start, end, label: ev.label, color: ev.color || "#16a34a",
       startDate: ev.startDate, endDate: ev.endDate,
       maxCapacity: ev.maxCapacity ?? null, bookedCount: ev.bookedCount ?? 0,
-      roomName: ev.roomName ?? null,
+      showCapacity: ev.showCapacity ?? false, roomName: ev.roomName ?? null,
     }];
   });
 }
 
-export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChange, showCapacity, roomId, onInvalidSelectionCleared }: Props) {
+export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChange, roomId, onInvalidSelectionCleared }: Props) {
   const [today, setToday] = useState<Date | null>(null);
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth());
@@ -399,7 +398,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                           gap: "0.3rem",
                         }}>
                         <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{ev.label}</span>
-                        {showCapacity && ev.maxCapacity != null && (
+                        {ev.showCapacity && ev.maxCapacity != null && (
                           <span style={{
                             flexShrink: 0,
                             background: "var(--overlay-sm)",

@@ -59,7 +59,6 @@ export interface EventConfig {
   quelleOptions: string[];
   notifyEmail: string;
   formFields?: FormFields;
-  showCapacity?: boolean;
   billing?: {
     taxRate?: number;
     validityDays?: number;
@@ -94,6 +93,7 @@ export interface BlockedDateEntry {
   color: string;
   maxCapacity?: number | null;
   bookedCount?: number;
+  showCapacity?: boolean;
   intern?: boolean;
   roomName?: string | null;
   silent?: boolean; // blocks the days but skips the "nicht verfügbar" banner
@@ -112,6 +112,7 @@ export interface EventEntry {
   minParticipants: number;
   maxParticipants: number | null;
   bookedCount: number;
+  showCapacity: boolean;
   isActive: boolean;
   sortOrder: number;
   roomId: string | null;

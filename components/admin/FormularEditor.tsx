@@ -9,19 +9,33 @@ interface Props {
 
 type OptionsField = "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions" | "budgetOptions" | "quelleOptions";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
   return (
     <div
       style={{
         background: "var(--surface)",
         border: "1px solid var(--border)",
         borderRadius: "var(--radius)",
-        padding: "1.5rem",
         marginBottom: "1.25rem",
       }}
     >
-      <h2 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--text)" }}>{title}</h2>
-      {children}
+      <div style={{ padding: "1rem 1.5rem", borderBottom: open ? "1px solid var(--border)" : "none" }}>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          style={{
+            width: "100%", textAlign: "left", padding: 0, background: "none",
+            border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.95rem", color: "var(--text)",
+          }}
+        >
+          {open ? "▾" : "▸"} {title}
+        </button>
+        {description && (
+          <p style={{ margin: "0.35rem 0 0", fontSize: "0.82rem", color: "var(--muted)" }}>{description}</p>
+        )}
+      </div>
+      {open && <div style={{ padding: "1.5rem" }}>{children}</div>}
     </div>
   );
 }
@@ -151,7 +165,7 @@ export default function FormularEditor({ initialConfig }: Props) {
       <p style={{ color: "var(--muted)", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
         Titel, Farben, Schriftarten und Felder deines Buchungsformulars — steuert, was Gäste im Anfrageformular sehen und ausfüllen können.
       </p>
-      <Section title="Formular">
+      <Section title="Titel & Design">
         <Field label="Formular-Titel (optional, leer lassen zum Ausblenden)">
           <input type="text" value={config.formTitle} onChange={(e) => set("formTitle", e.target.value)} placeholder="z.B. Du hast Interesse an einem Retreat bei uns?" />
         </Field>
@@ -215,26 +229,7 @@ export default function FormularEditor({ initialConfig }: Props) {
         </div>
       </Section>
 
-      <Section title="Widget-Features">
-        <p style={{ margin: "0 0 1rem", fontSize: "0.82rem", color: "var(--muted)" }}>
-          Diese Features sind standardmäßig ausgeblendet und müssen explizit aktiviert werden.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
-            <Toggle checked={config.showCapacity === true} onChange={(v) => set("showCapacity", v)} />
-            <span>
-              <strong>Verfügbare Plätze anzeigen</strong>
-              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Zeigt verbleibende Kapazität im Kalender (erfordert konfigurierte Kapazitäten)</span>
-            </span>
-          </label>
-        </div>
-      </Section>
-
-      <Section title="Felder">
-        <p style={{ margin: "0 0 1.5rem", fontSize: "0.82rem", color: "var(--muted)" }}>
-          Aktiviere oder deaktiviere einzelne Felder im Buchungsformular.
-        </p>
-
+      <Section title="Felder" description="Aktiviere oder deaktiviere einzelne Felder im Buchungsformular.">
         {([
           {
             label: "Schritt 1 – Veranstaltung",

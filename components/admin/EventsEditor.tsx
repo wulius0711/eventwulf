@@ -55,7 +55,7 @@ function emptyForm() {
   return {
     name: "", description: "", image: "", startDate: "", endDate: "",
     color: EVENT_COLORS[0].value, intern: false, pricePerPerson: "0",
-    minParticipants: "1", maxParticipants: "", isActive: true, roomId: "",
+    minParticipants: "1", maxParticipants: "", showCapacity: true, isActive: true, roomId: "",
   };
 }
 
@@ -92,7 +92,7 @@ export default function EventsEditor() {
       color: ev.color || EVENT_COLORS[0].value, intern: ev.intern,
       pricePerPerson: String(ev.pricePerPerson), minParticipants: String(ev.minParticipants),
       maxParticipants: ev.maxParticipants != null ? String(ev.maxParticipants) : "",
-      isActive: ev.isActive, roomId: ev.roomId ?? "",
+      showCapacity: ev.showCapacity, isActive: ev.isActive, roomId: ev.roomId ?? "",
     });
     setError("");
     setShowForm(true);
@@ -107,7 +107,7 @@ export default function EventsEditor() {
       color: ev.color || EVENT_COLORS[0].value, intern: ev.intern,
       pricePerPerson: String(ev.pricePerPerson), minParticipants: String(ev.minParticipants),
       maxParticipants: ev.maxParticipants != null ? String(ev.maxParticipants) : "",
-      isActive: true, roomId: ev.roomId ?? "",
+      showCapacity: ev.showCapacity, isActive: true, roomId: ev.roomId ?? "",
     });
     setError("");
     setShowForm(true);
@@ -285,7 +285,7 @@ export default function EventsEditor() {
 
         {showForm && (
         <form onSubmit={handleSubmit} style={{
-          padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem",
+          padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem",
         }}>
 
         <div>
@@ -395,21 +395,31 @@ export default function EventsEditor() {
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
+        <div>
+          <label style={{ marginBottom: "0.6rem" }}>Sichtbarkeit & Verhalten</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
+            <Toggle checked={form.showCapacity} onChange={(v) => set("showCapacity", v)} />
+            <span>
+              <strong>Verfügbare Plätze anzeigen</strong>
+              <InfoTip text="Zeigt verbleibende Kapazität im Kalender (erfordert konfigurierte Kapazitäten)." />
+            </span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
             <Toggle checked={form.intern} onChange={(v) => set("intern", v)} />
             <span>
               <strong>Intern</strong>
-              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Sperrt den Zeitraum im allgemeinen Kalender für andere Anfragen</span>
+              <InfoTip text="Sperrt den Zeitraum im allgemeinen Kalender für andere Anfragen." />
             </span>
           </label>
-          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
             <Toggle checked={form.isActive} onChange={(v) => set("isActive", v)} />
             <span>
               <strong>Aktiv</strong>
-              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)" }}>Nur aktive Events erscheinen im Buchungswidget — nützlich, um ein Event vorzubereiten, bevor es veröffentlicht wird, oder es vorübergehend auszublenden, ohne es zu löschen</span>
+              <InfoTip text="Nur aktive Events erscheinen im Buchungswidget — nützlich, um ein Event vorzubereiten, bevor es veröffentlicht wird, oder es vorübergehend auszublenden, ohne es zu löschen." />
             </span>
           </label>
+          </div>
         </div>
 
         {error && <p style={{ color: "var(--error)", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
