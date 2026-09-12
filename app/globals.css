@@ -403,6 +403,7 @@ button:active:not(:disabled) {
   --primary-dark: #6366f1;
   --primary-tint: rgba(129,140,248,0.12);
   --primary-dim:  rgba(129,140,248,0.20);
+  --primary-text: #a5b4fc;
 }
 
 .admin-shell input,
