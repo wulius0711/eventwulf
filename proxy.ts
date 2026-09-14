@@ -37,6 +37,14 @@ export async function proxy(request: NextRequest) {
   });
 
   const responseHeaders = new Headers(upstream.headers);
+  // fetch() transparently decompresses the response body, but upstream.headers
+  // still carries the original Content-Encoding/Content-Length describing the
+  // compressed bytes — forwarding those unchanged alongside the now-decoded
+  // body makes the browser try to decompress already-plain content and fail
+  // (silently renders a blank page). The platform re-applies its own
+  // compression to the client as needed.
+  responseHeaders.delete("content-encoding");
+  responseHeaders.delete("content-length");
   const location = responseHeaders.get("location");
   if (location?.includes(FRAMER_HOST)) {
     responseHeaders.set("location", location.replace(FRAMER_HOST, host));
