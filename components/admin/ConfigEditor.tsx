@@ -196,8 +196,8 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
         </Section>
       )}
 
-      {/* Save bar (only for firma/formular tabs) */}
-      {tab !== "passwort" && (
+      {/* Save bar (only for firma/abrechnung tabs — team and passwort save inline) */}
+      {tab !== "passwort" && tab !== "team" && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
           {saved && <span style={{ color: "#16a34a", fontSize: "0.85rem" }}>Gespeichert ✓</span>}
           {saveError && <span style={{ color: "var(--error)", fontSize: "0.85rem" }}>{saveError}</span>}
