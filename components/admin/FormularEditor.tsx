@@ -220,8 +220,8 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
           <span style={{
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             width: "14px", height: "14px", borderRadius: "50%", border: "1px solid var(--muted)",
-            fontSize: "0.68rem", lineHeight: 1, flexShrink: 0,
-          }}>i</span>
+            fontSize: "0.6rem", lineHeight: 1, flexShrink: 0,
+          }}>☰</span>
           neben einem Feld = die Auswahloptionen dafür pflegst du weiter unten im gleichen Tab.
         </p>
         {([
@@ -229,7 +229,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
             label: "Schritt 1 – Veranstaltung",
             fields: [
               { key: "uhrzeiten" as const, label: "Uhrzeiten (Beginn / Ende)", requirable: true },
-              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind — dann automatisch Pflichtfeld", hintAsTooltip: true, proOnly: true },
+              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind — dann automatisch Pflichtfeld", proOnly: true },
             ],
           },
           {
@@ -292,7 +292,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
                       <span style={{ fontSize: "0.875rem", lineHeight: 1.4, opacity: locked ? 0.6 : 1 }}>
                         {label}
                         {hint && (hintAsTooltip ? (
-                          <span className="ew-infotip" data-tip={hint}>i</span>
+                          <span className="ew-infotip" data-tip={hint}>☰</span>
                         ) : (
                           <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>
                         ))}
