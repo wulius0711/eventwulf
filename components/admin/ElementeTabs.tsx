@@ -33,14 +33,14 @@ export default function ElementeTabs({ initialConfig }: Props) {
         style={{ display: "flex", borderBottom: "1px solid var(--border)", marginBottom: "1.5rem", gap: "0.25rem" }}
       >
         <button style={tabStyle("formular")} onClick={() => setTab("formular")}>Formular</button>
-        <button style={tabStyle("events")} onClick={() => setTab("events")}>Events</button>
         <button style={tabStyle("raeume")} onClick={() => setTab("raeume")}>Räume</button>
+        <button style={tabStyle("events")} onClick={() => setTab("events")}>Events</button>
         <button style={tabStyle("sperrzeiten")} onClick={() => setTab("sperrzeiten")}>Sperrzeiten</button>
       </div>
 
       {tab === "formular" && <FormularEditor initialConfig={initialConfig} />}
-      {tab === "events" && <EventsEditor />}
       {tab === "raeume" && <RoomsEditor />}
+      {tab === "events" && <EventsEditor />}
       {tab === "sperrzeiten" && <AvailabilityEditor />}
     </div>
   );
