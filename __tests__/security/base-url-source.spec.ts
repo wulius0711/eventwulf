@@ -14,21 +14,35 @@ import { resolveBaseUrl } from "../../app/api/submit/route";
 // ever set when actually running on Vercel, so this can't be exercised
 // end-to-end against the local test server — resolveBaseUrl is exported
 // specifically to make the choice of source directly testable.
+//
+// NEXT_PUBLIC_APP_URL was added on top afterwards: VERCEL_URL is documented
+// to always be the deployment's own *.vercel.app alias, never a custom
+// domain attached to the project, so once app.eventwulf.at went live as the
+// real production domain, VERCEL_URL alone kept putting vercel.app into
+// every emailed link. NEXT_PUBLIC_APP_URL is a server-controlled env var
+// (same trust level as VERCEL_URL), so giving it top priority doesn't
+// reopen the Host-header spoofing gap.
 test.describe("Base URL source for guest-facing email links", () => {
-  test("prefers VERCEL_URL over a spoofed Host header when set", () => {
-    const result = resolveBaseUrl("eventwulf.vercel.app", "evil.example");
+  test("prefers NEXT_PUBLIC_APP_URL over VERCEL_URL and a spoofed Host header when set", () => {
+    const result = resolveBaseUrl("https://app.eventwulf.at", "eventwulf.vercel.app", "evil.example");
+    expect(result.host).toBe("app.eventwulf.at");
+    expect(result.proto).toBe("https");
+  });
+
+  test("prefers VERCEL_URL over a spoofed Host header when NEXT_PUBLIC_APP_URL is unset", () => {
+    const result = resolveBaseUrl(undefined, "eventwulf.vercel.app", "evil.example");
     expect(result.host).toBe("eventwulf.vercel.app");
     expect(result.proto).toBe("https");
   });
 
-  test("falls back to the request Host header when VERCEL_URL is unset (local dev)", () => {
-    const result = resolveBaseUrl(undefined, "localhost:3100");
+  test("falls back to the request Host header when neither env var is set (local dev)", () => {
+    const result = resolveBaseUrl(undefined, undefined, "localhost:3100");
     expect(result.host).toBe("localhost:3100");
     expect(result.proto).toBe("http");
   });
 
-  test("falls back to https for a non-localhost header when VERCEL_URL is unset", () => {
-    const result = resolveBaseUrl(undefined, "example.com");
+  test("falls back to https for a non-localhost header when neither env var is set", () => {
+    const result = resolveBaseUrl(undefined, undefined, "example.com");
     expect(result.proto).toBe("https");
   });
 });

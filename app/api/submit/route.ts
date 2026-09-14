@@ -12,9 +12,27 @@ import { assertRoomAvailable, RoomConflictError } from "@/lib/roomAvailability";
 
 // Exported for direct testing — VERCEL_URL is only actually set on Vercel,
 // so this can't be exercised end-to-end against the local test server; the
-// choice of source (deployment env var vs. request header) is what's under
-// test, not anything HTTP-observable.
-export function resolveBaseUrl(vercelUrl: string | undefined, headerHost: string): { host: string; proto: string } {
+// choice of source (env vars vs. request header) is what's under test, not
+// anything HTTP-observable.
+//
+// appUrl (NEXT_PUBLIC_APP_URL) takes priority over vercelUrl: VERCEL_URL is
+// documented by Vercel to always be the deployment's auto-generated
+// *.vercel.app alias, never a custom domain attached to the project — so on
+// a production deploy with app.eventwulf.at attached, VERCEL_URL alone would
+// still put the wrong (vercel.app) domain into every emailed link. appUrl is
+// only ever set from a server-controlled env var (Vercel project settings),
+// same trust level as vercelUrl, so this doesn't reopen the Host-header
+// spoofing gap the VERCEL_URL fix closed. Left unset for preview deploys and
+// local dev, where vercelUrl/headerHost are the correct fallbacks.
+export function resolveBaseUrl(
+  appUrl: string | undefined,
+  vercelUrl: string | undefined,
+  headerHost: string
+): { host: string; proto: string } {
+  if (appUrl) {
+    const url = new URL(appUrl);
+    return { host: url.host, proto: url.protocol.replace(":", "") };
+  }
   const host = vercelUrl ?? headerHost;
   const proto = vercelUrl ? "https" : host.startsWith("localhost") ? "http" : "https";
   return { host, proto };
@@ -259,16 +277,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Anfrage konnte nicht gespeichert werden" }, { status: 500 });
   }
 
-  // VERCEL_URL (the actual deployment's own domain — preview or production,
-  // whichever this request is actually running on) instead of the request's
+  // NEXT_PUBLIC_APP_URL (the real production custom domain) if set, else
+  // VERCEL_URL (the deployment's own *.vercel.app alias — never a custom
+  // domain, but a safe fallback on preview deploys) instead of the request's
   // Host header, which Vercel documents as reflecting whatever the client
   // sent, not something it validates against the deployment's real domain
   // (https://vercel.com/docs/headers/request-headers#host). A crafted Host
   // header would otherwise flow straight into these email links' href
-  // attributes. Only set on Vercel, so local dev still falls back to the
-  // request header (harmless there — there's no untrusted client to spoof
-  // it against).
-  const { host, proto } = resolveBaseUrl(process.env.VERCEL_URL, req.headers.get("host") ?? "");
+  // attributes. Neither env var is set locally, so local dev still falls
+  // back to the request header (harmless there — there's no untrusted
+  // client to spoof it against).
+  const { host, proto } = resolveBaseUrl(process.env.NEXT_PUBLIC_APP_URL, process.env.VERCEL_URL, req.headers.get("host") ?? "");
 
   const icalLink = inquiryId
     ? `<p style="margin-top:1.5rem;display:flex;gap:10px;flex-wrap:wrap"><a href="${proto}://${host}/api/ical/${inquiryId}" style="display:inline-block;padding:10px 20px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-size:0.875rem;font-weight:600">📅 Zum Kalender hinzufügen</a>${savedCancelToken ? `<a href="${proto}://${host}/api/cancel/${savedCancelToken}" style="display:inline-block;padding:10px 20px;background:transparent;color:#6b7280;border:1px solid #e5e7eb;border-radius:8px;text-decoration:none;font-size:0.875rem;font-weight:600">Anfrage stornieren</a>` : ""}</p>`

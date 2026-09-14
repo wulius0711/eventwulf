@@ -152,7 +152,11 @@ addPropertyControls(EventwulfWidget, {
 
 export default function EmbedEditor({ slug }: Props) {
   const [origin, setOrigin] = useState("");
-  useEffect(() => { setOrigin(window.location.origin); }, []);
+  // Prefer the fixed production domain over window.location.origin — an
+  // admin who happens to be logged in via the *.vercel.app alias instead of
+  // app.eventwulf.at would otherwise generate embed snippets pointing
+  // customer sites at the wrong domain.
+  useEffect(() => { setOrigin(process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin); }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
