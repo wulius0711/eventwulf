@@ -35,13 +35,13 @@ export default function UpgradeButton({ currentPlan }: { currentPlan: Plan }) {
     );
   }
 
-  async function upgrade() {
+  async function upgrade(interval: "monthly" | "yearly") {
     setLoading(true);
     setError("");
     const res = await fetch("/api/stripe/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: "pro", interval: "monthly" }),
+      body: JSON.stringify({ plan: "pro", interval }),
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.url) {
@@ -53,14 +53,26 @@ export default function UpgradeButton({ currentPlan }: { currentPlan: Plan }) {
   }
 
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.6rem" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
       <button
         type="button"
-        onClick={upgrade}
+        onClick={() => upgrade("monthly")}
         disabled={loading}
         style={{ ...linkStyle, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}
       >
         {loading ? "Weiter zu Stripe…" : "Auf Pro upgraden"}
+      </button>
+      <button
+        type="button"
+        onClick={() => upgrade("yearly")}
+        disabled={loading}
+        style={{
+          background: "none", border: "none", padding: 0,
+          color: "var(--muted)", fontSize: "0.78rem", textDecoration: "underline",
+          cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1,
+        }}
+      >
+        oder jährlich (~10% sparen)
       </button>
       {error && <span style={{ color: "var(--error)", fontSize: "0.8rem" }}>{error}</span>}
     </span>
