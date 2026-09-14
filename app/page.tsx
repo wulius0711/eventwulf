@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import { buildThemeVars, DEFAULT_PRIMARY_COLOR } from "@/lib/theme";
 import { isSafeCssColor } from "@/lib/validate";
@@ -23,7 +24,8 @@ interface Props {
 
 export default async function Home({ searchParams }: Props) {
   const { kunde } = await searchParams;
-  const slug = kunde ?? process.env.SUPERADMIN_SLUG ?? "default";
+  if (!kunde) redirect("/signup");
+  const slug = kunde;
   const config = await loadConfigFromDB(slug);
 
   const client = await prisma.client.findUnique({ where: { slug }, select: { id: true } });
