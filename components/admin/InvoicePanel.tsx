@@ -101,7 +101,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
   const net = lineItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
 
   const btnBase: React.CSSProperties = {
-    padding: "0.3rem 0.75rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)",
+    padding: "0.3rem 0.75rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)",
     background: "none", cursor: "pointer", fontSize: "0.78rem",
   };
 
@@ -210,7 +210,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
               <button
                 onClick={handleCreate} disabled={saving}
                 style={{ padding: "0.4rem 1.25rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)",
-                  border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600,
+                  border: "none", borderRadius: "var(--admin-btn-radius)", fontWeight: 600,
                   cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1, fontSize: "0.82rem" }}
               >
                 {saving ? "Wird erstellt…" : "Angebot erstellen"}

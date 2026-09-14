@@ -79,12 +79,12 @@ export default function InvoiceArchive() {
               <div style={{ display: "flex", gap: "0.35rem" }}>
                 <button
                   onClick={() => window.open(`/api/admin/invoices/${inv.id}/html`, "_blank")}
-                  style={{ padding: "0.28rem 0.65rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "var(--text)", cursor: "pointer", fontSize: "0.78rem" }}>
+                  style={{ padding: "0.28rem 0.65rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)", background: "none", color: "var(--text)", cursor: "pointer", fontSize: "0.78rem" }}>
                   Vorschau
                 </button>
                 {inv.status !== "storniert" && (
                   <button onClick={() => updateStatus(inv.id, "storniert")}
-                    style={{ padding: "0.28rem 0.65rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.78rem" }}>
+                    style={{ padding: "0.28rem 0.65rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.78rem" }}>
                     Stornieren
                   </button>
                 )}

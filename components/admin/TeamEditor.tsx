@@ -145,7 +145,7 @@ export default function TeamEditor({ plan }: { plan: Plan }) {
             background: "var(--admin-accent)",
             color: "var(--admin-accent-text)",
             border: "none",
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "var(--admin-btn-radius)",
             fontWeight: 600,
             cursor: inviting || atLimit ? "not-allowed" : "pointer",
             opacity: inviting || atLimit ? 0.7 : 1,

@@ -130,7 +130,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
               style={{
                 padding: "0 0.75rem",
                 border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)",
+                borderRadius: "var(--admin-btn-radius)",
                 background: "none",
                 color: "var(--error)",
                 cursor: "pointer",
@@ -147,7 +147,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
           style={{
             padding: "0.35rem 0.85rem",
             border: "1px dashed var(--border)",
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "var(--admin-btn-radius)",
             background: "none",
             color: "var(--muted)",
             cursor: "pointer",
@@ -183,7 +183,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
                 <>
                   <input type="color" value={config.formBgColor} onChange={(e) => set("formBgColor", e.target.value)} style={{ width: "3rem", height: "2.5rem", padding: "0.2rem", cursor: "pointer" }} />
                   <input type="text" value={config.formBgColor} onChange={(e) => set("formBgColor", e.target.value)} placeholder="transparent" style={{ flex: 1 }} />
-                  <button type="button" onClick={() => set("formBgColor", "")} style={{ padding: "0.5rem 0.75rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "none", color: "var(--muted)", cursor: "pointer", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                  <button type="button" onClick={() => set("formBgColor", "")} style={{ padding: "0.5rem 0.75rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)", background: "none", color: "var(--muted)", cursor: "pointer", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
                     ×
                   </button>
                 </>
@@ -361,7 +361,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
             background: "var(--admin-accent)",
             color: "var(--admin-accent-text)",
             border: "none",
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "var(--admin-btn-radius)",
             fontWeight: 600,
             cursor: saving ? "not-allowed" : "pointer",
             opacity: saving ? 0.7 : 1,

@@ -122,7 +122,7 @@ function SignupForm() {
               background: "var(--admin-accent)",
               color: "var(--admin-accent-text)",
               border: "none",
-              borderRadius: "var(--radius-sm)",
+              borderRadius: "var(--admin-btn-radius)",
               fontWeight: 600,
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.7 : 1,

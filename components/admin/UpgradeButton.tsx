@@ -17,7 +17,7 @@ export default function UpgradeButton({ currentPlan }: { currentPlan: Plan }) {
     background: "var(--admin-accent)",
     color: "var(--admin-accent-text)",
     border: "none",
-    borderRadius: "var(--radius-sm)",
+    borderRadius: "var(--admin-btn-radius)",
     fontWeight: 600,
     fontSize: "0.82rem",
     textDecoration: "none",

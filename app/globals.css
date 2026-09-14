@@ -388,6 +388,7 @@ button:active:not(:disabled) {
   --admin-accent:       #996C1E;
   --admin-accent-dark:  #825C1A;
   --admin-accent-text:  #ffffff;
+  --admin-btn-radius:   32px;
   --btn-text:     #ffffff;
   color: var(--text);
   font-family: "Inter", system-ui, -apple-system, sans-serif;
@@ -521,7 +522,7 @@ button:active:not(:disabled) {
   width: fit-content;
   padding: 0.5rem 0.875rem;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: var(--admin-btn-radius);
   background: none;
   color: var(--muted);
   cursor: pointer;
@@ -541,7 +542,7 @@ button:active:not(:disabled) {
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: 7px;
+  border-radius: var(--admin-btn-radius);
   background: none;
   color: var(--muted);
   cursor: pointer;
@@ -616,7 +617,7 @@ button:active:not(:disabled) {
     width: 36px;
     height: 36px;
     border: none;
-    border-radius: 7px;
+    border-radius: var(--admin-btn-radius);
     background: none;
     color: var(--text);
     cursor: pointer;

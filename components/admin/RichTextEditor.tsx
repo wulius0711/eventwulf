@@ -16,7 +16,7 @@ function ToolbarButton({ active, onClick, children }: { active: boolean; onClick
       style={{
         padding: "0.3rem 0.6rem",
         border: "1px solid var(--border)",
-        borderRadius: "var(--radius-sm)",
+        borderRadius: "var(--admin-btn-radius)",
         background: active ? "var(--primary)" : "var(--surface)",
         color: active ? "var(--btn-text)" : "var(--text)",
         cursor: "pointer",
