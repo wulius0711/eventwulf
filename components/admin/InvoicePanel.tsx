@@ -209,7 +209,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
               <button style={{ ...btnBase, color: "var(--muted)" }} onClick={() => setCreating(false)}>Abbrechen</button>
               <button
                 onClick={handleCreate} disabled={saving}
-                style={{ padding: "0.4rem 1.25rem", background: "var(--primary)", color: "var(--btn-text)",
+                style={{ padding: "0.4rem 1.25rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)",
                   border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600,
                   cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1, fontSize: "0.82rem" }}
               >

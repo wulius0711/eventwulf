@@ -208,7 +208,7 @@ export default function ClientsEditor({ superadminSlug }: Props) {
           </div>
         </div>
         {error && <p style={{ color: "var(--error)", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ padding: "0.65rem 1.5rem", background: "var(--primary)", color: "var(--btn-text)", border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", alignSelf: "flex-start" }}>
+        <button type="submit" disabled={loading} style={{ padding: "0.65rem 1.5rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)", border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", alignSelf: "flex-start" }}>
           {loading ? "Anlegen…" : "Kunde anlegen"}
         </button>
       </form>
@@ -261,7 +261,7 @@ export default function ClientsEditor({ superadminSlug }: Props) {
                   {addSlugOrgId === org.id ? (
                     <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
                       <input type="text" value={newSlug} onChange={(e) => setNewSlug(e.target.value)} placeholder="neuer-slug" pattern="[a-z0-9-]+" style={{ width: "140px", fontSize: "0.82rem", padding: "0.25rem 0.5rem" }} autoFocus />
-                      <button type="button" onClick={() => handleAddSlug(org.id)} disabled={addSlugLoading} style={{ padding: "0.3rem 0.7rem", background: "var(--primary)", color: "var(--btn-text)", border: "none", borderRadius: "var(--radius-sm)", fontSize: "0.8rem", cursor: "pointer" }}>
+                      <button type="button" onClick={() => handleAddSlug(org.id)} disabled={addSlugLoading} style={{ padding: "0.3rem 0.7rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)", border: "none", borderRadius: "var(--radius-sm)", fontSize: "0.8rem", cursor: "pointer" }}>
                         {addSlugLoading ? "…" : "OK"}
                       </button>
                       <button type="button" onClick={() => { setAddSlugOrgId(null); setNewSlug(""); setAddSlugError(""); }} style={btnGhost}>×</button>

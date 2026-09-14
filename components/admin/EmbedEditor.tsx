@@ -34,8 +34,8 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
         style={{
           marginTop: "1rem",
           padding: "0.65rem 1.25rem",
-          background: copied ? "#16a34a" : "var(--primary)",
-          color: "var(--btn-text)",
+          background: copied ? "#16a34a" : "var(--admin-accent)",
+          color: copied ? "var(--btn-text)" : "var(--admin-accent-text)",
           border: "none",
           borderRadius: "var(--radius-sm)",
           fontWeight: 600,
@@ -133,8 +133,8 @@ addPropertyControls(EventwulfWidget, {
         style={{
           marginTop: "1rem",
           padding: "0.65rem 1.25rem",
-          background: copied ? "#16a34a" : "var(--primary)",
-          color: "var(--btn-text)",
+          background: copied ? "#16a34a" : "var(--admin-accent)",
+          color: copied ? "var(--btn-text)" : "var(--admin-accent-text)",
           border: "none",
           borderRadius: "var(--radius-sm)",
           fontWeight: 600,

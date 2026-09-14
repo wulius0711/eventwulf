@@ -335,8 +335,8 @@ export default function FormularEditor({ initialConfig }: Props) {
           disabled={saving}
           style={{
             padding: "0.65rem 1.75rem",
-            background: "var(--primary)",
-            color: "var(--btn-text)",
+            background: "var(--admin-accent)",
+            color: "var(--admin-accent-text)",
             border: "none",
             borderRadius: "var(--radius-sm)",
             fontWeight: 600,

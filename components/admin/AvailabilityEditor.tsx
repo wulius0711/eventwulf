@@ -158,7 +158,7 @@ export default function AvailabilityEditor() {
             </button>
           )}
           <button type="submit" disabled={loading} style={{
-            padding: "0.65rem 1.5rem", background: "var(--primary)", color: "var(--btn-text)",
+            padding: "0.65rem 1.5rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)",
             border: "none", borderRadius: "var(--radius-sm)", fontWeight: 600,
             cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1,
           }}>
