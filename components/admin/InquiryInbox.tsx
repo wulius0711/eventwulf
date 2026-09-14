@@ -196,13 +196,13 @@ export default function InquiryInbox() {
                   {d.artTitel || "Retreat"} — {d.nameGruppenleitung}
                 </span>
                 {inq.eventId && (
-                  <span style={{ display: "inline-flex", alignItems: "center", background: "var(--primary-tint)", color: "var(--primary-text)", padding: "0.18rem 0.5rem", borderRadius: "4px", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", background: "var(--primary-tint)", color: "var(--primary-text)", padding: "0.18rem 0.5rem", borderRadius: "999px", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
                     Inhouse
                   </span>
                 )}
               </div>
 
-              <span style={{ display: "inline-flex", alignItems: "center", justifySelf: "start", background: sc.bg, color: sc.color, padding: "0.18rem 0.6rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600, flexShrink: 0 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", justifySelf: "start", background: sc.bg, color: sc.color, padding: "0.18rem 0.6rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600, flexShrink: 0 }}>
                 {STATUS_LABELS[inq.status] ?? inq.status}
               </span>
 

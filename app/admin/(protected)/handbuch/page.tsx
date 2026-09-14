@@ -235,7 +235,7 @@ const content: Record<string, React.ReactNode> = {
           ].map(([status, color, desc]) => (
             <tr key={status as string} style={{ borderBottom: "1px solid var(--border)" }}>
               <td style={{ padding: "0.6rem 0.75rem" }}>
-                <span style={{ background: color as string, color: "#fff", padding: "0.15rem 0.5rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600 }}>{status}</span>
+                <span style={{ background: color as string, color: "#fff", padding: "0.15rem 0.5rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600 }}>{status}</span>
               </td>
               <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)", fontSize: "0.875rem" }}>{desc}</td>
             </tr>

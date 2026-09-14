@@ -227,7 +227,7 @@ export default function EventsEditor() {
             ) : (
               <div style={{ width: "0.75rem", height: "0.75rem", borderRadius: "50%", background: ev.color || "#16a34a", flexShrink: 0 }} />
             )}
-            <span style={{ background: "var(--primary-tint)", color: "var(--primary-text)", padding: "0.18rem 0.55rem", borderRadius: "4px", fontSize: "0.78rem", fontWeight: 500, whiteSpace: "nowrap" }}>
+            <span style={{ background: "var(--primary-tint)", color: "var(--primary-text)", padding: "0.18rem 0.55rem", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 500, whiteSpace: "nowrap" }}>
               {fmt(ev.startDate)} – {fmt(ev.endDate)}
             </span>
             <span style={{ fontSize: "0.85rem", fontWeight: 500, flex: 1, cursor: "pointer" }} onClick={() => setExpandedId(expandedId === ev.id ? null : ev.id)}>
@@ -237,7 +237,7 @@ export default function EventsEditor() {
               {ev.intern && <span style={{ color: "var(--muted)", fontWeight: 400 }}> · intern (sperrt Kalender)</span>}
               {ev.roomName && <span style={{ color: "var(--muted)", fontWeight: 400 }}> · {ev.roomName}</span>}
             </span>
-            <span style={{ background: b.bg, color: b.color, padding: "0.18rem 0.55rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap" }}>{b.label}</span>
+            <span style={{ background: b.bg, color: b.color, padding: "0.18rem 0.55rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap" }}>{b.label}</span>
             <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
               <button onClick={() => startEdit(ev)} style={miniBtn}>Bearbeiten</button>
               <button onClick={() => duplicate(ev)} style={miniBtn}>Duplizieren</button>

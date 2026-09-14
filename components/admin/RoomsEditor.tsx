@@ -316,7 +316,7 @@ export default function RoomsEditor() {
               <span style={{
                 background: room.isActive ? "var(--badge-confirmed-bg)" : "var(--badge-neutral-bg)",
                 color: room.isActive ? "var(--badge-confirmed-text)" : "var(--badge-neutral-text)",
-                padding: "0.18rem 0.55rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap",
+                padding: "0.18rem 0.55rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap",
               }}>
                 {room.isActive ? "Aktiv" : "Inaktiv"}
               </span>

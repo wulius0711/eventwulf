@@ -73,7 +73,7 @@ export default function InvoiceArchive() {
               <span style={{ fontWeight: 700, fontSize: "0.9rem", flex: 1 }}>
                 {gross.toLocaleString("de-AT", { style: "currency", currency: "EUR" })}
               </span>
-              <span style={{ background: sc.bg, color: sc.color, padding: "0.15rem 0.55rem", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600 }}>
+              <span style={{ background: sc.bg, color: sc.color, padding: "0.15rem 0.55rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600 }}>
                 {STATUS_LABELS[inv.status]}
               </span>
               <div style={{ display: "flex", gap: "0.35rem" }}>

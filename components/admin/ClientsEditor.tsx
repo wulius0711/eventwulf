@@ -229,7 +229,7 @@ export default function ClientsEditor({ superadminSlug }: Props) {
                 </div>
                 <div style={{ padding: "0.5rem 1rem", display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
                   {org.clients.map((c) => (
-                    <div key={c.slug} style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "var(--bg2)", borderRadius: "4px", padding: "0.2rem 0.4rem 0.2rem 0.5rem" }}>
+                    <div key={c.slug} style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "var(--bg2)", borderRadius: "999px", padding: "0.2rem 0.4rem 0.2rem 0.5rem" }}>
                       <code style={{ fontSize: "0.82rem" }}>{c.slug}</code>
                       <a href={`/?kunde=${c.slug}`} target="_blank" style={{ fontSize: "0.72rem", color: "var(--primary)", textDecoration: "none" }}>↗</a>
                       {org.clients.length > 1 && c.slug !== superadminSlug && (

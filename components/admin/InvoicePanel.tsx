@@ -122,7 +122,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
             <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#1a1612" }}>
               {gross.toLocaleString("de-AT", { style: "currency", currency: "EUR" })}
             </span>
-            <span style={{ background: sc.bg, color: sc.color, padding: "0.12rem 0.5rem", borderRadius: "4px", fontSize: "0.72rem", fontWeight: 600 }}>
+            <span style={{ background: sc.bg, color: sc.color, padding: "0.12rem 0.5rem", borderRadius: "999px", fontSize: "0.72rem", fontWeight: 600 }}>
               {STATUS_LABELS[inv.status]}
             </span>
             <div style={{ marginLeft: "auto", display: "flex", gap: "0.35rem" }}>

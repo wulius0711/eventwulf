@@ -175,7 +175,7 @@ export default function AvailabilityEditor() {
           }}>
             <span style={{
               background: "var(--primary-tint)", color: "var(--primary)",
-              padding: "0.18rem 0.55rem", borderRadius: "4px",
+              padding: "0.18rem 0.55rem", borderRadius: "999px",
               fontSize: "0.78rem", fontWeight: 500, whiteSpace: "nowrap",
             }}>
               {fmt(entry.startDate)} – {fmt(entry.endDate)}
