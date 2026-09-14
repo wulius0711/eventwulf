@@ -49,11 +49,14 @@ function SignupForm() {
       style={{
         minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        gap: "1.5rem",
         background: "var(--bg)",
       }}
     >
+      <img src="/eventwulf-logo.png" alt="eventwulf" style={{ height: "32px", width: "auto" }} />
       <div
         style={{
           width: "100%",
