@@ -380,10 +380,14 @@ button:active:not(:disabled) {
   --border:       #e2e8f0;
   --text:         #0f172a;
   --muted:        #64748b;
-  --primary:      #4f46e5;
-  --primary-dark: #3730a3;
-  --primary-tint: rgba(79,70,229,0.10);
-  --primary-dim:  rgba(79,70,229,0.18);
+  --primary:      #156e47;
+  --primary-dark: #0f5536;
+  --primary-tint: rgba(21,110,71,0.10);
+  --primary-dim:  rgba(21,110,71,0.18);
+  --primary-text: #156e47;
+  --admin-accent:       #bd8e3c;
+  --admin-accent-dark:  #a67a2e;
+  --admin-accent-text:  #1a1a1a;
   --btn-text:     #ffffff;
   color: var(--text);
   font-family: "Inter", system-ui, -apple-system, sans-serif;
@@ -399,11 +403,11 @@ button:active:not(:disabled) {
   --border:       #334155;
   --text:         #f1f5f9;
   --muted:        #94a3b8;
-  --primary:      #818cf8;
-  --primary-dark: #6366f1;
-  --primary-tint: rgba(129,140,248,0.12);
-  --primary-dim:  rgba(129,140,248,0.20);
-  --primary-text: #a5b4fc;
+  --primary:      #34d399;
+  --primary-dark: #10b981;
+  --primary-tint: rgba(52,211,153,0.12);
+  --primary-dim:  rgba(52,211,153,0.20);
+  --primary-text: #6ee7b7;
 }
 
 .admin-shell input,

@@ -116,8 +116,8 @@ function SignupForm() {
             disabled={loading}
             style={{
               padding: "0.75rem",
-              background: "var(--primary)",
-              color: "var(--btn-text)",
+              background: "var(--admin-accent)",
+              color: "var(--admin-accent-text)",
               border: "none",
               borderRadius: "var(--radius-sm)",
               fontWeight: 600,
