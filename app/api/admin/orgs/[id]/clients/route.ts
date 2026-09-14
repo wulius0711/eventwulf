@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
+import { locationLimitFor, isPlan, PLAN_LABELS } from "@/lib/plan";
 
 const SUPERADMIN = process.env.SUPERADMIN_SLUG ?? "admin";
 
@@ -20,6 +21,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const existing = await prisma.client.findUnique({ where: { slug } });
   if (existing) return NextResponse.json({ error: "Slug bereits vergeben" }, { status: 400 });
+
+  const org = await prisma.organization.findUnique({ where: { id }, select: { plan: true } });
+  const plan = isPlan(org?.plan) ? org.plan : "basis";
+  const limit = locationLimitFor(plan);
+  if (limit !== null) {
+    const count = await prisma.client.count({ where: { organizationId: id } });
+    if (count >= limit) {
+      return NextResponse.json({ error: `Maximal ${limit} Standort(e) im ${PLAN_LABELS[plan]}-Paket. Für weitere Standorte upgraden.` }, { status: 400 });
+    }
+  }
 
   const defaultConfig = loadConfig("default");
   const client = await prisma.client.create({

@@ -34,6 +34,16 @@ export function eventLimitFor(plan: Plan): number | null {
   return EVENT_LIMIT[plan];
 }
 
+// Max Standorte (Client slugs) per Organization, by plan. null = unlimited.
+// Only the superadmin creates these today (no self-service UI), so this is
+// the one thing standing between "1 Standort" on the Basis pricing card and
+// it actually being true — see app/api/admin/orgs/[id]/clients/route.ts.
+const LOCATION_LIMIT: Record<Plan, number | null> = { basis: 1, pro: 1, premium: null };
+
+export function locationLimitFor(plan: Plan): number | null {
+  return LOCATION_LIMIT[plan];
+}
+
 export function isPlan(val: unknown): val is Plan {
   return typeof val === "string" && (PLAN_ORDER as string[]).includes(val);
 }
