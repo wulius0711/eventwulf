@@ -16,6 +16,10 @@ model Organization {
   bookingAppUrl String?
   bookingAppKey String?
   plan          String  @default("basis") // "basis" | "pro" | "premium" — gates features across all clients of this org
+
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+  subscriptionStatus   String? // Stripe subscription status, e.g. "active" | "past_due" | "canceled" — null if never subscribed
 }
 
 model Client {

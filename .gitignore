@@ -12,3 +12,4 @@ prisma/dev.db-journal
 /test-results
 /playwright-report
 /blob-report
+.env*
