@@ -244,9 +244,9 @@ export default function RoomsEditor() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
+                className="ew-btn ew-btn-outline"
                 style={{
-                  padding: "0.5rem 1rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)",
-                  background: "none", color: "var(--text)", cursor: uploading ? "not-allowed" : "pointer", fontSize: "0.85rem",
+                  fontSize: "0.85rem",
                 }}
               >
                 {form.image ? "Bild ändern" : "Bild hochladen"}
@@ -283,11 +283,11 @@ export default function RoomsEditor() {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
           {editingId && (
-            <button type="button" onClick={cancelEdit} style={{ padding: "0.65rem 1.25rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)", background: "none", color: "var(--muted)", cursor: "pointer", fontWeight: 500 }}>
+            <button type="button" onClick={cancelEdit} className="ew-btn ew-btn-outline" style={{ color: "var(--muted)" }}>
               Abbrechen
             </button>
           )}
-          <button type="submit" disabled={loading} style={{ padding: "0.65rem 1.5rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)", border: "none", borderRadius: "var(--admin-btn-radius)", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
+          <button type="submit" disabled={loading} className="ew-btn ew-btn-primary">
             {loading ? "Speichern…" : editingId ? "Änderungen speichern" : "Raum anlegen"}
           </button>
         </div>

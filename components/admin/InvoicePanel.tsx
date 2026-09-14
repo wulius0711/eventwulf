@@ -100,17 +100,14 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
 
   const net = lineItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
 
-  const btnBase: React.CSSProperties = {
-    padding: "0.3rem 0.75rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)",
-    background: "none", cursor: "pointer", fontSize: "0.78rem",
-  };
+  const btnBase: React.CSSProperties = { fontSize: "0.78rem" };
 
   return (
     <div style={{ borderTop: "1px solid var(--border)", paddingTop: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--muted)" }}>Dokumente</span>
         {!creating && (
-          <button style={{ ...btnBase, color: "var(--text)" }} onClick={openCreate}>+ Angebot</button>
+          <button className="ew-btn ew-btn-outline" style={{ ...btnBase, color: "var(--text)" }} onClick={openCreate}>+ Angebot</button>
         )}
       </div>
 
@@ -129,9 +126,9 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
               {STATUS_LABELS[inv.status]}
             </span>
             <div style={{ marginLeft: "auto", display: "flex", gap: "0.35rem" }}>
-              <button style={btnBase} onClick={() => window.open(`/api/admin/invoices/${inv.id}/html`, "_blank")}>Vorschau</button>
+              <button className="ew-btn ew-btn-outline" style={btnBase} onClick={() => window.open(`/api/admin/invoices/${inv.id}/html`, "_blank")}>Vorschau</button>
               {inv.status !== "storniert" && (
-                <button style={{ ...btnBase, color: "var(--error)" }} onClick={() => updateStatus(inv.id, "storniert")}>Stornieren</button>
+                <button className="ew-btn ew-btn-outline-danger" style={btnBase} onClick={() => updateStatus(inv.id, "storniert")}>Stornieren</button>
               )}
             </div>
           </div>
@@ -175,11 +172,12 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
                     />
                   </div>
                   <button onClick={() => removeItem(idx)} disabled={lineItems.length === 1}
-                    style={{ ...btnBase, padding: "0.3rem 0.65rem", fontSize: "1.1rem", lineHeight: 1, color: "var(--error)", opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
+                    className="ew-btn ew-btn-outline-danger"
+                    style={{ padding: "0.3rem 0.65rem", fontSize: "1.1rem", lineHeight: 1, opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
                 </Fragment>
               ))}
             </div>
-            <button onClick={addItem} style={{ ...btnBase, color: "var(--muted)", alignSelf: "flex-start" }}>+ Position</button>
+            <button onClick={addItem} className="ew-btn ew-btn-outline" style={{ ...btnBase, color: "var(--muted)", alignSelf: "flex-start" }}>+ Position</button>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginRight: "calc(42px + 0.4rem)" }}>
@@ -206,12 +204,11 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
             {error && <p style={{ color: "var(--error)", fontSize: "0.8rem", margin: 0 }}>{error}</p>}
 
             <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-              <button style={{ ...btnBase, color: "var(--muted)" }} onClick={() => setCreating(false)}>Abbrechen</button>
+              <button className="ew-btn ew-btn-outline" style={{ ...btnBase, color: "var(--muted)" }} onClick={() => setCreating(false)}>Abbrechen</button>
               <button
                 onClick={handleCreate} disabled={saving}
-                style={{ padding: "0.4rem 1.25rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)",
-                  border: "none", borderRadius: "var(--admin-btn-radius)", fontWeight: 600,
-                  cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1, fontSize: "0.82rem" }}
+                className="ew-btn ew-btn-primary"
+                style={{ fontSize: "0.82rem" }}
               >
                 {saving ? "Wird erstellt…" : "Angebot erstellen"}
               </button>

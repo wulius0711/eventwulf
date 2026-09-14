@@ -140,16 +140,7 @@ export default function TeamEditor({ plan }: { plan: Plan }) {
         <button
           type="submit"
           disabled={inviting || atLimit}
-          style={{
-            padding: "0.65rem 1.25rem",
-            background: "var(--admin-accent)",
-            color: "var(--admin-accent-text)",
-            border: "none",
-            borderRadius: "var(--admin-btn-radius)",
-            fontWeight: 600,
-            cursor: inviting || atLimit ? "not-allowed" : "pointer",
-            opacity: inviting || atLimit ? 0.7 : 1,
-          }}
+          className="ew-btn ew-btn-primary"
         >
           {inviting ? "Wird eingeladen…" : "Einladen"}
         </button>

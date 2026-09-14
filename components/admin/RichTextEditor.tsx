@@ -13,13 +13,11 @@ function ToolbarButton({ active, onClick, children }: { active: boolean; onClick
     <button
       type="button"
       onClick={onClick}
+      className="ew-btn"
       style={{
-        padding: "0.3rem 0.6rem",
         border: "1px solid var(--border)",
-        borderRadius: "var(--admin-btn-radius)",
         background: active ? "var(--primary)" : "var(--surface)",
         color: active ? "var(--btn-text)" : "var(--text)",
-        cursor: "pointer",
         fontSize: "0.82rem",
         fontWeight: 600,
       }}

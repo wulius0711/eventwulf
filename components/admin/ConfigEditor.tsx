@@ -189,7 +189,7 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
               <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} required autoComplete="new-password" minLength={8} />
             </Field>
             {pwMsg && <p style={{ color: pwMsg.includes("Fehler") || pwMsg.includes("falsch") ? "var(--error)" : "#16a34a", fontSize: "0.85rem", margin: 0 }}>{pwMsg}</p>}
-            <button type="submit" style={{ padding: "0.65rem 1.5rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)", border: "none", borderRadius: "var(--admin-btn-radius)", fontWeight: 600, cursor: "pointer", alignSelf: "flex-start" }}>
+            <button type="submit" className="ew-btn ew-btn-primary" style={{ alignSelf: "flex-start" }}>
               Speichern
             </button>
           </form>
@@ -204,16 +204,7 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
           <button
             onClick={handleSave}
             disabled={saving}
-            style={{
-              padding: "0.65rem 1.75rem",
-              background: "var(--admin-accent)",
-              color: "var(--admin-accent-text)",
-              border: "none",
-              borderRadius: "var(--admin-btn-radius)",
-              fontWeight: 600,
-              cursor: saving ? "not-allowed" : "pointer",
-              opacity: saving ? 0.7 : 1,
-            }}
+            className="ew-btn ew-btn-primary"
           >
             {saving ? "Speichern…" : "Änderungen speichern"}
           </button>

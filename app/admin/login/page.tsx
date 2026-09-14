@@ -89,17 +89,8 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              padding: "0.75rem",
-              background: "var(--admin-accent)",
-              color: "var(--admin-accent-text)",
-              border: "none",
-              borderRadius: "var(--admin-btn-radius)",
-              fontWeight: 600,
-              cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.7 : 1,
-              marginTop: "0.25rem",
-            }}
+            className="ew-btn ew-btn-primary"
+            style={{ marginTop: "0.25rem" }}
           >
             {loading ? "Anmelden…" : "Anmelden"}
           </button>

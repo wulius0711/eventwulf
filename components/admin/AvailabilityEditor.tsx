@@ -149,19 +149,11 @@ export default function AvailabilityEditor() {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
           {editingId && (
-            <button type="button" onClick={cancelEdit} style={{
-              padding: "0.65rem 1.25rem", border: "1px solid var(--border)",
-              borderRadius: "var(--admin-btn-radius)", background: "none",
-              color: "var(--muted)", cursor: "pointer", fontWeight: 500,
-            }}>
+            <button type="button" onClick={cancelEdit} className="ew-btn ew-btn-outline" style={{ color: "var(--muted)" }}>
               Abbrechen
             </button>
           )}
-          <button type="submit" disabled={loading} style={{
-            padding: "0.65rem 1.5rem", background: "var(--admin-accent)", color: "var(--admin-accent-text)",
-            border: "none", borderRadius: "var(--admin-btn-radius)", fontWeight: 600,
-            cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1,
-          }}>
+          <button type="submit" disabled={loading} className="ew-btn ew-btn-primary">
             {loading ? "Speichern…" : editingId ? "Änderungen speichern" : "Zeitraum sperren"}
           </button>
         </div>
@@ -190,18 +182,10 @@ export default function AvailabilityEditor() {
             </span>
             <span style={{ fontSize: "0.85rem", color: "var(--muted)", flex: 1 }}>{entry.label}</span>
             <div className="ew-entry-actions" style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
-              <button onClick={() => startEdit(entry)} style={{
-                padding: "0.28rem 0.65rem", border: "1px solid var(--border)",
-                borderRadius: "var(--admin-btn-radius)", background: "none",
-                color: "var(--text)", cursor: "pointer", fontSize: "0.78rem",
-              }}>
+              <button onClick={() => startEdit(entry)} className="ew-btn ew-btn-outline" style={{ fontSize: "0.78rem" }}>
                 Bearbeiten
               </button>
-              <button onClick={() => handleDelete(entry.id, entry.label)} style={{
-                padding: "0.28rem 0.65rem", border: "1px solid var(--border)",
-                borderRadius: "var(--admin-btn-radius)", background: "none",
-                color: "var(--error)", cursor: "pointer", fontSize: "0.78rem",
-              }}>
+              <button onClick={() => handleDelete(entry.id, entry.label)} className="ew-btn ew-btn-outline-danger" style={{ fontSize: "0.78rem" }}>
                 Löschen
               </button>
             </div>

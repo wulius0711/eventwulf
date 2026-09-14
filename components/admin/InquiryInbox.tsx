@@ -265,15 +265,13 @@ export default function InquiryInbox() {
                     <button
                       key={key}
                       onClick={() => setStatus(inq.id, key)}
+                      className="ew-btn"
                       style={{
-                        padding: "0.28rem 0.75rem",
                         border: `1px solid ${inq.status === key ? STATUS_COLORS[key].color : "var(--border)"}`,
-                        borderRadius: "var(--admin-btn-radius)",
                         background: inq.status === key ? STATUS_COLORS[key].bg : "none",
                         color: inq.status === key ? STATUS_COLORS[key].color : "var(--muted)",
                         fontSize: "0.78rem",
                         fontWeight: inq.status === key ? 600 : 400,
-                        cursor: "pointer",
                       }}
                     >
                       {label}
@@ -281,7 +279,8 @@ export default function InquiryInbox() {
                   ))}
                   <button
                     onClick={() => deleteInquiry(inq.id, `${d.artTitel || "Retreat"} — ${d.nameGruppenleitung}`)}
-                    style={{ marginLeft: "auto", padding: "0.28rem 0.65rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.78rem" }}
+                    className="ew-btn ew-btn-outline-danger"
+                    style={{ marginLeft: "auto", fontSize: "0.78rem" }}
                   >
                     Löschen
                   </button>

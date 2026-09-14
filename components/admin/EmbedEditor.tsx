@@ -31,15 +31,11 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
       <button
         type="button"
         onClick={copySnippet}
+        className="ew-btn ew-btn-primary"
         style={{
           marginTop: "1rem",
-          padding: "0.65rem 1.25rem",
-          background: copied ? "#16a34a" : "var(--admin-accent)",
-          color: copied ? "var(--btn-text)" : "var(--admin-accent-text)",
-          border: "none",
-          borderRadius: "var(--admin-btn-radius)",
-          fontWeight: 600,
-          cursor: "pointer",
+          background: copied ? "#16a34a" : undefined,
+          color: copied ? "var(--btn-text)" : undefined,
           fontSize: "0.85rem",
           width: "fit-content",
           transition: "background 0.2s",
@@ -130,15 +126,11 @@ addPropertyControls(EventwulfWidget, {
       <button
         type="button"
         onClick={copyCode}
+        className="ew-btn ew-btn-primary"
         style={{
           marginTop: "1rem",
-          padding: "0.65rem 1.25rem",
-          background: copied ? "#16a34a" : "var(--admin-accent)",
-          color: copied ? "var(--btn-text)" : "var(--admin-accent-text)",
-          border: "none",
-          borderRadius: "var(--admin-btn-radius)",
-          fontWeight: 600,
-          cursor: "pointer",
+          background: copied ? "#16a34a" : undefined,
+          color: copied ? "var(--btn-text)" : undefined,
           fontSize: "0.85rem",
           width: "fit-content",
           transition: "background 0.2s",

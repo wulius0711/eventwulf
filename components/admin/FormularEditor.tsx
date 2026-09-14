@@ -127,15 +127,8 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
             <button
               type="button"
               onClick={() => removeListItem(field, i)}
-              style={{
-                padding: "0 0.75rem",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--admin-btn-radius)",
-                background: "none",
-                color: "var(--error)",
-                cursor: "pointer",
-                fontSize: "0.85rem",
-              }}
+              className="ew-btn ew-btn-outline-danger"
+              style={{ padding: "0 0.75rem", fontSize: "0.85rem" }}
             >
               ×
             </button>
@@ -144,16 +137,8 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
         <button
           type="button"
           onClick={() => addListItem(field)}
-          style={{
-            padding: "0.35rem 0.85rem",
-            border: "1px dashed var(--border)",
-            borderRadius: "var(--admin-btn-radius)",
-            background: "none",
-            color: "var(--muted)",
-            cursor: "pointer",
-            fontSize: "0.82rem",
-            marginTop: "0.25rem",
-          }}
+          className="ew-btn ew-btn-outline"
+          style={{ borderStyle: "dashed", color: "var(--muted)", fontSize: "0.82rem", marginTop: "0.25rem" }}
         >
           + Option hinzufügen
         </button>
@@ -183,7 +168,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
                 <>
                   <input type="color" value={config.formBgColor} onChange={(e) => set("formBgColor", e.target.value)} style={{ width: "3rem", height: "2.5rem", padding: "0.2rem", cursor: "pointer" }} />
                   <input type="text" value={config.formBgColor} onChange={(e) => set("formBgColor", e.target.value)} placeholder="transparent" style={{ flex: 1 }} />
-                  <button type="button" onClick={() => set("formBgColor", "")} style={{ padding: "0.5rem 0.75rem", border: "1px solid var(--border)", borderRadius: "var(--admin-btn-radius)", background: "none", color: "var(--muted)", cursor: "pointer", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                  <button type="button" onClick={() => set("formBgColor", "")} className="ew-btn ew-btn-outline" style={{ color: "var(--muted)", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
                     ×
                   </button>
                 </>
@@ -356,16 +341,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
         <button
           onClick={handleSave}
           disabled={saving}
-          style={{
-            padding: "0.65rem 1.75rem",
-            background: "var(--admin-accent)",
-            color: "var(--admin-accent-text)",
-            border: "none",
-            borderRadius: "var(--admin-btn-radius)",
-            fontWeight: 600,
-            cursor: saving ? "not-allowed" : "pointer",
-            opacity: saving ? 0.7 : 1,
-          }}
+          className="ew-btn ew-btn-primary"
         >
           {saving ? "Speichern…" : "Änderungen speichern"}
         </button>
