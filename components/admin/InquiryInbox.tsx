@@ -197,7 +197,7 @@ export default function InquiryInbox() {
                 </span>
                 {inq.eventId && (
                   <span style={{ display: "inline-flex", alignItems: "center", background: "var(--primary-tint)", color: "var(--primary-text)", padding: "0.18rem 0.5rem", borderRadius: "4px", fontSize: "0.72rem", fontWeight: 600, flexShrink: 0 }}>
-                    Event
+                    Inhouse
                   </span>
                 )}
               </div>

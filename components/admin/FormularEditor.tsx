@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
 import type { EventConfig } from "@/lib/types";
+import type { Plan } from "@/lib/plan";
 import Toggle from "@/components/admin/Toggle";
 
 interface Props {
   initialConfig: EventConfig;
+  plan: Plan | null;
 }
 
 type OptionsField = "verpflegungOptions" | "zimmerwunschOptions" | "abrechnungOptions" | "ausstattungOptions" | "anreiseOptions" | "zahlungOptions" | "budgetOptions" | "quelleOptions";
@@ -48,7 +50,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export default function FormularEditor({ initialConfig }: Props) {
+export default function FormularEditor({ initialConfig, plan }: Props) {
   const [config, setConfig] = useState<EventConfig>(initialConfig);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -234,7 +236,7 @@ export default function FormularEditor({ initialConfig }: Props) {
             label: "Schritt 1 – Veranstaltung",
             fields: [
               { key: "uhrzeiten" as const, label: "Uhrzeiten (Beginn / Ende)", requirable: true },
-              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind — dann automatisch Pflichtfeld" },
+              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind — dann automatisch Pflichtfeld", hintAsTooltip: true, proOnly: true },
             ],
           },
           {
@@ -271,7 +273,7 @@ export default function FormularEditor({ initialConfig }: Props) {
               { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen unten wählbar", requirable: true },
             ],
           },
-        ] as { label: string; fields: { key: keyof NonNullable<EventConfig["formFields"]>; label: string; hint?: string; requirable?: boolean }[] }[]).map((step) => (
+        ] as { label: string; fields: { key: keyof NonNullable<EventConfig["formFields"]>; label: string; hint?: string; requirable?: boolean; hintAsTooltip?: boolean; proOnly?: boolean }[] }[]).map((step) => (
           <div key={step.label} style={{ marginBottom: "2.5rem" }}>
             <div style={{
               fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
@@ -282,15 +284,36 @@ export default function FormularEditor({ initialConfig }: Props) {
               {step.label}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, 100%), 1fr))", gap: "0.5rem 1.5rem" }}>
-              {step.fields.map(({ key, label, hint, requirable }) => {
+              {step.fields.map(({ key, label, hint, requirable, hintAsTooltip, proOnly }) => {
                 const enabled = fieldEnabled(key);
+                const locked = proOnly && plan === "basis";
                 return (
                   <div key={key}>
-                    <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
-                      <Toggle checked={enabled} onChange={(v) => setFormField(key, v)} />
-                      <span style={{ fontSize: "0.875rem", lineHeight: 1.4 }}>
+                    <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: locked ? "not-allowed" : "pointer" }}>
+                      <Toggle
+                        checked={enabled}
+                        onChange={(v) => setFormField(key, v)}
+                        disabled={locked}
+                        title={locked ? "Ab Pro verfügbar" : undefined}
+                      />
+                      <span style={{ fontSize: "0.875rem", lineHeight: 1.4, opacity: locked ? 0.6 : 1 }}>
                         {label}
-                        {hint && <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>}
+                        {hint && (hintAsTooltip ? (
+                          <span
+                            title={hint}
+                            style={{
+                              display: "inline-flex", alignItems: "center", justifyContent: "center",
+                              width: "1rem", height: "1rem", marginLeft: "0.4rem", verticalAlign: "middle",
+                              borderRadius: "50%", border: "1px solid var(--muted)", color: "var(--muted)",
+                              fontSize: "0.65rem", fontStyle: "italic", cursor: "help",
+                            }}
+                          >
+                            i
+                          </span>
+                        ) : (
+                          <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>
+                        ))}
+                        {locked && <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>Ab Pro verfügbar</span>}
                       </span>
                     </label>
                     {requirable && enabled && (

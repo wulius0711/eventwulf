@@ -3,15 +3,19 @@
 interface Props {
   checked: boolean;
   onChange: (val: boolean) => void;
+  disabled?: boolean;
+  title?: string;
 }
 
-export default function Toggle({ checked, onChange }: Props) {
+export default function Toggle({ checked, onChange, disabled, title }: Props) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
-      onClick={() => onChange(!checked)}
+      disabled={disabled}
+      title={title}
+      onClick={() => !disabled && onChange(!checked)}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -20,7 +24,8 @@ export default function Toggle({ checked, onChange }: Props) {
         height: "1.25rem",
         borderRadius: "9999px",
         border: "none",
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
         padding: "0.15rem",
         background: checked ? "var(--primary)" : "var(--border)",
         transition: "background 0.2s",
