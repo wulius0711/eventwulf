@@ -31,7 +31,7 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
       <button
         type="button"
         onClick={copySnippet}
-        className="ew-btn ew-btn-primary"
+        className="ew-admin-btn ew-admin-btn-primary"
         style={{
           marginTop: "1rem",
           background: copied ? "#16a34a" : undefined,
@@ -126,7 +126,7 @@ addPropertyControls(EventwulfWidget, {
       <button
         type="button"
         onClick={copyCode}
-        className="ew-btn ew-btn-primary"
+        className="ew-admin-btn ew-admin-btn-primary"
         style={{
           marginTop: "1rem",
           background: copied ? "#16a34a" : undefined,

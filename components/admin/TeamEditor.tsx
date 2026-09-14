@@ -140,7 +140,7 @@ export default function TeamEditor({ plan }: { plan: Plan }) {
         <button
           type="submit"
           disabled={inviting || atLimit}
-          className="ew-btn ew-btn-primary"
+          className="ew-admin-btn ew-admin-btn-primary"
         >
           {inviting ? "Wird eingeladen…" : "Einladen"}
         </button>

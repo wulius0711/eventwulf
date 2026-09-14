@@ -244,7 +244,7 @@ export default function RoomsEditor() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="ew-btn ew-btn-outline"
+                className="ew-admin-btn ew-admin-btn-outline"
                 style={{
                   fontSize: "0.85rem",
                 }}
@@ -283,11 +283,11 @@ export default function RoomsEditor() {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
           {editingId && (
-            <button type="button" onClick={cancelEdit} className="ew-btn ew-btn-outline" style={{ color: "var(--muted)" }}>
+            <button type="button" onClick={cancelEdit} className="ew-admin-btn ew-admin-btn-outline" style={{ color: "var(--muted)" }}>
               Abbrechen
             </button>
           )}
-          <button type="submit" disabled={loading} className="ew-btn ew-btn-primary">
+          <button type="submit" disabled={loading} className="ew-admin-btn ew-admin-btn-primary">
             {loading ? "Speichern…" : editingId ? "Änderungen speichern" : "Raum anlegen"}
           </button>
         </div>

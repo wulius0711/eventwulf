@@ -149,8 +149,8 @@ export default function ClientsEditor({ superadminSlug }: Props) {
             </p>
             {deleteError && <p style={{ color: "var(--error)", fontSize: "0.82rem", marginBottom: "0.75rem" }}>{deleteError}</p>}
             <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
-              <button className="ew-btn ew-btn-outline" style={btnGhost} onClick={() => { setDeleteOrgConfirm(null); setDeleteError(""); }}>Abbrechen</button>
-              <button className="ew-btn ew-btn-outline-danger" style={btnDanger} onClick={() => handleDeleteOrg(deleteOrgConfirm)}>Endgültig löschen</button>
+              <button className="ew-admin-btn ew-admin-btn-outline" style={btnGhost} onClick={() => { setDeleteOrgConfirm(null); setDeleteError(""); }}>Abbrechen</button>
+              <button className="ew-admin-btn ew-admin-btn-outline-danger" style={btnDanger} onClick={() => handleDeleteOrg(deleteOrgConfirm)}>Endgültig löschen</button>
             </div>
           </div>
         </div>
@@ -166,8 +166,8 @@ export default function ClientsEditor({ superadminSlug }: Props) {
             </p>
             {deleteError && <p style={{ color: "var(--error)", fontSize: "0.82rem", marginBottom: "0.75rem" }}>{deleteError}</p>}
             <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
-              <button className="ew-btn ew-btn-outline" style={btnGhost} onClick={() => { setDeleteSlugConfirm(null); setDeleteError(""); }}>Abbrechen</button>
-              <button className="ew-btn ew-btn-outline-danger" style={btnDanger} onClick={() => handleDeleteSlug(deleteSlugConfirm.orgId, deleteSlugConfirm.slug)}>Endgültig löschen</button>
+              <button className="ew-admin-btn ew-admin-btn-outline" style={btnGhost} onClick={() => { setDeleteSlugConfirm(null); setDeleteError(""); }}>Abbrechen</button>
+              <button className="ew-admin-btn ew-admin-btn-outline-danger" style={btnDanger} onClick={() => handleDeleteSlug(deleteSlugConfirm.orgId, deleteSlugConfirm.slug)}>Endgültig löschen</button>
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@ export default function ClientsEditor({ superadminSlug }: Props) {
           </div>
         </div>
         {error && <p style={{ color: "var(--error)", fontSize: "0.85rem", margin: 0 }}>{error}</p>}
-        <button type="submit" disabled={loading} className="ew-btn ew-btn-primary" style={{ alignSelf: "flex-start" }}>
+        <button type="submit" disabled={loading} className="ew-admin-btn ew-admin-btn-primary" style={{ alignSelf: "flex-start" }}>
           {loading ? "Anlegen…" : "Kunde anlegen"}
         </button>
       </form>
@@ -221,7 +221,7 @@ export default function ClientsEditor({ superadminSlug }: Props) {
                           <option key={p} value={p}>{PLAN_LABELS[p]}</option>
                         ))}
                       </select>
-                      <button className="ew-btn ew-btn-outline-danger" style={{ ...btnDanger, marginLeft: "auto" }} onClick={() => { setDeleteOrgConfirm(org.id); setDeleteError(""); }}>
+                      <button className="ew-admin-btn ew-admin-btn-outline-danger" style={{ ...btnDanger, marginLeft: "auto" }} onClick={() => { setDeleteOrgConfirm(org.id); setDeleteError(""); }}>
                         Kunde löschen
                       </button>
                     </>
@@ -244,14 +244,14 @@ export default function ClientsEditor({ superadminSlug }: Props) {
                   {addSlugOrgId === org.id ? (
                     <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
                       <input type="text" value={newSlug} onChange={(e) => setNewSlug(e.target.value)} placeholder="neuer-slug" pattern="[a-z0-9-]+" style={{ width: "140px", fontSize: "0.82rem", padding: "0.25rem 0.5rem" }} autoFocus />
-                      <button type="button" onClick={() => handleAddSlug(org.id)} disabled={addSlugLoading} className="ew-btn ew-btn-primary" style={{ fontSize: "0.8rem" }}>
+                      <button type="button" onClick={() => handleAddSlug(org.id)} disabled={addSlugLoading} className="ew-admin-btn ew-admin-btn-primary" style={{ fontSize: "0.8rem" }}>
                         {addSlugLoading ? "…" : "OK"}
                       </button>
-                      <button type="button" className="ew-btn ew-btn-outline" onClick={() => { setAddSlugOrgId(null); setNewSlug(""); setAddSlugError(""); }} style={btnGhost}>×</button>
+                      <button type="button" className="ew-admin-btn ew-admin-btn-outline" onClick={() => { setAddSlugOrgId(null); setNewSlug(""); setAddSlugError(""); }} style={btnGhost}>×</button>
                       {addSlugError && <span style={{ fontSize: "0.78rem", color: "var(--error)" }}>{addSlugError}</span>}
                     </div>
                   ) : (
-                    <button type="button" onClick={() => { setAddSlugOrgId(org.id); setAddSlugError(""); }} className="ew-btn ew-btn-outline" style={{ borderStyle: "dashed", color: "var(--muted)", fontSize: "0.78rem" }}>
+                    <button type="button" onClick={() => { setAddSlugOrgId(org.id); setAddSlugError(""); }} className="ew-admin-btn ew-admin-btn-outline" style={{ borderStyle: "dashed", color: "var(--muted)", fontSize: "0.78rem" }}>
                       + Slug
                     </button>
                   )}

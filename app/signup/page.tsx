@@ -117,7 +117,7 @@ function SignupForm() {
           <button
             type="submit"
             disabled={loading}
-            className="ew-btn ew-btn-primary"
+            className="ew-admin-btn ew-admin-btn-primary"
             style={{ marginTop: "0.25rem" }}
           >
             {loading ? "Weiter zu Stripe…" : "Weiter zur Zahlung"}

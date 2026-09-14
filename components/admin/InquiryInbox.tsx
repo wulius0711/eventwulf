@@ -265,7 +265,7 @@ export default function InquiryInbox() {
                     <button
                       key={key}
                       onClick={() => setStatus(inq.id, key)}
-                      className="ew-btn"
+                      className="ew-admin-btn"
                       style={{
                         border: `1px solid ${inq.status === key ? STATUS_COLORS[key].color : "var(--border)"}`,
                         background: inq.status === key ? STATUS_COLORS[key].bg : "none",
@@ -279,7 +279,7 @@ export default function InquiryInbox() {
                   ))}
                   <button
                     onClick={() => deleteInquiry(inq.id, `${d.artTitel || "Retreat"} — ${d.nameGruppenleitung}`)}
-                    className="ew-btn ew-btn-outline-danger"
+                    className="ew-admin-btn ew-admin-btn-outline-danger"
                     style={{ marginLeft: "auto", fontSize: "0.78rem" }}
                   >
                     Löschen

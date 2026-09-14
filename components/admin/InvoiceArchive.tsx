@@ -79,12 +79,12 @@ export default function InvoiceArchive() {
               <div style={{ display: "flex", gap: "0.35rem" }}>
                 <button
                   onClick={() => window.open(`/api/admin/invoices/${inv.id}/html`, "_blank")}
-                  className="ew-btn ew-btn-outline" style={{ fontSize: "0.78rem" }}>
+                  className="ew-admin-btn ew-admin-btn-outline" style={{ fontSize: "0.78rem" }}>
                   Vorschau
                 </button>
                 {inv.status !== "storniert" && (
                   <button onClick={() => updateStatus(inv.id, "storniert")}
-                    className="ew-btn ew-btn-outline-danger" style={{ fontSize: "0.78rem" }}>
+                    className="ew-admin-btn ew-admin-btn-outline-danger" style={{ fontSize: "0.78rem" }}>
                     Stornieren
                   </button>
                 )}

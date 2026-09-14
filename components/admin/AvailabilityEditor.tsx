@@ -149,11 +149,11 @@ export default function AvailabilityEditor() {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
           {editingId && (
-            <button type="button" onClick={cancelEdit} className="ew-btn ew-btn-outline" style={{ color: "var(--muted)" }}>
+            <button type="button" onClick={cancelEdit} className="ew-admin-btn ew-admin-btn-outline" style={{ color: "var(--muted)" }}>
               Abbrechen
             </button>
           )}
-          <button type="submit" disabled={loading} className="ew-btn ew-btn-primary">
+          <button type="submit" disabled={loading} className="ew-admin-btn ew-admin-btn-primary">
             {loading ? "Speichern…" : editingId ? "Änderungen speichern" : "Zeitraum sperren"}
           </button>
         </div>
@@ -182,10 +182,10 @@ export default function AvailabilityEditor() {
             </span>
             <span style={{ fontSize: "0.85rem", color: "var(--muted)", flex: 1 }}>{entry.label}</span>
             <div className="ew-entry-actions" style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
-              <button onClick={() => startEdit(entry)} className="ew-btn ew-btn-outline" style={{ fontSize: "0.78rem" }}>
+              <button onClick={() => startEdit(entry)} className="ew-admin-btn ew-admin-btn-outline" style={{ fontSize: "0.78rem" }}>
                 Bearbeiten
               </button>
-              <button onClick={() => handleDelete(entry.id, entry.label)} className="ew-btn ew-btn-outline-danger" style={{ fontSize: "0.78rem" }}>
+              <button onClick={() => handleDelete(entry.id, entry.label)} className="ew-admin-btn ew-admin-btn-outline-danger" style={{ fontSize: "0.78rem" }}>
                 Löschen
               </button>
             </div>

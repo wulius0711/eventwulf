@@ -189,7 +189,7 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
               <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} required autoComplete="new-password" minLength={8} />
             </Field>
             {pwMsg && <p style={{ color: pwMsg.includes("Fehler") || pwMsg.includes("falsch") ? "var(--error)" : "#16a34a", fontSize: "0.85rem", margin: 0 }}>{pwMsg}</p>}
-            <button type="submit" className="ew-btn ew-btn-primary" style={{ alignSelf: "flex-start" }}>
+            <button type="submit" className="ew-admin-btn ew-admin-btn-primary" style={{ alignSelf: "flex-start" }}>
               Speichern
             </button>
           </form>
@@ -204,7 +204,7 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
           <button
             onClick={handleSave}
             disabled={saving}
-            className="ew-btn ew-btn-primary"
+            className="ew-admin-btn ew-admin-btn-primary"
           >
             {saving ? "Speichern…" : "Änderungen speichern"}
           </button>

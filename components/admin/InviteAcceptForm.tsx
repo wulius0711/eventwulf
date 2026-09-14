@@ -98,7 +98,7 @@ export default function InviteAcceptForm({ token }: { token: string }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="ew-btn ew-btn-primary"
+                className="ew-admin-btn ew-admin-btn-primary"
                 style={{ marginTop: "0.25rem" }}
               >
                 {loading ? "Wird gespeichert…" : "Passwort setzen & einloggen"}

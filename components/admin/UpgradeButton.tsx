@@ -19,7 +19,7 @@ export default function UpgradeButton({ currentPlan }: { currentPlan: Plan }) {
 
   if (currentPlan === "pro") {
     return (
-      <a href="https://eventwulf.at/contact" target="_blank" rel="noopener noreferrer" className="ew-btn ew-btn-primary" style={linkStyle}>
+      <a href="https://eventwulf.at/contact" target="_blank" rel="noopener noreferrer" className="ew-admin-btn ew-admin-btn-primary" style={linkStyle}>
         Für Premium Kontakt aufnehmen
       </a>
     );
@@ -48,7 +48,7 @@ export default function UpgradeButton({ currentPlan }: { currentPlan: Plan }) {
         type="button"
         onClick={() => upgrade("monthly")}
         disabled={loading}
-        className="ew-btn ew-btn-primary"
+        className="ew-admin-btn ew-admin-btn-primary"
         style={linkStyle}
       >
         {loading ? "Weiter zu Stripe…" : "Auf Pro upgraden"}

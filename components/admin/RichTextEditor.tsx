@@ -13,7 +13,7 @@ function ToolbarButton({ active, onClick, children }: { active: boolean; onClick
     <button
       type="button"
       onClick={onClick}
-      className="ew-btn"
+      className="ew-admin-btn"
       style={{
         border: "1px solid var(--border)",
         background: active ? "var(--primary)" : "var(--surface)",
