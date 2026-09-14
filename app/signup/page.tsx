@@ -1,12 +1,25 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { PLAN_LABELS } from "@/lib/plan";
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
+  );
+}
+
+function SignupForm() {
+  const searchParams = useSearchParams();
+  const initialPlan = searchParams.get("plan") === "pro" ? "pro" : "basis";
+  const initialInterval = searchParams.get("interval") === "yearly" ? "yearly" : "monthly";
+
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
-  const [plan, setPlan] = useState<"basis" | "pro">("basis");
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const [plan, setPlan] = useState<"basis" | "pro">(initialPlan);
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(initialInterval);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
