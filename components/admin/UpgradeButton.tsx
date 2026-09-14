@@ -24,12 +24,8 @@ export default function UpgradeButton({ currentPlan }: { currentPlan: Plan }) {
   };
 
   if (currentPlan === "pro") {
-    // eventwulf.at's domain forward strips subpaths (redirects /contact to
-    // the marketing site's root) — Framer custom domains need a paid plan
-    // to fix at the DNS level, so this links straight to the framer.website
-    // alias instead, which serves /contact correctly.
     return (
-      <a href="https://eventwulf.framer.website/contact" target="_blank" rel="noopener noreferrer" style={linkStyle}>
+      <a href="https://eventwulf.at/contact" target="_blank" rel="noopener noreferrer" style={linkStyle}>
         Für Premium Kontakt aufnehmen
       </a>
     );
