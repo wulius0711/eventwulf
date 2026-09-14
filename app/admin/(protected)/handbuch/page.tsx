@@ -68,12 +68,31 @@ const content: Record<string, React.ReactNode> = {
   ),
   einstellungen: (
     <>
-      <p>Konto-/Backend-Konfiguration, in drei Tabs unterteilt. Alles, was das öffentliche Widget selbst prägt (Formular, Events, Sperrzeiten), findest du unter <em>Elemente</em>.</p>
+      <p>Konto-/Backend-Konfiguration, in vier Tabs unterteilt. Alles, was das öffentliche Widget selbst prägt (Formular, Events, Sperrzeiten), findest du unter <em>Elemente</em>.</p>
       <H3>Firma</H3>
       <p>Basisdaten deiner Organisation: Name, Tagline, Logo-URL, Primärfarbe, Hintergrundfarbe, Schriftarten, Kontaktdaten und Benachrichtigungs-E-Mail.</p>
       <Callout>Die <strong>Benachrichtigungs-E-Mail</strong> erhält bei jeder neuen Anfrage automatisch eine Benachrichtigung.</Callout>
       <H3>Abrechnung</H3>
-      <p>Steuersatz (%) und Gültigkeitsdauer für neue Angebote in Tagen.</p>
+      <p>Zeigt oben deinen aktuellen Plan (Basis/Pro/Premium). Darunter Steuersatz (%) und Gültigkeitsdauer für neue Angebote in Tagen.</p>
+      <H3>Plan upgraden</H3>
+      <p>Im Basis-Paket erscheint der Button <strong>„Auf Pro upgraden"</strong> (monatlich) sowie eine kleinere Option <strong>„oder jährlich (~10% sparen)"</strong> — beides führt direkt zur Stripe-Kasse, das Upgrade ist sofort aktiv. Im Pro-Paket zeigt derselbe Bereich stattdessen <strong>„Für Premium Kontakt aufnehmen"</strong>, da Premium individuell bepreist wird und kein Self-Checkout hat.</p>
+      <H3>Team</H3>
+      <p>Lade weitere Personen mit E-Mail-Adresse ein — sie erhalten einen Link, um selbst ein Passwort zu setzen und sich anzumelden. Alle Mitglieder haben dieselben Rechte wie du (kein Rollensystem). Du kannst dich nicht selbst aus dem Team entfernen; beim Entfernen anderer Mitglieder kommt vorher eine Sicherheitsabfrage.</p>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
+        <tbody>
+          {[
+            ["Basis", "1 Mitglied (nur du selbst — Einladen ist gesperrt)"],
+            ["Pro", "2 Mitglieder"],
+            ["Premium", "Unbegrenzt"],
+          ].map(([plan, limit]) => (
+            <tr key={plan as string} style={{ borderBottom: "1px solid var(--border)" }}>
+              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500, whiteSpace: "nowrap" }}>{plan}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{limit}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <Callout>Die Einladung ist 7 Tage gültig. Bestehende Mitglieder bleiben bei einem Downgrade erhalten — es lassen sich nur keine neuen mehr einladen, solange das Limit erreicht ist.</Callout>
       <H3>Passwort</H3>
       <p>Aktuelles Passwort eingeben, dann neues Passwort (mind. 8 Zeichen) vergeben.</p>
     </>
@@ -90,6 +109,7 @@ const content: Record<string, React.ReactNode> = {
 
       <H3>Schritt 1 – Veranstaltung</H3>
       <p>Nur eine Checkbox: <strong>Uhrzeiten</strong> — blendet die Felder für Beginn- und Endzeit im ersten Schritt ein oder aus. Titel, Zeitraum (Kalender) und ggf. Event-Auswahl erscheinen immer.</p>
+      <Callout>Die zweite Checkbox <strong>Raum-Auswahl</strong> ist erst ab dem <strong>Pro-Paket</strong> nutzbar — im Basis-Paket ausgegraut, da dort ohnehin keine Räume angelegt werden können.</Callout>
 
       <H3>Schritt 2 – Gruppe</H3>
       <p>Vier Checkboxen: <strong>Teilnehmerzahl</strong>, <strong>Leiter:innen</strong>, <strong>Telefon</strong> und <strong>Sprache</strong>. Jede blendet das jeweilige Feld ein oder aus, keine weiteren Optionslisten nötig.</p>
@@ -200,7 +220,7 @@ const content: Record<string, React.ReactNode> = {
   ),
   anfragen: (
     <>
-      <p>Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum. Anfragen aus dem Events-Widget tragen zusätzlich ein kleines <strong>„Event"-Badge</strong>, damit du sie auf einen Blick von individuellen Veranstaltungsanfragen unterscheiden kannst. Wurde ein Raum gewählt, siehst du ihn in der Detailansicht unter „Raum".</p>
+      <p>Alle eingehenden Anfragen erscheinen hier sortiert nach Eingangsdatum. Anfragen aus dem Events-Widget tragen zusätzlich ein kleines <strong>„Inhouse"-Badge</strong>, damit du sie auf einen Blick von individuellen Veranstaltungsanfragen unterscheiden kannst. Wurde ein Raum gewählt, siehst du ihn in der Detailansicht unter „Raum".</p>
       <H3>Status-Workflow</H3>
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
         <tbody>
@@ -285,7 +305,7 @@ const content: Record<string, React.ReactNode> = {
         },
         {
           q: "Der Tab „Räume“ zeigt nur ein Schloss-Symbol an.",
-          a: "Räume sind ab dem Pro-Paket freigeschaltet. Das Paket wird zentral verwaltet — wende dich an den Support, wenn du upgraden möchtest.",
+          a: "Räume sind ab dem Pro-Paket freigeschaltet. Upgrade direkt unter Einstellungen → Abrechnung über den Button „Auf Pro upgraden“.",
         },
         {
           q: "Eine Event-Anfrage hat den Status „Abgelaufen“ – was jetzt?",
