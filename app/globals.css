@@ -385,9 +385,9 @@ button:active:not(:disabled) {
   --primary-tint: rgba(21,110,71,0.10);
   --primary-dim:  rgba(21,110,71,0.18);
   --primary-text: #156e47;
-  --admin-accent:       #bd8e3c;
-  --admin-accent-dark:  #a67a2e;
-  --admin-accent-text:  #1a1a1a;
+  --admin-accent:       #996C1E;
+  --admin-accent-dark:  #825C1A;
+  --admin-accent-text:  #ffffff;
   --btn-text:     #ffffff;
   color: var(--text);
   font-family: "Inter", system-ui, -apple-system, sans-serif;

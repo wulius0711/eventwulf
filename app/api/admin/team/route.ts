@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
           <p style="margin:0 0 1.5rem;color:#6b7280;font-size:0.9rem">
             ${sanitizeEmailHeader(session.email)} hat dich zum Team von "${sanitizeEmailHeader(org.name)}" auf eventwulf eingeladen.
           </p>
-          <p style="margin:0 0 1.5rem"><a href="${inviteUrl}" style="display:inline-block;padding:10px 20px;background:#bd8e3c;color:#1a1a1a;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600">Einladung annehmen</a></p>
+          <p style="margin:0 0 1.5rem"><a href="${inviteUrl}" style="display:inline-block;padding:10px 20px;background:#996C1E;color:#ffffff;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600">Einladung annehmen</a></p>
           <p style="margin:0;color:#6b7280;font-size:0.8rem">Der Link ist 7 Tage gültig.</p>
         </div>
       `,
