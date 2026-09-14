@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import AdminNav from "./AdminNav";
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
@@ -10,10 +11,11 @@ interface Props {
   slugs: string[];
   activeSlug: string;
   newInquiryCount: number;
+  plan: Plan | null;
   children: React.ReactNode;
 }
 
-export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeSlug, newInquiryCount, children }: Props) {
+export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeSlug, newInquiryCount, plan, children }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -39,6 +41,14 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
         </nav>
 
         <div className="ew-sidebar-footer">
+          {plan && (
+            <a
+              href="/admin/config"
+              style={{ fontSize: "0.78rem", color: "var(--muted)", textDecoration: "none", fontWeight: 500 }}
+            >
+              Plan: {PLAN_LABELS[plan]}
+            </a>
+          )}
           <div style={{ display: "flex", alignItems: "center" }}>
             {bookingAppUrl && (
               <a href={bookingAppUrl} style={{ fontSize: "0.82rem", color: "var(--muted)", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.3rem", flex: 1 }}>

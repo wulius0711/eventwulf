@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import type { RoomEntry } from "@/lib/types";
+import { PLAN_LABELS, isPlan, type Plan } from "@/lib/plan";
 import Toggle from "./Toggle";
 import RichTextEditor from "./RichTextEditor";
+import UpgradeButton from "./UpgradeButton";
 
 function emptyForm() {
   return { name: "", description: "", image: "", capacity: "", isActive: true, sortOrder: "0" };
@@ -11,6 +13,7 @@ function emptyForm() {
 export default function RoomsEditor() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [roomLimit, setRoomLimit] = useState<number | null>(null);
+  const [roomPlan, setRoomPlan] = useState<Plan | null>(null);
   const [locked, setLocked] = useState(false);
   const [lockedMessage, setLockedMessage] = useState("");
   const [loaded, setLoaded] = useState(false);
@@ -34,6 +37,7 @@ export default function RoomsEditor() {
         const data = await r.json();
         setRooms(data.rooms);
         setRoomLimit(data.limit);
+        setRoomPlan(isPlan(data.plan) ? data.plan : null);
       })
       .catch(() => {})
       .finally(() => setLoaded(true));
@@ -167,18 +171,27 @@ export default function RoomsEditor() {
     );
   }
 
+  const activeRoomCount = rooms.filter((r) => r.isActive).length;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
       <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
         Räume mit Kapazität und Bild — können im Buchungsformular ausgewählt werden.
       </p>
 
-      {roomLimit !== null && rooms.filter((r) => r.isActive).length > roomLimit && (
+      {roomLimit !== null && roomPlan && (
+        <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", flexWrap: "wrap", fontSize: "0.85rem", color: "var(--muted)" }}>
+          <span>{activeRoomCount} von {roomLimit} aktiven Räumen ({PLAN_LABELS[roomPlan]}-Paket)</span>
+          {activeRoomCount >= roomLimit && <UpgradeButton currentPlan={roomPlan} />}
+        </div>
+      )}
+
+      {roomLimit !== null && activeRoomCount > roomLimit && (
         <div style={{
           background: "var(--surface)", border: "1px solid var(--primary)",
           borderRadius: "var(--radius-sm)", padding: "0.75rem 1rem", fontSize: "0.85rem", color: "var(--text)",
         }}>
-          Aktuell sind mehr aktive Räume angelegt ({rooms.filter((r) => r.isActive).length}), als das gebuchte Paket erlaubt ({roomLimit}) — z.B. nach einem Paket-Wechsel. Bestehende Räume bleiben nutzbar, aber es können keine weiteren angelegt werden, solange das so ist.
+          Aktuell sind mehr aktive Räume angelegt ({activeRoomCount}), als das gebuchte Paket erlaubt ({roomLimit}) — z.B. nach einem Paket-Wechsel. Bestehende Räume bleiben nutzbar, aber es können keine weiteren angelegt werden, solange das so ist.
         </div>
       )}
       <div style={{

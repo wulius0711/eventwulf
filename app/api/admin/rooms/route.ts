@@ -59,7 +59,8 @@ export async function GET() {
   // downgrade left more active rooms than the current plan allows (Medium
   // finding 6) — existing rooms are never touched by a downgrade, only new
   // creation is gated (see POST below), so this is purely informational.
-  return NextResponse.json({ rooms: rooms.map(serialize), limit: roomLimitFor(access.plan) });
+  // plan is included too so the UI can show a "X of Y (<Plan>)" usage line.
+  return NextResponse.json({ rooms: rooms.map(serialize), limit: roomLimitFor(access.plan), plan: access.plan });
 }
 
 export async function POST(req: NextRequest) {

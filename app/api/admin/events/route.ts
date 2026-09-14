@@ -90,7 +90,7 @@ export async function GET() {
   // downgrade left more active events than the current plan allows — mirrors
   // the same pattern used for rooms (see app/api/admin/rooms/route.ts GET).
   const plan = await getOrgPlan(session.organizationId);
-  return NextResponse.json({ events: events.map(serialize), limit: eventLimitFor(plan) });
+  return NextResponse.json({ events: events.map(serialize), limit: eventLimitFor(plan), plan });
 }
 
 export async function POST(req: NextRequest) {

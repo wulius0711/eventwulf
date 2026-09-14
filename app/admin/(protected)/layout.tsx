@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { isPlan } from "@/lib/plan";
 import AdminShell from "@/components/admin/AdminShell";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   });
   const slugs = org?.clients.map((c) => c.slug) ?? [];
   const bookingAppUrl = isSuperAdmin ? null : (org?.bookingAppUrl ?? null);
+  const plan = isSuperAdmin ? null : (isPlan(org?.plan) ? org.plan : "basis");
 
   // "neu" is the only signal for "not yet looked at" — there's no separate
   // read/unread flag, and it's literally the default status a fresh inquiry
@@ -34,7 +36,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <AdminShell bookingAppUrl={bookingAppUrl} isSuperAdmin={isSuperAdmin} slugs={slugs} activeSlug={session.clientSlug} newInquiryCount={newInquiryCount}>
+      <AdminShell bookingAppUrl={bookingAppUrl} isSuperAdmin={isSuperAdmin} slugs={slugs} activeSlug={session.clientSlug} newInquiryCount={newInquiryCount} plan={plan}>
         {children}
       </AdminShell>
     </div>

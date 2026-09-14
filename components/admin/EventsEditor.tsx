@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import type { EventEntry, RoomEntry } from "@/lib/types";
+import { PLAN_LABELS, isPlan, type Plan } from "@/lib/plan";
 import Toggle from "./Toggle";
 import RichTextEditor from "./RichTextEditor";
+import UpgradeButton from "./UpgradeButton";
 
 const EVENT_COLORS = [
   { label: "Grün",   value: "#16a34a" },
@@ -62,6 +64,7 @@ function emptyForm() {
 export default function EventsEditor() {
   const [events, setEvents] = useState<EventEntry[]>([]);
   const [eventLimit, setEventLimit] = useState<number | null>(null);
+  const [eventPlan, setEventPlan] = useState<Plan | null>(null);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,6 +81,7 @@ export default function EventsEditor() {
     fetch("/api/admin/events").then((r) => r.json()).then((data) => {
       setEvents(data.events);
       setEventLimit(data.limit);
+      setEventPlan(isPlan(data.plan) ? data.plan : null);
     }).catch(() => {});
     fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
     // 403 if rooms aren't unlocked for this plan — fine, just means no room picker.
@@ -273,18 +277,27 @@ export default function EventsEditor() {
     background: "none", color: "var(--text)", cursor: "pointer", fontSize: "0.78rem",
   };
 
+  const activeEventCount = events.filter((e) => e.isActive).length;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
       <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
         Terminierte Angebote mit Preis und Kapazität — werden im Events-Widget angezeigt und können direkt angefragt werden.
       </p>
 
-      {eventLimit !== null && events.filter((e) => e.isActive).length > eventLimit && (
+      {eventLimit !== null && eventPlan && (
+        <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", flexWrap: "wrap", fontSize: "0.85rem", color: "var(--muted)" }}>
+          <span>{activeEventCount} von {eventLimit} aktiven Events ({PLAN_LABELS[eventPlan]}-Paket)</span>
+          {activeEventCount >= eventLimit && <UpgradeButton currentPlan={eventPlan} />}
+        </div>
+      )}
+
+      {eventLimit !== null && activeEventCount > eventLimit && (
         <div style={{
           background: "var(--surface)", border: "1px solid var(--primary)",
           borderRadius: "var(--radius-sm)", padding: "0.75rem 1rem", fontSize: "0.85rem", color: "var(--text)",
         }}>
-          Aktuell sind mehr aktive Events angelegt ({events.filter((e) => e.isActive).length}), als das gebuchte Paket erlaubt ({eventLimit}) — z.B. nach einem Paket-Wechsel. Bestehende Events bleiben nutzbar, aber es können keine weiteren angelegt werden, solange das so ist.
+          Aktuell sind mehr aktive Events angelegt ({activeEventCount}), als das gebuchte Paket erlaubt ({eventLimit}) — z.B. nach einem Paket-Wechsel. Bestehende Events bleiben nutzbar, aber es können keine weiteren angelegt werden, solange das so ist.
         </div>
       )}
 
