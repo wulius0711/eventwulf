@@ -229,7 +229,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
             label: "Schritt 1 – Veranstaltung",
             fields: [
               { key: "uhrzeiten" as const, label: "Uhrzeiten (Beginn / Ende)", requirable: true },
-              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind — dann automatisch Pflichtfeld", proOnly: true },
+              { key: "raum" as const, label: "Raum-Auswahl", hint: "Nur sichtbar, wenn im Tab „Räume“ aktive Räume angelegt sind — dann automatisch Pflichtfeld", hintIcon: "i", proOnly: true },
             ],
           },
           {
@@ -250,23 +250,23 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
           {
             label: "Schritt 4 – Unterkunft",
             fields: [
-              { key: "verpflegung" as const,  label: "Verpflegung",  hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
-              { key: "zimmerwunsch" as const,  label: "Zimmerwunsch", hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
+              { key: "verpflegung" as const,  label: "Verpflegung",  hint: "Optionen unten wählbar", hintIcon: "☰", requirable: true },
+              { key: "zimmerwunsch" as const,  label: "Zimmerwunsch", hint: "Optionen unten wählbar", hintIcon: "☰", requirable: true },
             ],
           },
           {
             label: "Schritt 5 – Abschluss",
             fields: [
               { key: "wuenscheRahmenprogramm" as const, label: "Wünsche Rahmenprogramm", requirable: true },
-              { key: "abrechnung" as const,             label: "Abrechnung",                  hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
-              { key: "zahlung" as const,                label: "Zahlung",                      hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
-              { key: "anreise" as const,                label: "Anreise",                      hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
+              { key: "abrechnung" as const,             label: "Abrechnung",                  hint: "Optionen unten wählbar", hintIcon: "☰", requirable: true },
+              { key: "zahlung" as const,                label: "Zahlung",                      hint: "Optionen unten wählbar", hintIcon: "☰", requirable: true },
+              { key: "anreise" as const,                label: "Anreise",                      hint: "Optionen unten wählbar", hintIcon: "☰", requirable: true },
               { key: "barrierefreiheit" as const,       label: "Besondere Bedürfnisse", requirable: true },
-              { key: "budget" as const,                 label: "Budgetrahmen",                 hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
-              { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
+              { key: "budget" as const,                 label: "Budgetrahmen",                 hint: "Optionen unten wählbar", hintIcon: "☰", requirable: true },
+              { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen unten wählbar", hintIcon: "☰", requirable: true },
             ],
           },
-        ] as { label: string; fields: { key: keyof NonNullable<EventConfig["formFields"]>; label: string; hint?: string; requirable?: boolean; hintAsTooltip?: boolean; proOnly?: boolean }[] }[]).map((step) => (
+        ] as { label: string; fields: { key: keyof NonNullable<EventConfig["formFields"]>; label: string; hint?: string; requirable?: boolean; hintIcon?: string; proOnly?: boolean }[] }[]).map((step) => (
           <div key={step.label} style={{ marginBottom: "2.5rem" }}>
             <div style={{
               fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase",
@@ -277,7 +277,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
               {step.label}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, 100%), 1fr))", gap: "0.5rem 1.5rem" }}>
-              {step.fields.map(({ key, label, hint, requirable, hintAsTooltip, proOnly }) => {
+              {step.fields.map(({ key, label, hint, requirable, hintIcon, proOnly }) => {
                 const enabled = fieldEnabled(key);
                 const locked = proOnly && plan === "basis";
                 return (
@@ -291,8 +291,8 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
                       />
                       <span style={{ fontSize: "0.875rem", lineHeight: 1.4, opacity: locked ? 0.6 : 1 }}>
                         {label}
-                        {hint && (hintAsTooltip ? (
-                          <span className="ew-infotip" data-tip={hint}>☰</span>
+                        {hint && (hintIcon ? (
+                          <span className="ew-infotip" data-tip={hint}>{hintIcon}</span>
                         ) : (
                           <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>
                         ))}
