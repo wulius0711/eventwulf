@@ -62,31 +62,9 @@ const nextConfig: NextConfig = {
   // package so its .node/.so files are copied into the deployed function output
   // instead of getting dropped by the bundler.
   serverExternalPackages: ["sharp"],
-  // eventwulf.at (root domain, unlike app.eventwulf.at) is the Framer
-  // marketing site, not this app — Framer's own custom-domain connection
-  // needs an annual plan, so this proxies the bare domain straight through
-  // to the framer.website deployment server-side instead, keeping
-  // eventwulf.at in the browser's address bar. Matched by Host header so it
-  // only applies to that hostname, never app.eventwulf.at.
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: "/:path*",
-          has: [{ type: "host", value: "eventwulf.at" }],
-          destination: "https://eventwulf.framer.website/:path*",
-        },
-        {
-          source: "/:path*",
-          has: [{ type: "host", value: "www.eventwulf.at" }],
-          destination: "https://eventwulf.framer.website/:path*",
-        },
-      ],
-    };
-  },
   async headers() {
     // Keeps this app's own CSP/security headers off the proxied Framer
-    // content (see rewrites() above) — Framer's fonts/scripts/images would
+    // content (see proxy.ts) — Framer's fonts/scripts/images would
     // otherwise violate a policy written for this app's own pages.
     const notEventwulfAt = [
       { type: "host" as const, value: "eventwulf.at" },
