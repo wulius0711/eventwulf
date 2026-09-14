@@ -2,9 +2,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { EventConfig } from "@/lib/types";
+import { PLAN_LABELS, type Plan } from "@/lib/plan";
+import UpgradeButton from "./UpgradeButton";
 
 interface Props {
   initialConfig: EventConfig;
+  plan: Plan;
+  initialTab?: Tab;
 }
 
 type Tab = "firma" | "abrechnung" | "passwort";
@@ -35,10 +39,10 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export default function ConfigEditor({ initialConfig }: Props) {
+export default function ConfigEditor({ initialConfig, plan, initialTab }: Props) {
   const router = useRouter();
   const [config, setConfig] = useState<EventConfig>(initialConfig);
-  const [tab, setTab] = useState<Tab>("firma");
+  const [tab, setTab] = useState<Tab>(initialTab ?? "firma");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -149,6 +153,15 @@ export default function ConfigEditor({ initialConfig }: Props) {
           </Section>
 
         </>
+      )}
+
+      {tab === "abrechnung" && (
+        <Section title="Plan">
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "0.9rem" }}>Aktueller Plan: <strong>{PLAN_LABELS[plan]}</strong></span>
+            <UpgradeButton currentPlan={plan} />
+          </div>
+        </Section>
       )}
 
       {tab === "abrechnung" && (

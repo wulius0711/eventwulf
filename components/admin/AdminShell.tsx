@@ -43,21 +43,21 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
         <div className="ew-sidebar-footer">
           {plan && (
             <a
-              href="/admin/config"
+              href="/admin/config?tab=abrechnung"
               style={{ fontSize: "0.78rem", color: "var(--muted)", textDecoration: "none", fontWeight: 500 }}
             >
               Plan: {PLAN_LABELS[plan]}
             </a>
           )}
-          <div style={{ display: "flex", alignItems: "center" }}>
-            {bookingAppUrl && (
-              <a href={bookingAppUrl} style={{ fontSize: "0.82rem", color: "var(--muted)", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.3rem", flex: 1 }}>
-                <span>←</span> bookingwulf
-              </a>
-            )}
+          {bookingAppUrl && (
+            <a href={bookingAppUrl} style={{ fontSize: "0.82rem", color: "var(--muted)", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <span>←</span> bookingwulf
+            </a>
+          )}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <ThemeToggle />
+            <LogoutButton />
           </div>
-          <LogoutButton />
         </div>
       </aside>
 
