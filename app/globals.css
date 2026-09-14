@@ -439,7 +439,7 @@ button:active:not(:disabled) {
 }
 .ew-admin-btn-outline-danger {
   background: none;
-  border: 1px solid #fca5a5;
+  border: 1px solid var(--error);
   color: var(--error);
 }
 
@@ -457,6 +457,7 @@ button:active:not(:disabled) {
   --primary-tint: rgba(52,211,153,0.12);
   --primary-dim:  rgba(52,211,153,0.20);
   --primary-text: #6ee7b7;
+  --error:        #f87171;
 }
 
 .admin-shell input,
