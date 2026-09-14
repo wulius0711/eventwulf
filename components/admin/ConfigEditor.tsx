@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import type { EventConfig } from "@/lib/types";
 import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import UpgradeButton from "./UpgradeButton";
+import TeamEditor from "./TeamEditor";
 
 interface Props {
   initialConfig: EventConfig;
@@ -11,7 +12,7 @@ interface Props {
   initialTab?: Tab;
 }
 
-type Tab = "firma" | "abrechnung" | "passwort";
+type Tab = "firma" | "abrechnung" | "team" | "passwort";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -128,6 +129,7 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
       >
         <button style={tabStyle("firma")} onClick={() => setTab("firma")}>Firma</button>
         <button style={tabStyle("abrechnung")} onClick={() => setTab("abrechnung")}>Abrechnung</button>
+        <button style={tabStyle("team")} onClick={() => setTab("team")}>Team</button>
         <button style={tabStyle("passwort")} onClick={() => setTab("passwort")}>Passwort</button>
       </div>
 
@@ -174,6 +176,8 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
           </Field>
         </Section>
       )}
+
+      {tab === "team" && <TeamEditor plan={plan} />}
 
       {tab === "passwort" && (
         <Section title="Passwort ändern">

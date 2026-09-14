@@ -20,7 +20,7 @@ export default async function ConfigPage({ searchParams }: Props) {
   const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true } });
   const plan = isPlan(org?.plan) ? org.plan : "basis";
   const { tab } = await searchParams;
-  const initialTab = tab === "abrechnung" || tab === "passwort" ? tab : "firma";
+  const initialTab = tab === "abrechnung" || tab === "team" || tab === "passwort" ? tab : "firma";
 
   return (
     <div>

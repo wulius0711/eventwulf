@@ -44,6 +44,13 @@ export function locationLimitFor(plan: Plan): number | null {
   return LOCATION_LIMIT[plan];
 }
 
+// Max team members (User rows) per Organization, by plan. null = unlimited.
+const TEAM_LIMIT: Record<Plan, number | null> = { basis: 1, pro: 2, premium: null };
+
+export function teamLimitFor(plan: Plan): number | null {
+  return TEAM_LIMIT[plan];
+}
+
 export function isPlan(val: unknown): val is Plan {
   return typeof val === "string" && (PLAN_ORDER as string[]).includes(val);
 }
