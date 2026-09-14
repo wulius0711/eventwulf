@@ -443,6 +443,11 @@ button:active:not(:disabled) {
   border: 1px solid var(--error);
   color: var(--error);
 }
+.ew-admin-btn-ghost-danger {
+  background: none;
+  border: none;
+  color: var(--error);
+}
 
 /* ─── Admin shell – dark ───────────────────────────────────────── */
 .admin-shell[data-theme="dark"] {

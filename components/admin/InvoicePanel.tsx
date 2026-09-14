@@ -172,8 +172,8 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
                     />
                   </div>
                   <button onClick={() => removeItem(idx)} disabled={lineItems.length === 1}
-                    className="ew-admin-btn ew-admin-btn-outline-danger"
-                    style={{ padding: "0.3rem 0.65rem", fontSize: "1.1rem", lineHeight: 1, opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
+                    className="ew-admin-btn ew-admin-btn-ghost-danger"
+                    style={{ padding: "0 0.5rem", fontSize: "1.2em", lineHeight: 1, opacity: lineItems.length === 1 ? 0.3 : 1 }}>×</button>
                 </Fragment>
               ))}
             </div>

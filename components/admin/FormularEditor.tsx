@@ -127,8 +127,8 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
             <button
               type="button"
               onClick={() => removeListItem(field, i)}
-              className="ew-admin-btn ew-admin-btn-outline-danger"
-              style={{ padding: "0 0.75rem", fontSize: "0.85rem" }}
+              className="ew-admin-btn ew-admin-btn-ghost-danger"
+              style={{ padding: "0 0.5rem", fontSize: "1.2em" }}
             >
               ×
             </button>
@@ -216,6 +216,14 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
       </Section>
 
       <Section title="Felder" description="Aktiviere oder deaktiviere einzelne Felder im Buchungsformular.">
+        <p style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--muted)", margin: "-0.5rem 0 1.5rem" }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: "14px", height: "14px", borderRadius: "50%", border: "1px solid var(--muted)",
+            fontSize: "0.68rem", lineHeight: 1, flexShrink: 0,
+          }}>i</span>
+          neben einem Feld = die Auswahloptionen dafür pflegst du weiter unten im gleichen Tab.
+        </p>
         {([
           {
             label: "Schritt 1 – Veranstaltung",
@@ -242,20 +250,20 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
           {
             label: "Schritt 4 – Unterkunft",
             fields: [
-              { key: "verpflegung" as const,  label: "Verpflegung",  hint: "Optionen unten wählbar", requirable: true },
-              { key: "zimmerwunsch" as const,  label: "Zimmerwunsch", hint: "Optionen unten wählbar", requirable: true },
+              { key: "verpflegung" as const,  label: "Verpflegung",  hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
+              { key: "zimmerwunsch" as const,  label: "Zimmerwunsch", hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
             ],
           },
           {
             label: "Schritt 5 – Abschluss",
             fields: [
               { key: "wuenscheRahmenprogramm" as const, label: "Wünsche Rahmenprogramm", requirable: true },
-              { key: "abrechnung" as const,             label: "Abrechnung",                  hint: "Optionen unten wählbar", requirable: true },
-              { key: "zahlung" as const,                label: "Zahlung",                      hint: "Optionen unten wählbar", requirable: true },
-              { key: "anreise" as const,                label: "Anreise",                      hint: "Optionen unten wählbar", requirable: true },
+              { key: "abrechnung" as const,             label: "Abrechnung",                  hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
+              { key: "zahlung" as const,                label: "Zahlung",                      hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
+              { key: "anreise" as const,                label: "Anreise",                      hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
               { key: "barrierefreiheit" as const,       label: "Besondere Bedürfnisse", requirable: true },
-              { key: "budget" as const,                 label: "Budgetrahmen",                 hint: "Optionen unten wählbar", requirable: true },
-              { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen unten wählbar", requirable: true },
+              { key: "budget" as const,                 label: "Budgetrahmen",                 hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
+              { key: "quelle" as const,                 label: "Wie habt ihr uns gefunden?",   hint: "Optionen unten wählbar", hintAsTooltip: true, requirable: true },
             ],
           },
         ] as { label: string; fields: { key: keyof NonNullable<EventConfig["formFields"]>; label: string; hint?: string; requirable?: boolean; hintAsTooltip?: boolean; proOnly?: boolean }[] }[]).map((step) => (
@@ -284,17 +292,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
                       <span style={{ fontSize: "0.875rem", lineHeight: 1.4, opacity: locked ? 0.6 : 1 }}>
                         {label}
                         {hint && (hintAsTooltip ? (
-                          <span
-                            title={hint}
-                            style={{
-                              display: "inline-flex", alignItems: "center", justifyContent: "center",
-                              width: "1rem", height: "1rem", marginLeft: "0.4rem", verticalAlign: "middle",
-                              borderRadius: "50%", border: "1px solid var(--muted)", color: "var(--muted)",
-                              fontSize: "0.65rem", fontStyle: "italic", cursor: "help",
-                            }}
-                          >
-                            i
-                          </span>
+                          <span className="ew-infotip" data-tip={hint}>i</span>
                         ) : (
                           <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.1rem" }}>({hint})</span>
                         ))}
