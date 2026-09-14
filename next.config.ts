@@ -62,18 +62,48 @@ const nextConfig: NextConfig = {
   // package so its .node/.so files are copied into the deployed function output
   // instead of getting dropped by the bundler.
   serverExternalPackages: ["sharp"],
+  // eventwulf.at (root domain, unlike app.eventwulf.at) is the Framer
+  // marketing site, not this app — Framer's own custom-domain connection
+  // needs an annual plan, so this proxies the bare domain straight through
+  // to the framer.website deployment server-side instead, keeping
+  // eventwulf.at in the browser's address bar. Matched by Host header so it
+  // only applies to that hostname, never app.eventwulf.at.
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "eventwulf.at" }],
+          destination: "https://eventwulf.framer.website/:path*",
+        },
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "www.eventwulf.at" }],
+          destination: "https://eventwulf.framer.website/:path*",
+        },
+      ],
+    };
+  },
   async headers() {
+    // Keeps this app's own CSP/security headers off the proxied Framer
+    // content (see rewrites() above) — Framer's fonts/scripts/images would
+    // otherwise violate a policy written for this app's own pages.
+    const notEventwulfAt = [
+      { type: "host" as const, value: "eventwulf.at" },
+      { type: "host" as const, value: "www.eventwulf.at" },
+    ];
+
     return [
-      { source: "/",               headers: widgetHeaders },
-      { source: "/events",         headers: widgetHeaders },
-      { source: "/admin/(.*)",     headers: adminHeaders },
-      { source: "/api/submit",     headers: submitHeaders },
+      { source: "/",               headers: widgetHeaders, missing: notEventwulfAt },
+      { source: "/events",         headers: widgetHeaders, missing: notEventwulfAt },
+      { source: "/admin/(.*)",     headers: adminHeaders,  missing: notEventwulfAt },
+      { source: "/api/submit",     headers: submitHeaders, missing: notEventwulfAt },
       // Excludes /api/submit — Next.js merges ALL matching header rules for a
       // path rather than letting the first/more-specific one win, so without
       // this exclusion /api/submit silently also inherited adminHeaders'
       // X-Frame-Options and admin Content-Security-Policy on top of its own
       // (Low/Info: redundant headers).
-      { source: "/api/((?!submit).*)", headers: adminHeaders },
+      { source: "/api/((?!submit).*)", headers: adminHeaders, missing: notEventwulfAt },
     ];
   },
 };
