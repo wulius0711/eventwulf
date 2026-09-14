@@ -61,6 +61,7 @@ function emptyForm() {
 
 export default function EventsEditor() {
   const [events, setEvents] = useState<EventEntry[]>([]);
+  const [eventLimit, setEventLimit] = useState<number | null>(null);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -74,7 +75,10 @@ export default function EventsEditor() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/admin/events").then((r) => r.json()).then(setEvents).catch(() => {});
+    fetch("/api/admin/events").then((r) => r.json()).then((data) => {
+      setEvents(data.events);
+      setEventLimit(data.limit);
+    }).catch(() => {});
     fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
     // 403 if rooms aren't unlocked for this plan — fine, just means no room picker.
     fetch("/api/admin/rooms").then((r) => r.ok ? r.json() : { rooms: [] }).then((data) => setRooms(data.rooms)).catch(() => {});
@@ -274,6 +278,16 @@ export default function EventsEditor() {
       <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
         Terminierte Angebote mit Preis und Kapazität — werden im Events-Widget angezeigt und können direkt angefragt werden.
       </p>
+
+      {eventLimit !== null && events.filter((e) => e.isActive).length > eventLimit && (
+        <div style={{
+          background: "var(--surface)", border: "1px solid var(--primary)",
+          borderRadius: "var(--radius-sm)", padding: "0.75rem 1rem", fontSize: "0.85rem", color: "var(--text)",
+        }}>
+          Aktuell sind mehr aktive Events angelegt ({events.filter((e) => e.isActive).length}), als das gebuchte Paket erlaubt ({eventLimit}) — z.B. nach einem Paket-Wechsel. Bestehende Events bleiben nutzbar, aber es können keine weiteren angelegt werden, solange das so ist.
+        </div>
+      )}
+
       <div style={{ background: "var(--surface)", border: `1px solid ${editingId ? "var(--primary)" : "var(--border)"}`, borderRadius: "var(--radius)" }}>
         <button
           type="button"

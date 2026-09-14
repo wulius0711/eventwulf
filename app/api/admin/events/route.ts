@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
 import { validateMinParticipants } from "@/lib/validate";
+import { eventLimitFor, isPlan, PLAN_LABELS } from "@/lib/plan";
 
 function sanitizeDescription(html: string): string {
   return sanitizeHtml(html, {
@@ -46,6 +47,11 @@ async function getClientId(slug: string) {
   return client?.id ?? null;
 }
 
+async function getOrgPlan(organizationId: string) {
+  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { plan: true } });
+  return isPlan(org?.plan) ? org.plan : "basis";
+}
+
 // Validates a submitted roomId belongs to this client. `null`/"" clears the room.
 // Returns `undefined` only when the id doesn't resolve to one of the client's own rooms.
 async function validateRoomId(clientId: string, roomId: string | null): Promise<string | null | undefined> {
@@ -80,7 +86,11 @@ export async function GET() {
     include: { room: { select: { name: true } } },
   });
 
-  return NextResponse.json(events.map(serialize));
+  // limit alongside the list so the admin UI can show a heads-up when a plan
+  // downgrade left more active events than the current plan allows — mirrors
+  // the same pattern used for rooms (see app/api/admin/rooms/route.ts GET).
+  const plan = await getOrgPlan(session.organizationId);
+  return NextResponse.json({ events: events.map(serialize), limit: eventLimitFor(plan) });
 }
 
 export async function POST(req: NextRequest) {
@@ -119,6 +129,15 @@ export async function POST(req: NextRequest) {
   const resolvedRoomId = await validateRoomId(clientId, roomId ?? null);
   if (resolvedRoomId === undefined) {
     return NextResponse.json({ error: "Raum ungültig" }, { status: 400 });
+  }
+
+  const plan = await getOrgPlan(session.organizationId);
+  const limit = eventLimitFor(plan);
+  if (limit !== null) {
+    const count = await prisma.event.count({ where: { clientId, isActive: true } });
+    if (count >= limit) {
+      return NextResponse.json({ error: `Maximal ${limit} aktive Events im ${PLAN_LABELS[plan]}-Paket. Für mehr Events upgraden.` }, { status: 400 });
+    }
   }
 
   try {
@@ -192,6 +211,20 @@ export async function PATCH(req: NextRequest) {
   }
   if (max !== null && existing.bookedCount > max) {
     return NextResponse.json({ error: `Es sind bereits ${existing.bookedCount} Plätze belegt — Max. Teilnehmer kann nicht darunter gesetzt werden` }, { status: 400 });
+  }
+
+  // Reactivating a deactivated event is the same effective action as creating
+  // one (it increases the active count), so it needs the same plan-limit
+  // check as POST — mirrors the identical guard in app/api/admin/rooms/route.ts.
+  if (isActive === true && !existing.isActive) {
+    const plan = await getOrgPlan(session.organizationId);
+    const limit = eventLimitFor(plan);
+    if (limit !== null) {
+      const count = await prisma.event.count({ where: { clientId, isActive: true } });
+      if (count >= limit) {
+        return NextResponse.json({ error: `Maximal ${limit} aktive Events im ${PLAN_LABELS[plan]}-Paket. Für mehr Events upgraden.` }, { status: 400 });
+      }
+    }
   }
 
   const newImage = image ?? existing.image;

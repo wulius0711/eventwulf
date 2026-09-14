@@ -26,6 +26,14 @@ export function roomLimitFor(plan: Plan): number | null {
   return ROOM_LIMIT[plan];
 }
 
+// Max active events per client, by plan. null = unlimited. Unlike rooms,
+// events are available on every plan — only the count is gated.
+const EVENT_LIMIT: Record<Plan, number | null> = { basis: 3, pro: null, premium: null };
+
+export function eventLimitFor(plan: Plan): number | null {
+  return EVENT_LIMIT[plan];
+}
+
 export function isPlan(val: unknown): val is Plan {
   return typeof val === "string" && (PLAN_ORDER as string[]).includes(val);
 }
