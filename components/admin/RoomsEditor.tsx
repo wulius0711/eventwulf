@@ -23,6 +23,7 @@ export default function RoomsEditor() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function RoomsEditor() {
       isActive: room.isActive, sortOrder: String(room.sortOrder),
     });
     setError("");
+    setUploadError("");
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -63,6 +65,7 @@ export default function RoomsEditor() {
     setEditingId(null);
     setForm(emptyForm());
     setError("");
+    setUploadError("");
     setShowForm(false);
   }
 
@@ -71,11 +74,11 @@ export default function RoomsEditor() {
     // API route even runs — catch it here so the admin gets a clear message
     // instead of a confusing generic upload failure.
     if (file.size > 4 * 1024 * 1024) {
-      setError("Datei zu groß (max. 4MB)");
+      setUploadError("Datei zu groß (max. 4MB)");
       return;
     }
     setUploading(true);
-    setError("");
+    setUploadError("");
     const body = new FormData();
     body.append("file", file);
     const res = await fetch("/api/admin/events/upload", { method: "POST", body });
@@ -84,7 +87,7 @@ export default function RoomsEditor() {
       set("image", url);
     } else {
       const { error: msg } = await res.json().catch(() => ({ error: "Upload fehlgeschlagen" }));
-      setError(msg);
+      setUploadError(msg);
     }
     setUploading(false);
   }
@@ -253,6 +256,7 @@ export default function RoomsEditor() {
             <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
               {form.image ? "Neues Bild wählen, um das aktuelle zu ersetzen" : "JPEG, PNG oder WebP, wird automatisch optimiert (max. 4MB)"}
             </span>
+            {uploadError && <span style={{ fontSize: "0.8rem", color: "var(--error)" }}>{uploadError}</span>}
           </div>
         </div>
 

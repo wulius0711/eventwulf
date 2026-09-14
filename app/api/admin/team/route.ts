@@ -9,12 +9,13 @@ import { isPlan, teamLimitFor, PLAN_LABELS } from "@/lib/plan";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-function serialize(u: { id: string; email: string; createdAt: Date; inviteToken: string | null }) {
+function serialize(u: { id: string; email: string; createdAt: Date; inviteToken: string | null }, currentUserId: string) {
   return {
     id: u.id,
     email: u.email,
     createdAt: u.createdAt.toISOString(),
     pending: u.inviteToken !== null,
+    self: u.id === currentUserId,
   };
 }
 
@@ -29,7 +30,7 @@ export async function GET() {
   if (!org) return NextResponse.json({ error: "Organisation nicht gefunden" }, { status: 404 });
 
   const plan = isPlan(org.plan) ? org.plan : "basis";
-  return NextResponse.json({ members: org.users.map(serialize), limit: teamLimitFor(plan), plan });
+  return NextResponse.json({ members: org.users.map((u) => serialize(u, session.userId)), limit: teamLimitFor(plan), plan });
 }
 
 export async function POST(req: NextRequest) {
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
           <p style="margin:0 0 1.5rem;color:#6b7280;font-size:0.9rem">
             ${sanitizeEmailHeader(session.email)} hat dich zum Team von "${sanitizeEmailHeader(org.name)}" auf eventwulf eingeladen.
           </p>
-          <p style="margin:0 0 1.5rem"><a href="${inviteUrl}" style="display:inline-block;padding:10px 20px;background:#156e47;color:#fff;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600">Einladung annehmen</a></p>
+          <p style="margin:0 0 1.5rem"><a href="${inviteUrl}" style="display:inline-block;padding:10px 20px;background:#bd8e3c;color:#1a1a1a;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600">Einladung annehmen</a></p>
           <p style="margin:0;color:#6b7280;font-size:0.8rem">Der Link ist 7 Tage gültig.</p>
         </div>
       `,
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
     console.error(`Failed to send invite email to ${user.id}:`, e);
   }
 
-  return NextResponse.json(serialize(user));
+  return NextResponse.json(serialize(user, session.userId));
 }
 
 export async function DELETE(req: NextRequest) {

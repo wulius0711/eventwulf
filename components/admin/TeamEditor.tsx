@@ -8,6 +8,7 @@ interface Member {
   email: string;
   createdAt: string;
   pending: boolean;
+  self: boolean;
 }
 
 export default function TeamEditor({ plan }: { plan: Plan }) {
@@ -53,7 +54,8 @@ export default function TeamEditor({ plan }: { plan: Plan }) {
     setInviting(false);
   }
 
-  async function handleRemove(id: string) {
+  async function handleRemove(id: string, email: string) {
+    if (!confirm(`${email} wirklich aus dem Team entfernen?`)) return;
     setRemovingId(id);
     setError("");
 
@@ -110,14 +112,16 @@ export default function TeamEditor({ plan }: { plan: Plan }) {
                 <span style={{ marginLeft: "0.5rem", color: "var(--muted)", fontSize: "0.75rem" }}>(Einladung ausstehend)</span>
               )}
             </span>
-            <button
-              type="button"
-              onClick={() => handleRemove(m.id)}
-              disabled={removingId === m.id}
-              style={{ border: "none", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.8rem" }}
-            >
-              {removingId === m.id ? "…" : "Entfernen"}
-            </button>
+            {!m.self && (
+              <button
+                type="button"
+                onClick={() => handleRemove(m.id, m.email)}
+                disabled={removingId === m.id}
+                style={{ border: "none", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.8rem" }}
+              >
+                {removingId === m.id ? "…" : "Entfernen"}
+              </button>
+            )}
           </div>
         ))}
       </div>
