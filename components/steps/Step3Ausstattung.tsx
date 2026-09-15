@@ -17,7 +17,7 @@ export default function Step3Ausstattung({ config }: Props) {
             const checked = form.ausstattungExtra.includes(opt);
             return (
               <label key={opt} className="ew-checkbox-option" data-checked={checked ? "" : undefined}>
-                <input type="checkbox" checked={checked} onChange={() => { const next = checked ? form.ausstattungExtra.filter((x) => x !== opt) : [...form.ausstattungExtra, opt]; setField("ausstattungExtra", next); }} />
+                <input type="checkbox" checked={checked} style={{ accentColor: "var(--primary)" }} onChange={() => { const next = checked ? form.ausstattungExtra.filter((x) => x !== opt) : [...form.ausstattungExtra, opt]; setField("ausstattungExtra", next); }} />
                 <span className="ew-checkbox-option-label">{opt}</span>
               </label>
             );

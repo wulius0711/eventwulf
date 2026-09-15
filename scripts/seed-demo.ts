@@ -28,7 +28,7 @@ const config = {
     primaryColor: "#156e47",
   },
   formTitle: "Du hast Interesse an einem Event bei uns?",
-  formTitleFont: "Inter",
+  formTitleFont: "Cormorant Garamond",
   verpflegungOptions: ["Keine", "Frühstück", "Mittagessen", "Abendessen", "Kaffeepauschale", "Obst / Nüsse", "Kuchen", "Selbstversorgung"],
   zimmerwunschOptions: ["Keine Zimmer", "Einzelzimmer", "Doppelzimmer", "Mehrbettzimmer", "Apartements"],
   abrechnungOptions: ["Veranstalter", "Teilnehmer zahlen selbst", "Teilnehmer zahlen Nächtigung, Veranstalter zahlt Räumlichkeiten"],
