@@ -4,6 +4,7 @@ import { useFormStore, TOTAL_STEPS } from "@/store/form";
 import type { EventConfig } from "@/lib/types";
 import { isValidParticipantCount, findMissingRequiredField } from "@/lib/validate";
 import Step1Veranstaltung from "@/components/steps/Step1Veranstaltung";
+import type { RoomEntry } from "@/lib/types";
 import Step2Gruppe from "@/components/steps/Step2Gruppe";
 import Step3Ausstattung from "@/components/steps/Step3Ausstattung";
 import Step4Verpflegung from "@/components/steps/Step4Verpflegung";
@@ -16,6 +17,7 @@ interface Props {
   slug: string;
   hasRooms: boolean;
   isDemo?: boolean;
+  initialRooms?: RoomEntry[];
 }
 
 type SubmitState = "idle" | "loading" | "success" | "error" | "demo";
@@ -46,7 +48,7 @@ function validate(step: number, form: import("@/lib/types").InquiryFormData, con
   return "";
 }
 
-export default function Wizard({ config, slug, hasRooms, isDemo }: Props) {
+export default function Wizard({ config, slug, hasRooms, isDemo, initialRooms }: Props) {
   const { form, step, maxStep, nextStep, prevStep, goToStep, reset } = useFormStore();
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
@@ -173,7 +175,7 @@ export default function Wizard({ config, slug, hasRooms, isDemo }: Props) {
 
       {/* Step content */}
       <div key={stepKey.current} className={`ew-step-content${stepClass ? ` ${stepClass}` : ""}`} onAnimationEnd={() => setStepClass("")}>
-        {step === 1 && <Step1Veranstaltung slug={slug} config={config} />}
+        {step === 1 && <Step1Veranstaltung slug={slug} config={config} initialRooms={initialRooms} />}
         {step === 2 && <Step2Gruppe config={config} />}
         {step === 3 && <Step3Ausstattung config={config} />}
         {step === 4 && <Step4Verpflegung config={config} />}

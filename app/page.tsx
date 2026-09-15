@@ -28,10 +28,20 @@ export default async function Home({ searchParams }: Props) {
   const slug = kunde;
   const config = await loadConfigFromDB(slug);
 
-  const client = await prisma.client.findUnique({ where: { slug }, select: { id: true, isDemo: true } });
-  const hasRooms = client
-    ? (await prisma.room.count({ where: { clientId: client.id, isActive: true } })) > 0
-    : false;
+  const client = await prisma.client.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      isDemo: true,
+      rooms: {
+        where: { isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        select: { id: true, name: true, description: true, image: true, capacity: true, isActive: true, sortOrder: true },
+      },
+    },
+  });
+  const initialRooms = client?.rooms ?? [];
+  const hasRooms = initialRooms.length > 0;
   const isDemo = client?.isDemo ?? false;
 
   const themeVars = buildThemeVars(config.company.primaryColor ?? DEFAULT_PRIMARY_COLOR);
@@ -78,7 +88,7 @@ export default async function Home({ searchParams }: Props) {
             {config.formTitle}
           </h2>
         )}
-        <Wizard config={config} slug={slug} hasRooms={hasRooms} isDemo={isDemo} />
+        <Wizard config={config} slug={slug} hasRooms={hasRooms} isDemo={isDemo} initialRooms={initialRooms} />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFormStore } from "@/store/form";
 import Calendar from "@/components/Calendar";
 import type { EventConfig, RoomEntry } from "@/lib/types";
@@ -7,6 +7,7 @@ import type { EventConfig, RoomEntry } from "@/lib/types";
 interface Props {
   slug: string;
   config: EventConfig;
+  initialRooms?: RoomEntry[];
 }
 
 const HOURS = Array.from({ length: 19 }, (_, i) => {
@@ -14,11 +15,21 @@ const HOURS = Array.from({ length: 19 }, (_, i) => {
   return `${String(h).padStart(2, "0")}:00`;
 });
 
-function RoomPicker({ slug, config }: { slug: string; config: EventConfig }) {
+function RoomPicker({ slug, config, initialRooms }: { slug: string; config: EventConfig; initialRooms?: RoomEntry[] }) {
   const { form, setField } = useFormStore();
-  const [rooms, setRooms] = useState<RoomEntry[]>([]);
+  const [rooms, setRooms] = useState<RoomEntry[]>(initialRooms ?? []);
+  // Server already provided the unfiltered room list for the no-dates-selected
+  // case — skip re-fetching that exact same thing on mount (it caused a second,
+  // late layout shift as the iframe embed resized again right after the user's
+  // first paint). Any date-range change past this point still refetches to get
+  // per-date availability.
+  const skippedInitialFetch = useRef(!!initialRooms?.length);
 
   useEffect(() => {
+    if (skippedInitialFetch.current) {
+      skippedInitialFetch.current = false;
+      if (!form.datumVon || !form.datumBis) return;
+    }
     const dateParams = form.datumVon && form.datumBis
       ? `&datumVon=${encodeURIComponent(form.datumVon)}&datumBis=${encodeURIComponent(form.datumBis)}`
       : "";
@@ -86,7 +97,7 @@ function fmtDate(iso: string) {
   return `${d}.${m}.${y}`;
 }
 
-export default function Step1Veranstaltung({ slug, config }: Props) {
+export default function Step1Veranstaltung({ slug, config, initialRooms }: Props) {
   const { form, setField } = useFormStore();
   const [dateConflict, setDateConflict] = useState(false);
 
@@ -130,7 +141,7 @@ export default function Step1Veranstaltung({ slug, config }: Props) {
         )}
       </div>
 
-      <RoomPicker slug={slug} config={config} />
+      <RoomPicker slug={slug} config={config} initialRooms={initialRooms} />
 
       <div className="ew-date-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", background: hasRange ? "var(--primary-tint)" : "var(--bg2)", border: `1px solid ${hasRange ? "var(--primary-dim)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", padding: "0.85rem 1rem", transition: "all 0.2s" }}>
         <div>
