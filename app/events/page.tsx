@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import { buildThemeVars, DEFAULT_PRIMARY_COLOR } from "@/lib/theme";
 import { isSafeCssColor } from "@/lib/validate";
+import { prisma } from "@/lib/db";
 import EventsList from "@/components/EventsList";
 import IframeResizer from "@/components/IframeResizer";
 
@@ -26,6 +27,8 @@ export default async function EventsPage({ searchParams }: Props) {
   if (!kunde) redirect("/signup");
   const slug = kunde;
   const config = await loadConfigFromDB(slug);
+  const client = await prisma.client.findUnique({ where: { slug }, select: { isDemo: true } });
+  const isDemo = client?.isDemo ?? false;
 
   const themeVars = buildThemeVars(config.company.primaryColor ?? DEFAULT_PRIMARY_COLOR);
   const bodyFont = config.formBodyFont ?? "";
@@ -47,7 +50,7 @@ export default async function EventsPage({ searchParams }: Props) {
       <IframeResizer />
       {googleFontUrl && <link rel="stylesheet" href={googleFontUrl} />}
       <div className="ew-widget-wrap" style={{ padding: "1.5rem", background: pageBg, fontFamily: bodyFontFamily }}>
-        <EventsList slug={slug} />
+        <EventsList slug={slug} isDemo={isDemo} />
       </div>
     </div>
   );

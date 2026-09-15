@@ -18,6 +18,7 @@ interface EventItem {
 
 interface Props {
   slug: string;
+  isDemo?: boolean;
 }
 
 function fmtDate(iso: string) {
@@ -28,7 +29,7 @@ function fmtPrice(n: number) {
   return n.toLocaleString("de-AT", { style: "currency", currency: "EUR" });
 }
 
-function EventCard({ event, slug, expanded, onToggle }: { event: EventItem; slug: string; expanded: boolean; onToggle: () => void }) {
+function EventCard({ event, slug, expanded, onToggle, isDemo }: { event: EventItem; slug: string; expanded: boolean; onToggle: () => void; isDemo?: boolean }) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,6 +37,7 @@ function EventCard({ event, slug, expanded, onToggle }: { event: EventItem; slug
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [demoDone, setDemoDone] = useState(false);
 
   useEffect(() => {
     if (!bodyRef.current) return;
@@ -58,6 +60,11 @@ function EventCard({ event, slug, expanded, onToggle }: { event: EventItem; slug
       setError(`Nur noch ${remaining} Plätze frei`);
       return;
     }
+    if (isDemo) {
+      setDemoDone(true);
+      return;
+    }
+
     setSubmitting(true);
     setError("");
 
@@ -143,6 +150,10 @@ function EventCard({ event, slug, expanded, onToggle }: { event: EventItem; slug
 
             {soldOut ? (
               <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>Dieses Event ist bereits ausgebucht.</p>
+            ) : demoDone ? (
+              <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--muted)", fontWeight: 500 }}>
+                ℹ Das ist nur eine Demo — hier würde jetzt deine echte Anfrage rausgehen. Es wird nichts versendet.
+              </p>
             ) : done ? (
               <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--success)", fontWeight: 500 }}>
                 Vielen Dank! Deine Anfrage ist eingegangen, wir melden uns in Kürze.
@@ -184,7 +195,7 @@ function EventCard({ event, slug, expanded, onToggle }: { event: EventItem; slug
   );
 }
 
-export default function EventsList({ slug }: Props) {
+export default function EventsList({ slug, isDemo }: Props) {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -211,6 +222,7 @@ export default function EventsList({ slug }: Props) {
           slug={slug}
           expanded={expandedId === ev.id}
           onToggle={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
+          isDemo={isDemo}
         />
       ))}
     </div>

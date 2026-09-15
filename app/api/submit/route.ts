@@ -91,6 +91,13 @@ export async function POST(req: NextRequest) {
   // Client B's Event/Room by id (both are just public, enumerable cuids).
   const client = await prisma.client.findUnique({ where: { slug } });
 
+  // Demo clients are for the marketing-site widget preview — the frontend already
+  // intercepts submit before calling this route, but reject here too in case
+  // someone bypasses the UI and posts directly.
+  if (client?.isDemo) {
+    return NextResponse.json({ error: "Das ist nur eine Demo — hier wird nichts versendet." }, { status: 403 });
+  }
+
 // Resolve event, validate participant count and reserve capacity if an eventId was submitted.
   let eventName = "";
   // validateSubmit already guarantees this is a positive integer within bounds.

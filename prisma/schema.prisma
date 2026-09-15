@@ -26,6 +26,7 @@ model Client {
   id             String        @id @default(cuid())
   slug           String        @unique
   config         String // JSON string (EventConfig)
+  isDemo         Boolean       @default(false)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
   blockedDates   BlockedDate[]

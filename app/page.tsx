@@ -28,10 +28,11 @@ export default async function Home({ searchParams }: Props) {
   const slug = kunde;
   const config = await loadConfigFromDB(slug);
 
-  const client = await prisma.client.findUnique({ where: { slug }, select: { id: true } });
+  const client = await prisma.client.findUnique({ where: { slug }, select: { id: true, isDemo: true } });
   const hasRooms = client
     ? (await prisma.room.count({ where: { clientId: client.id, isActive: true } })) > 0
     : false;
+  const isDemo = client?.isDemo ?? false;
 
   const themeVars = buildThemeVars(config.company.primaryColor ?? DEFAULT_PRIMARY_COLOR);
 
@@ -77,7 +78,7 @@ export default async function Home({ searchParams }: Props) {
             {config.formTitle}
           </h2>
         )}
-        <Wizard config={config} slug={slug} hasRooms={hasRooms} />
+        <Wizard config={config} slug={slug} hasRooms={hasRooms} isDemo={isDemo} />
       </div>
     </div>
   );

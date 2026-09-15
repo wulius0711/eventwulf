@@ -15,9 +15,10 @@ interface Props {
   config: EventConfig;
   slug: string;
   hasRooms: boolean;
+  isDemo?: boolean;
 }
 
-type SubmitState = "idle" | "loading" | "success" | "error";
+type SubmitState = "idle" | "loading" | "success" | "error" | "demo";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -45,7 +46,7 @@ function validate(step: number, form: import("@/lib/types").InquiryFormData, con
   return "";
 }
 
-export default function Wizard({ config, slug, hasRooms }: Props) {
+export default function Wizard({ config, slug, hasRooms, isDemo }: Props) {
   const { form, step, maxStep, nextStep, prevStep, goToStep, reset } = useFormStore();
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
@@ -81,6 +82,15 @@ export default function Wizard({ config, slug, hasRooms }: Props) {
   }
 
   async function handleSubmit() {
+    if (isDemo) {
+      setSubmitState("demo");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      requestAnimationFrame(() => {
+        const h = document.getElementById("embed-root")?.offsetHeight ?? document.body.offsetHeight;
+        window.parent.postMessage({ type: "eventwulf-resize", height: h, scrollTop: true }, "*");
+      });
+      return;
+    }
     setSubmitState("loading");
     setError("");
     try {
@@ -101,6 +111,19 @@ export default function Wizard({ config, slug, hasRooms }: Props) {
       setError(err instanceof Error ? err.message : "Unbekannter Fehler");
       setSubmitState("error");
     }
+  }
+
+  if (submitState === "demo") {
+    return (
+      <div className="ew-success">
+        <div className="ew-success-icon">ℹ</div>
+        <h2 className="ew-success-title">Das ist nur eine Demo</h2>
+        <p className="ew-success-msg">Hier würde jetzt deine echte Anfrage rausgehen. In dieser Vorschau wird nichts versendet.</p>
+        <button onClick={() => { setSubmitState("idle"); reset(); }} className="ew-btn-primary">
+          Nochmal ausprobieren
+        </button>
+      </div>
+    );
   }
 
   if (submitState === "success") {
