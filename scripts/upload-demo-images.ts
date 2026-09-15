@@ -44,7 +44,7 @@ async function main() {
   await prisma.room.updateMany({ where: { clientId: client.id, name: "Seminarraum Alm" }, data: { image: seminarraumUrl } });
   console.log("Seminarraum Alm ->", seminarraumUrl);
 
-  const scheuneUrl = await uploadImage("https://images.unsplash.com/photo-1593810450967-f9c42742e326?w=1200&q=80");
+  const scheuneUrl = await uploadImage("https://images.unsplash.com/photo-1761971975962-9cc397e2ba2a?w=1200&q=80");
   await prisma.room.updateMany({ where: { clientId: client.id, name: "Yoga-Scheune" }, data: { image: scheuneUrl } });
   console.log("Yoga-Scheune ->", scheuneUrl);
 
