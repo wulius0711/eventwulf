@@ -324,7 +324,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                         cursor: disabled_ ? "not-allowed" : "pointer",
                         opacity: !cell.inMonth ? 0.3 : isPast && !blocked_ ? 0.4 : 1,
                         display: "flex",
-                        alignItems: "flex-start",
+                        alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
