@@ -368,6 +368,8 @@ button:active:not(:disabled) {
 
   .ew-grid-2 { grid-template-columns: 1fr !important; }
 
+  .ew-checkbox-option { justify-content: flex-start !important; }
+
   /* Widget wrapper */
   .ew-widget-wrap { padding: 1.25rem 1rem !important; }
   .ew-widget-title { font-size: 1.5rem !important; margin-bottom: 2rem !important; }
