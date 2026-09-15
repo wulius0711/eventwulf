@@ -168,7 +168,7 @@ export default function InquiryInbox() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Suche nach Titel, Name oder E-Mail…"
+          placeholder="Nach Titel, Name oder E-Mail filtern…"
           style={{ width: "auto", minWidth: "300px" }}
         />
       </div>
