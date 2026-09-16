@@ -1,6 +1,6 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 const MAX_ATTEMPTS = 10;
 const POLL_INTERVAL_MS = 1500;
@@ -14,10 +14,10 @@ export default function SignupCompletePage() {
 }
 
 function SignupCompleteInner() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [error, setError] = useState("");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!sessionId) {
@@ -33,7 +33,7 @@ function SignupCompleteInner() {
 
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
-        router.push("/admin/config?welcome=1");
+        setReady(true);
         return;
       }
       if (res.ok && data.pending && attempt < MAX_ATTEMPTS) {
@@ -48,7 +48,7 @@ function SignupCompleteInner() {
     return () => {
       cancelled = true;
     };
-  }, [sessionId, router]);
+  }, [sessionId]);
 
   return (
     <div
@@ -78,6 +78,15 @@ function SignupCompleteInner() {
               Fast fertig
             </h1>
             <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{error}</p>
+          </>
+        ) : ready ? (
+          <>
+            <h1 style={{ fontSize: "1.15rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+              Fast geschafft — prüfe deine E-Mails
+            </h1>
+            <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
+              Wir haben dir eine E-Mail geschickt, mit der du dein Passwort setzt und dich einloggst.
+            </p>
           </>
         ) : (
           <>
