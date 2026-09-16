@@ -97,6 +97,16 @@ export default function TeamEditor({ plan }: { plan: Plan }) {
         </div>
       )}
 
+      {limit !== null && members.length > limit && (
+        <div style={{
+          background: "var(--surface)", border: "1px solid var(--primary)",
+          borderRadius: "var(--radius-sm)", padding: "0.75rem 1rem", fontSize: "0.85rem", color: "var(--text)",
+          marginBottom: "1.25rem",
+        }}>
+          Aktuell sind mehr Team-Mitglieder angelegt ({members.length}), als das gebuchte Paket erlaubt ({limit}) — z.B. nach einem Paket-Wechsel. Bestehende Mitglieder bleiben aktiv, aber es können keine weiteren angelegt werden, solange das so ist.
+        </div>
+      )}
+
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1.5rem" }}>
         {members.map((m) => (
           <div
