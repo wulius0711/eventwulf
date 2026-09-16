@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
 import { stripe, planForPriceId } from "@/lib/stripe";
 import { sanitizeEmailHeader } from "@/lib/validate";
+import { resolveBaseUrl } from "@/app/api/submit/route";
 
 // Matches the team-invite TTL (app/api/admin/team/route.ts) — well within
 // the 14-day trial, so a new signup always has time to set a password.
@@ -82,7 +83,11 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      const inviteUrl = `${new URL(req.url).origin}/admin/invite/${inviteToken}`;
+      // Stripe posts this webhook to whatever endpoint URL is configured on
+      // the Stripe side — req.url's own origin isn't reliable for building a
+      // customer-facing link (see resolveBaseUrl's rationale in submit/route.ts).
+      const { host, proto } = resolveBaseUrl(process.env.NEXT_PUBLIC_APP_URL, process.env.VERCEL_URL, req.headers.get("host") ?? "");
+      const inviteUrl = `${proto}://${host}/admin/invite/${inviteToken}`;
       try {
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
