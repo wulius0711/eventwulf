@@ -4,15 +4,17 @@ import { useRouter } from "next/navigation";
 import type { EventConfig } from "@/lib/types";
 import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import UpgradeButton from "./UpgradeButton";
+import ManageBillingButton from "./ManageBillingButton";
 import TeamEditor from "./TeamEditor";
 
 interface Props {
   initialConfig: EventConfig;
   plan: Plan;
   initialTab?: Tab;
+  hasStripeCustomer: boolean;
 }
 
-type Tab = "firma" | "abrechnung" | "team" | "passwort";
+type Tab = "firma" | "team" | "passwort" | "abrechnung";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -40,7 +42,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export default function ConfigEditor({ initialConfig, plan, initialTab }: Props) {
+export default function ConfigEditor({ initialConfig, plan, initialTab, hasStripeCustomer }: Props) {
   const router = useRouter();
   const [config, setConfig] = useState<EventConfig>(initialConfig);
   const [tab, setTab] = useState<Tab>(initialTab ?? "firma");
@@ -128,9 +130,9 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
         }}
       >
         <button style={tabStyle("firma")} onClick={() => setTab("firma")}>Firma</button>
-        <button style={tabStyle("abrechnung")} onClick={() => setTab("abrechnung")}>Abrechnung</button>
         <button style={tabStyle("team")} onClick={() => setTab("team")}>Team</button>
         <button style={tabStyle("passwort")} onClick={() => setTab("passwort")}>Passwort</button>
+        <button style={tabStyle("abrechnung")} onClick={() => setTab("abrechnung")}>Abrechnung</button>
       </div>
 
       {tab === "firma" && (
@@ -162,6 +164,7 @@ export default function ConfigEditor({ initialConfig, plan, initialTab }: Props)
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
             <span style={{ fontSize: "0.9rem" }}>Aktueller Plan: <strong>{PLAN_LABELS[plan]}</strong></span>
             <UpgradeButton currentPlan={plan} />
+            <ManageBillingButton hasStripeCustomer={hasStripeCustomer} />
           </div>
         </Section>
       )}

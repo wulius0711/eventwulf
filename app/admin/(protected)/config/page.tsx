@@ -17,7 +17,7 @@ export default async function ConfigPage({ searchParams }: Props) {
   if (!client) redirect("/admin/login"); // client was deleted while this session's cookie was still valid
 
   const config = await loadConfigFromDB(client.slug);
-  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true } });
+  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, stripeCustomerId: true } });
   const plan = isPlan(org?.plan) ? org.plan : "basis";
   const { tab } = await searchParams;
   const initialTab = tab === "abrechnung" || tab === "team" || tab === "passwort" ? tab : "firma";
@@ -27,7 +27,7 @@ export default async function ConfigPage({ searchParams }: Props) {
       <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
         Einstellungen
       </h1>
-      <ConfigEditor initialConfig={config} plan={plan} initialTab={initialTab} />
+      <ConfigEditor initialConfig={config} plan={plan} initialTab={initialTab} hasStripeCustomer={!!org?.stripeCustomerId} />
     </div>
   );
 }
