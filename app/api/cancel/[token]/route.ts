@@ -42,7 +42,7 @@ export async function GET(
   // Notify admin
   try {
     const config = await loadConfigFromDB(inquiry.client.slug);
-    const notifyEmail = config.notifyEmail ?? process.env.NOTIFY_EMAIL ?? "";
+    const notifyEmail = config.notifyEmail ?? "";
     if (notifyEmail) {
       const data = JSON.parse(inquiry.data) as InquiryFormData;
       const resend = new Resend(process.env.RESEND_API_KEY);

@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const notifyEmail = config.notifyEmail ?? process.env.NOTIFY_EMAIL ?? "";
+  const notifyEmail = config.notifyEmail ?? "";
 
   if (!notifyEmail) {
     return NextResponse.json({ error: "Kein Empfänger konfiguriert" }, { status: 500 });

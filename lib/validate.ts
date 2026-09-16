@@ -126,7 +126,7 @@ export function validateConfig(body: unknown): string | null {
   if (b.formBgColor !== undefined && b.formBgColor !== "" && !isSafeCssColor(b.formBgColor)) {
     return "formBgColor ungültig";
   }
-  if (b.notifyEmail !== undefined && b.notifyEmail !== "" && !isValidEmail(b.notifyEmail)) return "notifyEmail ungültig";
+  if (!isValidEmail(b.notifyEmail)) return "notifyEmail ungültig oder fehlt";
   for (const key of ["verpflegungOptions", "zimmerwunschOptions", "abrechnungOptions", "ausstattungOptions", "anreiseOptions", "zahlungOptions", "budgetOptions", "quelleOptions"] as const) {
     if (b[key] !== undefined && !isStringArray(b[key])) return `${key} muss ein String-Array sein`;
   }

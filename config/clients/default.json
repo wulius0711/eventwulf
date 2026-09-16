@@ -1,11 +1,11 @@
 {
   "company": {
-    "name": "Musterfirma",
-    "tagline": "Deine Tagline hier",
+    "name": "",
+    "tagline": "",
     "logo": "",
-    "email": "info@musterfirma.at",
+    "email": "",
     "phone": "+43 1 234567",
-    "website": "https://musterfirma.at",
+    "website": "",
     "address": "Musterstraße 1, 1010 Wien",
     "primaryColor": "#4f46e5"
   },
