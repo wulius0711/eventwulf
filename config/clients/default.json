@@ -1,11 +1,11 @@
 {
   "company": {
-    "name": "Open Space Retreat",
-    "tagline": "Dein Raum für Wachstum & Entspannung",
+    "name": "Musterfirma",
+    "tagline": "Deine Tagline hier",
     "logo": "",
-    "email": "info@openspace.at",
+    "email": "info@musterfirma.at",
     "phone": "+43 1 234567",
-    "website": "https://openspace.at",
+    "website": "https://musterfirma.at",
     "address": "Musterstraße 1, 1010 Wien",
     "primaryColor": "#4f46e5"
   },
@@ -69,5 +69,5 @@
     "Messe / Veranstaltung",
     "Sonstiges"
   ],
-  "notifyEmail": "werbesan@gmail.com"
+  "notifyEmail": "info@musterfirma.at"
 }
