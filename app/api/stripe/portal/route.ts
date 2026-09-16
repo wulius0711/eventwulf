@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: org.stripeCustomerId,
     return_url: `${origin}/admin/config?tab=abrechnung`,
+    // Dedicated configuration so the portal shows eventwulf's own branding —
+    // the Stripe account is shared with bookingwulf, and without this the
+    // portal falls back to the account's generic default configuration.
+    configuration: process.env.STRIPE_PORTAL_CONFIGURATION_ID,
   });
 
   return NextResponse.json({ url: portalSession.url });
