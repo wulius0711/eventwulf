@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { randomBytes } from "crypto";
 import { hashSync } from "bcryptjs";
+import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
 import { stripe, planForPriceId } from "@/lib/stripe";
+import { sanitizeEmailHeader } from "@/lib/validate";
+
+// Matches the team-invite TTL (app/api/admin/team/route.ts) — well within
+// the 14-day trial, so a new signup always has time to set a password.
+const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Stripe needs the raw body to verify the webhook signature — Next.js route
 // handlers don't parse bodies automatically, so req.text() below already
@@ -53,6 +59,11 @@ export async function POST(req: NextRequest) {
       const slug = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + randomBytes(3).toString("hex");
       const defaultConfig = loadConfig("default");
 
+      // No password is set here — same reason as a team invite (see
+      // app/api/admin/team/route.ts): the account owner can't know a
+      // password we never showed them. They set their own via the invite
+      // link below, using the same /admin/invite/[token] flow.
+      const inviteToken = randomBytes(32).toString("hex");
       await prisma.organization.create({
         data: {
           name: meta.companyName,
@@ -60,9 +71,38 @@ export async function POST(req: NextRequest) {
           stripeCustomerId: checkoutSession.customer,
           subscriptionStatus: "trialing",
           clients: { create: { slug, config: JSON.stringify(defaultConfig) } },
-          users: { create: { email, password: hashSync(randomBytes(32).toString("hex"), 12) } },
+          users: {
+            create: {
+              email,
+              password: hashSync(randomBytes(32).toString("hex"), 12),
+              inviteToken,
+              inviteTokenExpiresAt: new Date(Date.now() + INVITE_TTL_MS),
+            },
+          },
         },
       });
+
+      const inviteUrl = `${new URL(req.url).origin}/admin/invite/${inviteToken}`;
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: `eventwulf <anfrage@eventwulf.at>`,
+          to: email,
+          subject: `Willkommen bei eventwulf — Konto aktivieren`,
+          html: `
+            <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:2rem">
+              <h2 style="margin:0 0 0.5rem;font-size:1.2rem;color:#1a1612">Willkommen bei eventwulf, ${sanitizeEmailHeader(meta.companyName)}!</h2>
+              <p style="margin:0 0 1.5rem;color:#6b7280;font-size:0.9rem">
+                Deine 14-tägige Testphase hat begonnen. Setze jetzt ein Passwort, um dich einzuloggen und loszulegen.
+              </p>
+              <p style="margin:0 0 1.5rem"><a href="${inviteUrl}" style="display:inline-block;padding:10px 20px;background:#996C1E;color:#ffffff;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600">Konto aktivieren</a></p>
+              <p style="margin:0;color:#6b7280;font-size:0.8rem">Der Link ist 7 Tage gültig.</p>
+            </div>
+          `,
+        });
+      } catch (e) {
+        console.error(`Failed to send welcome email for signup ${email}:`, e);
+      }
       break;
     }
 
