@@ -779,10 +779,19 @@ button:active:not(:disabled) {
    accent-color issue), so this class only carries the mobile breakpoint,
    which is safe even if a property is lost. */
 @media (max-width: 768px) {
+  .ew-auth-wrap {
+    background: var(--bg);
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+  }
   .ew-auth-split-left { display: none !important; }
   .ew-auth-split-right {
     width: 100% !important;
-    align-items: flex-start !important;
+    max-width: 400px !important;
+    margin: 0 !important;
+    border-radius: var(--radius) !important;
+    border: 1px solid var(--border) !important;
     padding: 2rem 1.25rem !important;
   }
 }
