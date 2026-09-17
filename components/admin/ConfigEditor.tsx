@@ -161,7 +161,7 @@ export default function ConfigEditor({ initialConfig, plan, initialTab, hasStrip
                 borderRadius: "var(--radius-sm)", padding: "0.75rem 1rem", fontSize: "0.85rem", color: "var(--text)",
                 marginTop: "1rem",
               }}>
-                Ohne Benachrichtigungs-E-Mail kannst du keine Gäste-Anfragen empfangen — Gäste bekommen beim Absenden einen Fehler angezeigt, du erfährst davon nichts. Bitte trage oben eine E-Mail-Adresse ein.
+                Ohne Benachrichtigungs-E-Mail kannst du keine Gäste-Anfragen empfangen. Bitte trage eine E-Mail-Adresse ein.
               </div>
             )}
           </Section>
