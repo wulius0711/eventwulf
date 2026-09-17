@@ -11,10 +11,35 @@ import { NextRequest, NextResponse } from "next/server";
 // falls through to this app's normal routing untouched.
 const FRAMER_HOST = "eventwulf.framer.website";
 
+// Content types where Framer's markup embeds its own framer.website domain
+// (canonical link, og:url, sitemap <loc> entries, robots.txt's Sitemap:
+// directive) — rewritten to the real host below. Framer has no idea
+// eventwulf.at exists (see comment above), so it always self-references the
+// free subdomain; everything else (images, fonts, JS, CSS) streams through
+// untouched, unrewritten, for performance.
+const REWRITABLE_CONTENT_TYPES = ["text/html", "text/xml", "application/xml", "text/plain"];
+
+const SECURITY_HEADERS: Record<string, string> = {
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  // No Content-Security-Policy here — this response is Framer's own markup,
+  // referencing Framer's own script/font/image CDN origins that aren't
+  // enumerated anywhere in this codebase; a CSP written blind would risk
+  // breaking the live marketing site rather than hardening it.
+};
+
 export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   if (host !== "eventwulf.at" && host !== "www.eventwulf.at") {
     return NextResponse.next();
+  }
+
+  // Canonicalize on the apex domain — www and apex previously served
+  // byte-identical proxied content as two indexable origins.
+  if (host === "www.eventwulf.at") {
+    const target = new URL(request.nextUrl.pathname + request.nextUrl.search, "https://eventwulf.at");
+    return NextResponse.redirect(target, 301);
   }
 
   const upstreamUrl = new URL(
@@ -49,11 +74,18 @@ export async function proxy(request: NextRequest) {
   if (location?.includes(FRAMER_HOST)) {
     responseHeaders.set("location", location.replace(FRAMER_HOST, host));
   }
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    responseHeaders.set(key, value);
+  }
 
-  return new NextResponse(upstream.body, {
-    status: upstream.status,
-    headers: responseHeaders,
-  });
+  const contentType = responseHeaders.get("content-type") ?? "";
+  const shouldRewrite = REWRITABLE_CONTENT_TYPES.some((t) => contentType.startsWith(t));
+  if (!shouldRewrite) {
+    return new NextResponse(upstream.body, { status: upstream.status, headers: responseHeaders });
+  }
+
+  const body = (await upstream.text()).replaceAll(FRAMER_HOST, host);
+  return new NextResponse(body, { status: upstream.status, headers: responseHeaders });
 }
 
 export const config = {
