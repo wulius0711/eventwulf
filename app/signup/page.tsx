@@ -71,7 +71,7 @@ function SignupForm() {
           eventwulf registrieren
         </h1>
         <p style={{ color: "var(--muted)", fontSize: "0.85rem", marginBottom: "1.75rem" }}>
-          14 Tage kostenlos testen, danach automatische Abrechnung.
+          Jetzt 14 Tage kostenlos testen. Jederzeit kündbar — sonst läuft die Abrechnung nach der Testphase automatisch weiter.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -120,7 +120,7 @@ function SignupForm() {
             className="ew-admin-btn ew-admin-btn-primary"
             style={{ marginTop: "0.25rem" }}
           >
-            {loading ? "Weiter zu Stripe…" : "Weiter zur Zahlung"}
+            {loading ? "Weiter zu Stripe…" : "Kostenlose Testphase starten"}
           </button>
         </form>
       </div>
