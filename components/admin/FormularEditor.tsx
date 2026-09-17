@@ -153,7 +153,7 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
       </p>
       <Section title="Titel & Design">
         <Field label="Formular-Titel (optional, leer lassen zum Ausblenden)">
-          <input type="text" value={config.formTitle} onChange={(e) => set("formTitle", e.target.value)} placeholder="z.B. Du hast Interesse an einem Retreat bei uns?" />
+          <input type="text" value={config.formTitle} onChange={(e) => set("formTitle", e.target.value)} placeholder="z.B. Du hast Interesse an einem Event bei uns?" />
         </Field>
         <div className="grid sm:grid-cols-2 gap-4" style={{ marginBottom: "1rem" }}>
           <Field label="Primärfarbe">
