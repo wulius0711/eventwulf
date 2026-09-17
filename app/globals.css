@@ -771,3 +771,18 @@ button:active:not(:disabled) {
   color: var(--primary-text, var(--primary));
   text-decoration: underline;
 }
+
+/* Auth pages (Login / Signup) — 50/50 split, image left, form right.
+   Layout-critical properties (display/flex/width) are set inline in the
+   components instead of here — Lightning CSS has silently dropped
+   properties from freshly-added rules in this file before (see the
+   accent-color issue), so this class only carries the mobile breakpoint,
+   which is safe even if a property is lost. */
+@media (max-width: 768px) {
+  .ew-auth-split-left { display: none !important; }
+  .ew-auth-split-right {
+    width: 100% !important;
+    align-items: flex-start !important;
+    padding: 2rem 1.25rem !important;
+  }
+}
