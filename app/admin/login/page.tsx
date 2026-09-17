@@ -118,7 +118,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               className="ew-admin-btn ew-admin-btn-primary"
-              style={{ marginTop: "0.25rem" }}
+              style={{ marginTop: "0.25rem", width: "fit-content" }}
             >
               {loading ? "Anmelden…" : "Anmelden"}
             </button>
