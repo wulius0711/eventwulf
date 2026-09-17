@@ -147,11 +147,11 @@ export default function ConfigEditor({ initialConfig, plan, initialTab, hasStrip
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="E-Mail (sichtbar für Gäste)"><input type="email" placeholder="info@musterfirma.at" value={config.company.email} onChange={(e) => setCompany("email", e.target.value)} /></Field>
-              <Field label="Telefon"><input type="text" value={config.company.phone} onChange={(e) => setCompany("phone", e.target.value)} /></Field>
+              <Field label="Telefon"><input type="text" placeholder="+43 1 234567" value={config.company.phone} onChange={(e) => setCompany("phone", e.target.value)} /></Field>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Website"><input type="text" placeholder="https://musterfirma.at" value={config.company.website} onChange={(e) => setCompany("website", e.target.value)} /></Field>
-              <Field label="Adresse"><input type="text" value={config.company.address} onChange={(e) => setCompany("address", e.target.value)} /></Field>
+              <Field label="Adresse"><input type="text" placeholder="Musterstraße 1, 1010 Wien" value={config.company.address} onChange={(e) => setCompany("address", e.target.value)} /></Field>
             </div>
             <Field label="Benachrichtigungs-E-Mail (erhält neue Anfragen intern)"><input type="email" placeholder="info@musterfirma.at" value={config.notifyEmail} onChange={(e) => set("notifyEmail", e.target.value)} /></Field>
           </Section>
