@@ -154,6 +154,16 @@ export default function ConfigEditor({ initialConfig, plan, initialTab, hasStrip
               <Field label="Adresse"><input type="text" placeholder="Musterstraße 1, 1010 Wien" value={config.company.address} onChange={(e) => setCompany("address", e.target.value)} /></Field>
             </div>
             <Field label="Benachrichtigungs-E-Mail (erhält neue Anfragen intern)"><input type="email" placeholder="info@musterfirma.at" value={config.notifyEmail} onChange={(e) => set("notifyEmail", e.target.value)} /></Field>
+
+            {!config.notifyEmail && (
+              <div style={{
+                background: "var(--surface)", border: "1px solid var(--error)",
+                borderRadius: "var(--radius-sm)", padding: "0.75rem 1rem", fontSize: "0.85rem", color: "var(--text)",
+                marginTop: "1rem",
+              }}>
+                Ohne Benachrichtigungs-E-Mail kannst du keine Gäste-Anfragen empfangen — Gäste bekommen beim Absenden einen Fehler angezeigt, du erfährst davon nichts. Bitte trage oben eine E-Mail-Adresse ein.
+              </div>
+            )}
           </Section>
 
         </>
