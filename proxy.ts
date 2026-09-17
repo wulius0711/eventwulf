@@ -75,6 +75,15 @@ export async function proxy(request: NextRequest) {
     return new NextResponse(LLMS_TXT, { headers: { "content-type": "text/plain; charset=utf-8" } });
   }
 
+  // The <link rel="icon"> tags in Framer's markup already point at a valid
+  // favicon, but Google Search Console (and other tools) also fetch
+  // /favicon.ico directly by convention, ignoring the HTML — that path 404s
+  // through the proxy otherwise, which is why GSC showed a generic globe
+  // instead of the real icon.
+  if (request.nextUrl.pathname === "/favicon.ico") {
+    return NextResponse.redirect("https://framerusercontent.com/images/luLFcJARur2bsoKAaSlLCRK7NN4.png", 302);
+  }
+
   const upstreamUrl = new URL(
     request.nextUrl.pathname + request.nextUrl.search,
     `https://${FRAMER_HOST}`
