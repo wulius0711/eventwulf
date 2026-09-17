@@ -11,6 +11,33 @@ import { NextRequest, NextResponse } from "next/server";
 // falls through to this app's normal routing untouched.
 const FRAMER_HOST = "eventwulf.framer.website";
 
+const LLMS_TXT = `# eventwulf
+
+> eventwulf ist die Verwaltungssoftware für Eventlocations, Seminarhäuser und Hotels in Österreich und dem DACH-Raum: Buchungswidget, Kalender, Raum- und Eventverwaltung sowie automatische Angebote – alles an einem Ort.
+
+## Funktionen
+- Buchungswidget & Kalender: Echtzeitverfügbarkeit direkt in die Website eingebettet
+- Individuelles Formular: Fragen ein-/ausblenden, Ausstattungsoptionen und Design anpassbar
+- Räumeverwaltung: mehrere Räume mit Kapazität und Verfügbarkeit (ab Pro)
+- Eigene Events: separat buchbare Termine mit Preis und Kapazität
+- Automatische Angebote: aus Anfragen direkt Angebote erstellen und versenden
+- Dokumenten-Archiv, Team-Mitglieder, Sperrzeiten, Live-Vorschau
+
+## Preise
+- Basis: 29 €/Monat (312 €/Jahr) – Buchungswidget & Kalender, bis zu 3 aktive Events
+- Pro: 59 €/Monat (636 €/Jahr) – zusätzlich Räumeverwaltung, unbegrenzte Events, bis zu 2 Team-Mitglieder
+- Premium: Preis auf Anfrage – unbegrenzte Räume, mehrere Standorte, unbegrenztes Team
+
+## Zielgruppe
+Cafés, Eventlocations, Catering-Betriebe und Hotels in Österreich und dem DACH-Raum.
+
+## Links
+- [Website](https://eventwulf.at)
+- [Preise](https://eventwulf.at/#preise)
+- [FAQ](https://eventwulf.at/#faq)
+- [Kontakt](https://eventwulf.at/contact)
+`;
+
 // Content types where Framer's markup embeds its own framer.website domain
 // (canonical link, og:url, sitemap <loc> entries, robots.txt's Sitemap:
 // directive) — rewritten to the real host below. Framer has no idea
@@ -40,6 +67,12 @@ export async function proxy(request: NextRequest) {
   if (host === "www.eventwulf.at") {
     const target = new URL(request.nextUrl.pathname + request.nextUrl.search, "https://eventwulf.at");
     return NextResponse.redirect(target, 301);
+  }
+
+  // Framer has no file upload for a root-level text file, so llms.txt is
+  // served directly here instead of proxied.
+  if (request.nextUrl.pathname === "/llms.txt") {
+    return new NextResponse(LLMS_TXT, { headers: { "content-type": "text/plain; charset=utf-8" } });
   }
 
   const upstreamUrl = new URL(
