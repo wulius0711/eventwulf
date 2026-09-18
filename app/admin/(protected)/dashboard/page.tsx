@@ -60,7 +60,7 @@ export default async function DashboardPage() {
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
         <StatCard href="/admin/inquiries" label="Offene Anfragen" value={openInquiryCount} />
         <StatCard href="/admin/vorschau" label="Anstehende Events" value={upcomingEventCount} />
-        <StatCard href="/admin/invoices" label="Offene Angebote/Rechnungen" value={openInvoiceCount} />
+        <StatCard href="/admin/invoices" label="Offene Angebote" value={openInvoiceCount} />
       </div>
 
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem 1.5rem" }}>

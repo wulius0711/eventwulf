@@ -27,6 +27,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const newInquiryCount = activeClient
     ? await prisma.inquiry.count({ where: { clientId: activeClient.id, status: "neu" } })
     : 0;
+  const openInvoiceCount = activeClient
+    ? await prisma.invoice.count({ where: { clientId: activeClient.id, status: "offen" } })
+    : 0;
 
   return (
     <div className="admin-shell" suppressHydrationWarning style={{ display: "flex", minHeight: "100vh", background: "var(--bg)" }}>
@@ -36,7 +39,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <AdminShell bookingAppUrl={bookingAppUrl} isSuperAdmin={isSuperAdmin} slugs={slugs} activeSlug={session.clientSlug} newInquiryCount={newInquiryCount} plan={plan}>
+      <AdminShell bookingAppUrl={bookingAppUrl} isSuperAdmin={isSuperAdmin} slugs={slugs} activeSlug={session.clientSlug} newInquiryCount={newInquiryCount} openInvoiceCount={openInvoiceCount} plan={plan}>
         {children}
       </AdminShell>
     </div>

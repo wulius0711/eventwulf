@@ -6,6 +6,7 @@ interface Props {
   slugs: string[];
   activeSlug: string;
   newInquiryCount: number;
+  openInvoiceCount: number;
   onNavigate?: () => void;
 }
 
@@ -15,14 +16,18 @@ const links = [
   { href: "/admin/elemente",     label: "Elemente" },
   { href: "/admin/embed",        label: "Embed-Codes" },
   { href: "/admin/inquiries",    label: "Anfragen" },
-  { href: "/admin/invoices",     label: "Dokumente" },
+  { href: "/admin/invoices",     label: "Angebote" },
   { href: "/admin/vorschau",     label: "Vorschau" },
   { href: "/admin/handbuch",     label: "Handbuch" },
 ];
 
-export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCount, onNavigate }: Props) {
+export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCount, openInvoiceCount, onNavigate }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const badgeCounts: Record<string, number> = {
+    "/admin/inquiries": newInquiryCount,
+    "/admin/invoices": openInvoiceCount,
+  };
 
   async function switchSlug(slug: string) {
     await fetch("/api/admin/switch-slug", {
@@ -35,22 +40,25 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCo
 
   return (
     <>
-      {links.map(({ href, label }) => (
-        <a key={href} href={href} className={`ew-nav-link${pathname.startsWith(href) ? " active" : ""}`} onClick={onNavigate}>
-          {label}
-          {href === "/admin/inquiries" && newInquiryCount > 0 && (
-            <span
-              style={{
-                marginLeft: "0.5rem", background: "#dc2626", color: "#fff", borderRadius: "999px",
-                fontSize: "0.72rem", fontWeight: 700, lineHeight: 1, padding: "0.2rem 0.45rem", minWidth: "1.1rem",
-                textAlign: "center", display: "inline-block",
-              }}
-            >
-              {newInquiryCount}
-            </span>
-          )}
-        </a>
-      ))}
+      {links.map(({ href, label }) => {
+        const badge = badgeCounts[href] ?? 0;
+        return (
+          <a key={href} href={href} className={`ew-nav-link${pathname.startsWith(href) ? " active" : ""}`} onClick={onNavigate}>
+            {label}
+            {badge > 0 && (
+              <span
+                style={{
+                  marginLeft: "0.5rem", background: "#dc2626", color: "#fff", borderRadius: "999px",
+                  fontSize: "0.72rem", fontWeight: 700, lineHeight: 1, padding: "0.2rem 0.45rem", minWidth: "1.1rem",
+                  textAlign: "center", display: "inline-block",
+                }}
+              >
+                {badge}
+              </span>
+            )}
+          </a>
+        );
+      })}
 
       {isSuperAdmin && (
         <a href="/admin/clients" className={`ew-nav-link${pathname.startsWith("/admin/clients") ? " active" : ""}`} onClick={onNavigate}>

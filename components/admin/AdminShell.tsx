@@ -11,11 +11,12 @@ interface Props {
   slugs: string[];
   activeSlug: string;
   newInquiryCount: number;
+  openInvoiceCount: number;
   plan: Plan | null;
   children: React.ReactNode;
 }
 
-export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeSlug, newInquiryCount, plan, children }: Props) {
+export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeSlug, newInquiryCount, openInvoiceCount, plan, children }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -37,7 +38,7 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
         </div>
 
         <nav className="ew-sidebar-nav">
-          <AdminNav isSuperAdmin={isSuperAdmin} slugs={slugs} activeSlug={activeSlug} newInquiryCount={newInquiryCount} onNavigate={() => setOpen(false)} />
+          <AdminNav isSuperAdmin={isSuperAdmin} slugs={slugs} activeSlug={activeSlug} newInquiryCount={newInquiryCount} openInvoiceCount={openInvoiceCount} onNavigate={() => setOpen(false)} />
         </nav>
 
         <div className="ew-sidebar-footer">
