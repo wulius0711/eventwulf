@@ -10,6 +10,7 @@ interface Props {
 }
 
 const links = [
+  { href: "/admin/dashboard",    label: "Dashboard" },
   { href: "/admin/config",       label: "Einstellungen" },
   { href: "/admin/elemente",     label: "Elemente" },
   { href: "/admin/embed",        label: "Embed-Codes" },

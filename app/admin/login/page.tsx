@@ -21,7 +21,7 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      router.push("/admin/config");
+      router.push("/admin/dashboard");
     } else {
       const data = await res.json().catch(() => ({}));
       setError(data.error ?? "Anmeldung fehlgeschlagen");
