@@ -813,8 +813,8 @@ button:active:not(:disabled) {
   --primary-dim:  rgba(63, 191, 135, 0.24);
   --primary-text: #3fbf87;
   --error:        #f87171;
-  --admin-accent:       #156e47;
-  --admin-accent-dark:  #0f5536;
+  --admin-accent:       #996C1E;
+  --admin-accent-dark:  #825C1A;
   --admin-accent-text:  #ffffff;
   --admin-btn-radius:   10px;
   background-color: var(--bg);
