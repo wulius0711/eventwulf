@@ -64,7 +64,8 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
               style={{
                 textAlign: "left", padding: 0, overflow: "hidden",
                 cursor: unavailable ? "not-allowed" : "pointer",
-                borderRadius: "var(--radius-sm)", border: `2px solid ${selected ? "var(--primary)" : "var(--border-strong, var(--border))"}`,
+                borderRadius: "var(--radius-sm)", border: `1px solid ${selected ? "var(--primary)" : "var(--border-strong, var(--border))"}`,
+                boxShadow: selected ? "0 0 0 3px var(--primary-tint)" : "none",
                 background: "var(--surface)", display: "flex", flexDirection: "column",
                 opacity: unavailable ? 0.45 : 1,
               }}
