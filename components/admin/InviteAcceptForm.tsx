@@ -44,7 +44,7 @@ export default function InviteAcceptForm({ token }: { token: string }) {
 
   return (
     <div
-      className="admin-shell"
+      className="admin-shell ew-auth-dark"
       style={{
         minHeight: "100vh",
         display: "flex",
@@ -52,17 +52,18 @@ export default function InviteAcceptForm({ token }: { token: string }) {
         alignItems: "center",
         justifyContent: "center",
         gap: "1.5rem",
-        background: "var(--bg)",
+        background: "radial-gradient(ellipse 90% 60% at 20% 0%, rgba(21,110,71,0.28) 0%, transparent 60%), var(--bg)",
       }}
     >
-      <img src="/eventwulf-logo.png" alt="eventwulf" style={{ height: "32px", width: "auto" }} />
+      <img src="/eventwulf-logo.png" alt="eventwulf" style={{ height: "32px", width: "auto", filter: "brightness(0) invert(1)" }} />
       <div
         style={{
           width: "100%",
           maxWidth: "380px",
           background: "var(--surface)",
           border: "1px solid var(--border)",
-          borderRadius: "var(--radius)",
+          borderRadius: "var(--radius-lg)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
           padding: "2.5rem 2rem",
         }}
       >
@@ -99,7 +100,7 @@ export default function InviteAcceptForm({ token }: { token: string }) {
                 type="submit"
                 disabled={loading}
                 className="ew-admin-btn ew-admin-btn-primary"
-                style={{ marginTop: "0.25rem" }}
+                style={{ marginTop: "0.5rem", padding: "0.75rem 1.25rem", fontSize: "15px", fontWeight: 600 }}
               >
                 {loading ? "Wird gespeichert…" : "Passwort setzen & einloggen"}
               </button>

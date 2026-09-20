@@ -52,23 +52,27 @@ function SignupCompleteInner() {
 
   return (
     <div
-      className="admin-shell"
+      className="admin-shell ew-auth-dark"
       style={{
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
+        flexDirection: "column",
+        gap: "1.5rem",
         justifyContent: "center",
-        background: "var(--bg)",
+        background: "radial-gradient(ellipse 90% 60% at 20% 0%, rgba(21,110,71,0.28) 0%, transparent 60%), var(--bg)",
         textAlign: "center",
       }}
     >
+      <img src="/eventwulf-logo.png" alt="eventwulf" style={{ height: "32px", width: "auto", filter: "brightness(0) invert(1)" }} />
       <div
         style={{
           width: "100%",
           maxWidth: "420px",
           background: "var(--surface)",
           border: "1px solid var(--border)",
-          borderRadius: "var(--radius)",
+          borderRadius: "var(--radius-lg)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
           padding: "2.5rem 2rem",
         }}
       >

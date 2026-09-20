@@ -44,7 +44,7 @@ function SignupForm() {
   }
 
   return (
-    <div className="admin-shell ew-auth-wrap" style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="admin-shell ew-auth-dark ew-auth-wrap" style={{ display: "flex", minHeight: "100vh" }}>
       <div
         className="ew-auth-split-left"
         style={{
@@ -63,7 +63,7 @@ function SignupForm() {
           style={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(to bottom, rgba(15,23,20,0.55) 0%, rgba(15,23,20,0.15) 45%, rgba(15,23,20,0.65) 100%)",
+            background: "linear-gradient(to bottom, rgba(14,21,37,0.72) 0%, rgba(21,110,71,0.22) 50%, rgba(14,21,37,0.85) 100%)",
           }}
         />
         <img
@@ -95,7 +95,7 @@ function SignupForm() {
         }}
       >
         <div style={{ width: "100%", maxWidth: "360px" }}>
-          <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "0.25rem" }}>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 700, letterSpacing: "-0.01em", marginBottom: "0.4rem" }}>
             eventwulf registrieren
           </h1>
           <p style={{ color: "var(--muted)", fontSize: "0.85rem", marginBottom: "1.75rem" }}>
@@ -146,12 +146,13 @@ function SignupForm() {
               type="submit"
               disabled={loading}
               className="ew-admin-btn ew-admin-btn-primary"
-              style={{ marginTop: "0.25rem", width: "fit-content" }}
+              style={{ marginTop: "0.5rem", width: "100%", padding: "0.75rem 1.25rem", fontSize: "15px", fontWeight: 600 }}
             >
               {loading ? "Weiter zu Stripe…" : "Kostenlose Testphase starten"}
             </button>
           </form>
-        </div>
+
+          <a href="https://eventwulf.at" className="ew-auth-back">← Zurück zur Startseite</a>        </div>
       </div>
     </div>
   );

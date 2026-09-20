@@ -795,3 +795,37 @@ button:active:not(:disabled) {
     padding: 2rem 1.25rem !important;
   }
 }
+
+/* ─── Auth pages – landing-page look (signup, login, complete, invite) ───
+   Scoped to .ew-auth-dark so the admin shell and widgets are untouched.
+   Palette mirrors the marketing site (eventwulf-coded/index.html). */
+.admin-shell.ew-auth-dark {
+  --bg:           #0e1525;
+  --bg2:          #16213a;
+  --bg3:          #273d60;
+  --surface:      #1e2d4a;
+  --border:       rgba(255, 255, 255, 0.12);
+  --text:         #f5f8ff;
+  --muted:        #b8c8e0;
+  --primary:      #3fbf87;
+  --primary-dark: #156e47;
+  --primary-tint: rgba(63, 191, 135, 0.16);
+  --primary-dim:  rgba(63, 191, 135, 0.24);
+  --primary-text: #3fbf87;
+  --error:        #f87171;
+  --admin-accent:       #156e47;
+  --admin-accent-dark:  #0f5536;
+  --admin-accent-text:  #ffffff;
+  --admin-btn-radius:   10px;
+  background-color: var(--bg);
+  color-scheme: dark;
+}
+.admin-shell.ew-auth-dark select option { background: #1e2d4a; color: #f5f8ff; }
+.admin-shell.ew-auth-dark .ew-auth-back {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+.admin-shell.ew-auth-dark .ew-auth-back:hover { color: var(--text); text-decoration: underline; }
