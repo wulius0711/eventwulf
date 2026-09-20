@@ -94,7 +94,7 @@ function EventCard({ event, slug, expanded, onToggle, isDemo }: { event: EventIt
 
   return (
     <div style={{
-      background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)",
+      background: "var(--surface)", border: "1.5px solid var(--border-strong, var(--border))", borderRadius: "var(--radius)",
       boxShadow: "var(--shadow-card)", overflow: "hidden", display: "flex", flexDirection: "column",
     }}>
       {event.image ? (

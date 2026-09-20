@@ -149,6 +149,9 @@ label {
   visibility: visible;
 }
 
+/* ─── Widget: stärkere Rahmen (≥ 3:1), nur im Embed – Admin bleibt unberührt ─── */
+#embed-root { --border-strong: #8c8c8c; }
+
 /* Floating label – outlined */
 .ew-field {
   position: relative;
@@ -160,6 +163,16 @@ label {
   padding-bottom: 1rem;
   padding-left: 1rem;
   border-radius: var(--radius-sm);
+}
+#embed-root .ew-field input,
+#embed-root .ew-field textarea,
+#embed-root .ew-field select {
+  border: 1.2px solid var(--border-strong);
+}
+#embed-root .ew-field input:focus,
+#embed-root .ew-field textarea:focus,
+#embed-root .ew-field select:focus {
+  border-color: var(--primary);
 }
 .ew-field > label {
   position: absolute;
@@ -217,7 +230,7 @@ button:active:not(:disabled) {
   width: 2.5rem; height: 2.5rem; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.8rem; font-weight: 700;
-  background: var(--bg2); color: var(--muted); border: 2px solid var(--border);
+  background: var(--bg2); color: var(--muted); border: 2px solid var(--border-strong, var(--border));
   transition: all 0.2s;
 }
 .ew-step-circle[data-state="done"],
@@ -263,7 +276,7 @@ button:active:not(:disabled) {
 
 .ew-btn-secondary {
   padding: 0.65rem 1.5rem;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border-strong, var(--border));
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text);
@@ -280,7 +293,7 @@ button:active:not(:disabled) {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border-strong, var(--border));
   border-radius: var(--radius-sm);
   background: var(--surface);
   cursor: pointer;
