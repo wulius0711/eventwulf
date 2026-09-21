@@ -295,7 +295,7 @@ button:active:not(:disabled) {
   font-weight: 500;
   cursor: pointer;
 }
-.ew-btn-secondary:disabled { color: var(--border); cursor: not-allowed; }
+.ew-btn-secondary:disabled { color: var(--border); border-color: var(--border); cursor: not-allowed; }
 
 /* Checkbox options (Step3) */
 .ew-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: 0.5rem; }
