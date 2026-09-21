@@ -105,7 +105,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
   return (
     <div style={{ borderTop: "1px solid var(--border)", paddingTop: "0.9rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--muted)" }}>Dokumente</span>
+        <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--muted)" }}>Angebote</span>
         {!creating && (
           <button className="ew-admin-btn ew-admin-btn-outline" style={{ ...btnBase, color: "var(--text)" }} onClick={openCreate}>+ Angebot</button>
         )}
@@ -136,7 +136,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
       })}
 
       {invoices.length === 0 && !creating && (
-        <p style={{ fontSize: "0.8rem", color: "var(--muted)", margin: 0 }}>Noch keine Dokumente für diese Anfrage.</p>
+        <p style={{ fontSize: "0.8rem", color: "var(--muted)", margin: 0 }}>Noch keine Angebote für diese Anfrage.</p>
       )}
 
       {/* Create form */}

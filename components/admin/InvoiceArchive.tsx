@@ -35,7 +35,7 @@ export default function InvoiceArchive() {
 
   const filtered = filter === "all" ? invoices : invoices.filter((i) => i.status === filter);
 
-  if (loading) return <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>Lade Dokumente…</p>;
+  if (loading) return <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>Lade Angebote…</p>;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -56,7 +56,7 @@ export default function InvoiceArchive() {
       {/* List */}
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
         {filtered.length === 0 ? (
-          <p style={{ padding: "1.5rem", color: "var(--muted)", fontSize: "0.85rem" }}>Keine Dokumente gefunden.</p>
+          <p style={{ padding: "1.5rem", color: "var(--muted)", fontSize: "0.85rem" }}>Keine Angebote gefunden.</p>
         ) : filtered.map((inv) => {
           const sc = STATUS_COLORS[inv.status] ?? STATUS_COLORS.offen;
           const gross = inv.lineItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * (1 + inv.taxRate);

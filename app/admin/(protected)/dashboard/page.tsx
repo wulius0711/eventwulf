@@ -54,7 +54,7 @@ export default async function DashboardPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       <div>
         <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.3rem", fontWeight: 700 }}>Dashboard</h1>
-        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--muted)" }}>Überblick über offene Anfragen, Events und Dokumente.</p>
+        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--muted)" }}>Überblick über offene Anfragen, Events und Angebote.</p>
       </div>
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
