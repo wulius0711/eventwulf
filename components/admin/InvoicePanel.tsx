@@ -119,7 +119,7 @@ export default function InvoicePanel({ inquiryId, inquiryUpdatedAt, participantC
           <div key={inv.id} style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.6rem 0.75rem", background: "var(--bg2)", borderRadius: "var(--radius-sm)", flexWrap: "wrap" }}>
             <span style={{ fontSize: "0.78rem", fontWeight: 600 }}>Angebot</span>
             <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{inv.number}</span>
-            <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#1a1612" }}>
+            <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text)" }}>
               {gross.toLocaleString("de-AT", { style: "currency", currency: "EUR" })}
             </span>
             <span style={{ background: sc.bg, color: sc.color, padding: "0.12rem 0.5rem", borderRadius: "999px", fontSize: "0.72rem", fontWeight: 600 }}>
