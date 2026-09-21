@@ -799,6 +799,7 @@ button:active:not(:disabled) {
     padding: 1rem !important;
   }
   .ew-auth-split-left { display: none !important; }
+  .ew-auth-mobile-logo { display: block !important; }
   .ew-auth-split-right {
     width: 100% !important;
     max-width: 400px !important;
