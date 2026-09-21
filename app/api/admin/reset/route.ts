@@ -6,7 +6,7 @@ import { getIp, rateLimit } from "@/lib/ratelimit";
 // Lets the reset page confirm the link is still valid (and show which email
 // it is for) before rendering the "new password" form.
 export async function GET(req: NextRequest) {
-  if (!rateLimit(`reset-check:${getIp(req)}`, 30, 15 * 60 * 1000)) {
+  if (!(await rateLimit(`reset-check:${getIp(req)}`, 30, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Zu viele Versuche. Bitte warte 15 Minuten." }, { status: 429 });
   }
   const user = await findUserByToken(req.nextUrl.searchParams.get("token"));
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!rateLimit(`reset:${getIp(req)}`, 10, 15 * 60 * 1000)) {
+  if (!(await rateLimit(`reset:${getIp(req)}`, 10, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Zu viele Versuche. Bitte warte 15 Minuten." }, { status: 429 });
   }
   const body = await req.json().catch(() => ({}));

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { rateLimit, getIp } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest) {
-  if (!rateLimit(`login:${getIp(req)}`, 5, 15 * 60 * 1000)) {
+  if (!(await rateLimit(`login:${getIp(req)}`, 5, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Zu viele Versuche. Bitte warte 15 Minuten." }, { status: 429 });
   }
 

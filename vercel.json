@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/room-holds",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-rate-limits",
+      "schedule": "0 3 * * 1"
     }
   ]
 }

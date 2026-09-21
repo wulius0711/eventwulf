@@ -158,3 +158,11 @@ model Event {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
+
+// Fixed-window counters for lib/ratelimit.ts. Keys are hashed; rows older than
+// a day are removed by /api/cron/cleanup-rate-limits.
+model RateLimitEntry {
+  key         String   @id
+  count       Int      @default(1)
+  windowStart DateTime @default(now())
+}

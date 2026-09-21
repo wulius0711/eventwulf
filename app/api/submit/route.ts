@@ -62,7 +62,7 @@ function fmt(iso: string) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!rateLimit(`submit:${getIp(req)}`, 5, 10 * 60 * 1000)) {
+  if (!(await rateLimit(`submit:${getIp(req)}`, 5, 10 * 60 * 1000))) {
     return NextResponse.json({ error: "Zu viele Anfragen. Bitte warte 10 Minuten." }, { status: 429 });
   }
 

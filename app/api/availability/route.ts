@@ -3,7 +3,7 @@ import { rateLimit, getIp } from "@/lib/ratelimit";
 import { BLOCKING_STATUSES } from "@/lib/roomAvailability";
 
 export async function GET(req: NextRequest) {
-  if (!rateLimit(`availability:${getIp(req)}`, 30, 60 * 1000)) {
+  if (!(await rateLimit(`availability:${getIp(req)}`, 30, 60 * 1000))) {
     return NextResponse.json([], { status: 429 });
   }
   const slug = req.nextUrl.searchParams.get("slug") ?? "default";

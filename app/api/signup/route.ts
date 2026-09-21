@@ -14,7 +14,7 @@ function isBillingInterval(val: unknown): val is BillingInterval {
 }
 
 export async function POST(req: NextRequest) {
-  if (!rateLimit(`signup:${getIp(req)}`, 5, 15 * 60 * 1000)) {
+  if (!(await rateLimit(`signup:${getIp(req)}`, 5, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Zu viele Versuche. Bitte warte 15 Minuten." }, { status: 429 });
   }
 

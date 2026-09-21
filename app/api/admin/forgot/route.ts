@@ -12,7 +12,7 @@ import { resolveBaseUrl } from "@/app/api/submit/route";
 const GENERIC_OK = { ok: true };
 
 export async function POST(req: NextRequest) {
-  if (!rateLimit(`forgot:${getIp(req)}`, 5, 15 * 60 * 1000)) {
+  if (!(await rateLimit(`forgot:${getIp(req)}`, 5, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Zu viele Versuche. Bitte warte 15 Minuten." }, { status: 429 });
   }
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   if (!isValidEmail(email)) return NextResponse.json({ error: "E-Mail ungültig" }, { status: 400 });
 
   // One mail per address and hour at most — stops the form being used to spam someone.
-  if (!rateLimit(`forgot-mail:${email}`, 3, 60 * 60 * 1000)) return NextResponse.json(GENERIC_OK);
+  if (!(await rateLimit(`forgot-mail:${email}`, 3, 60 * 60 * 1000))) return NextResponse.json(GENERIC_OK);
 
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true, organizationId: true } });
   if (!user?.organizationId) return NextResponse.json(GENERIC_OK);
