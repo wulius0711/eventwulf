@@ -498,6 +498,8 @@ button:active:not(:disabled) {
 }
 
 .admin-shell input[type="checkbox"],
+  /* Native controls (date/time picker icon, checkbox, number spinner, scrollbar, file button) follow the dark theme */
+  color-scheme: dark;
 .admin-shell input[type="radio"] {
   width: auto;
   padding: 0;
