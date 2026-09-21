@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 
 const sections = [
   { id: "login",          title: "Login" },
+  { id: "dashboard",      title: "Dashboard" },
   { id: "navigation",     title: "Navigation & Oberfläche" },
   { id: "einstellungen",  title: "Einstellungen" },
   { id: "elemente",       title: "Elemente" },
@@ -10,6 +11,7 @@ const sections = [
   { id: "anfragen",       title: "Anfragen" },
   { id: "angebote",       title: "Angebote" },
   { id: "vorschau",       title: "Vorschau" },
+  { id: "sicherheit",     title: "Passwort & Sicherheit" },
   { id: "faq",            title: "Häufige Fragen" },
 ];
 
@@ -32,8 +34,37 @@ function Callout({ children }: { children: React.ReactNode }) {
 const content: Record<string, React.ReactNode> = {
   login: (
     <>
-      <p>Öffne <code>/admin/login</code> und melde dich mit E-Mail und Passwort an. Nach dem Login wirst du automatisch zu den Einstellungen weitergeleitet.</p>
-      <p style={{ marginTop: "0.75rem" }}>Die Session bleibt aktiv bis du dich abmeldest (Button in der Sidebar unten links). Bei Inaktivität läuft die Session nach 7 Tagen ab.</p>
+      <p>Öffne <code>/admin/login</code> und melde dich mit E-Mail und Passwort an. Nach dem Login landest du im <strong>Dashboard</strong>.</p>
+      <p style={{ marginTop: "0.75rem" }}>Die Anmeldung gilt 7 Tage, oder bis du dich abmeldest (Button in der Sidebar unten links). Danach meldest du dich einfach neu an.</p>
+      <p style={{ marginTop: "0.75rem" }}>Passwort vergessen? Klicke auf dem Login auf <strong>„Passwort vergessen?“</strong> — mehr dazu unter <em>Passwort &amp; Sicherheit</em>. Noch kein Konto? Unter dem Anmelde-Button führt <strong>„Kostenlos testen“</strong> zur Registrierung.</p>
+    </>
+  ),
+  dashboard: (
+    <>
+      <p>Das Dashboard ist deine Startseite nach dem Login: ein schneller Überblick, was gerade ansteht. Jede der drei Karten ist anklickbar und führt direkt zum passenden Bereich.</p>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem", fontSize: "0.875rem" }}>
+        <thead>
+          <tr style={{ borderBottom: "1px solid var(--border)" }}>
+            <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", color: "var(--muted)", fontWeight: 600 }}>Karte</th>
+            <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", color: "var(--muted)", fontWeight: 600 }}>Was gezählt wird</th>
+            <th style={{ textAlign: "left", padding: "0.5rem 0.75rem", color: "var(--muted)", fontWeight: 600 }}>Klick führt zu</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ["Offene Anfragen", "Anfragen mit dem Status „Neu“", "Anfragen"],
+            ["Anstehende Events", "Aktive Events, die noch nicht begonnen haben", "Elemente → Tab „Events“"],
+            ["Offene Angebote", "Angebote mit dem Status „Offen“", "Angebote"],
+          ].map(([karte, zaehlt, ziel]) => (
+            <tr key={karte} style={{ borderBottom: "1px solid var(--border)" }}>
+              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500 }}>{karte}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{zaehlt}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{ziel}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p style={{ marginTop: "1rem" }}>Darunter siehst du unter <strong>Neueste Anfragen</strong> die letzten fünf neuen Anfragen mit Name und Veranstaltung. Ist keine Anfrage offen, steht dort „Keine offenen Anfragen“.</p>
     </>
   ),
   navigation: (
@@ -48,11 +79,12 @@ const content: Record<string, React.ReactNode> = {
         </thead>
         <tbody>
           {[
-            ["Einstellungen", "Firmendaten, Abrechnung, Passwort — Konto-/Backend-Konfiguration"],
-            ["Elemente", "Formular-Felder, Events, Räume und Sperrzeiten — alles, was das öffentliche Widget prägt"],
+            ["Dashboard", "Startseite mit Überblick: offene Anfragen, anstehende Events, offene Angebote"],
+            ["Einstellungen", "Firma, Team, Passwort und Abrechnung — Konto-/Backend-Konfiguration"],
+            ["Elemente", "Formular, Räume, Events und Sperrzeiten — alles, was das öffentliche Widget prägt"],
             ["Embed-Codes", "Widget-Codes für Website und Framer"],
-            ["Anfragen", "Eingehende Anfragen bearbeiten"],
-            ["Dokumente", "Angebots-Archiv"],
+            ["Anfragen", "Eingehende Anfragen bearbeiten (die Zahl zeigt neue Anfragen)"],
+            ["Angebote", "Angebots-Archiv (die Zahl zeigt offene Angebote)"],
             ["Vorschau", "Live-Vorschau des Buchungswidgets"],
             ["Handbuch", "Diese Hilfeseite"],
           ].map(([item, desc]) => (
@@ -64,14 +96,15 @@ const content: Record<string, React.ReactNode> = {
         </tbody>
       </table>
       <p style={{ marginTop: "1rem" }}><strong>Dark / Light Mode:</strong> Das Icon neben dem Abmelden-Button schaltet zwischen den Modi um. Die Einstellung wird gespeichert.</p>
+      <p style={{ marginTop: "0.75rem" }}><strong>Info-Symbole:</strong> Neben einigen Feldern steht ein kleines „i“. Fahre mit der Maus darüber oder tippe darauf (am Handy), um eine kurze Erklärung zu sehen. Ein Tipp daneben schließt sie wieder.</p>
     </>
   ),
   einstellungen: (
     <>
-      <p>Konto-/Backend-Konfiguration, in vier Tabs unterteilt. Alles, was das öffentliche Widget selbst prägt (Formular, Events, Sperrzeiten), findest du unter <em>Elemente</em>.</p>
+      <p>Konto-/Backend-Konfiguration, in vier Tabs unterteilt. Alles, was das öffentliche Widget selbst prägt (Formular, Räume, Events, Sperrzeiten), findest du unter <em>Elemente</em>.</p>
       <H3>Firma</H3>
       <p>Basisdaten deiner Organisation: Name, Tagline, Logo-URL, Primärfarbe, Hintergrundfarbe, Schriftarten, Kontaktdaten und Benachrichtigungs-E-Mail.</p>
-      <Callout>Die <strong>Benachrichtigungs-E-Mail</strong> erhält bei jeder neuen Anfrage automatisch eine Benachrichtigung.</Callout>
+      <Callout>Die <strong>Benachrichtigungs-E-Mail</strong> erhält bei jeder neuen Anfrage automatisch eine Benachrichtigung. Sie ist ein Pflichtfeld: Ohne sie kannst du keine Anfragen empfangen. Fehlt sie, zeigt dir dieser Tab eine Warnung.</Callout>
       <H3>Abrechnung</H3>
       <p>Zeigt oben deinen aktuellen Plan (Basis/Pro/Premium). Darunter Steuersatz (%) und Gültigkeitsdauer für neue Angebote in Tagen.</p>
       <H3>Plan upgraden</H3>
@@ -94,12 +127,12 @@ const content: Record<string, React.ReactNode> = {
       </table>
       <Callout>Die Einladung ist 7 Tage gültig. Bestehende Mitglieder bleiben bei einem Downgrade erhalten — es lassen sich nur keine neuen mehr einladen, solange das Limit erreicht ist.</Callout>
       <H3>Passwort</H3>
-      <p>Aktuelles Passwort eingeben, dann neues Passwort (mind. 8 Zeichen) vergeben.</p>
+      <p>Aktuelles Passwort eingeben, dann ein neues Passwort vergeben (mindestens 8 Zeichen). Welche Passwörter abgelehnt werden, steht unter <em>Passwort &amp; Sicherheit</em>.</p>
     </>
   ),
   elemente: (
     <>
-      <p>Alles, was das öffentliche Widget/die Website prägt, gebündelt in drei Tabs: <strong>Formular</strong>, <strong>Events</strong> und <strong>Sperrzeiten</strong>.</p>
+      <p>Alles, was das öffentliche Widget/die Website prägt, gebündelt in vier Tabs: <strong>Formular</strong>, <strong>Räume</strong>, <strong>Events</strong> und <strong>Sperrzeiten</strong>.</p>
 
       <H2>Formular</H2>
       <p>Steuert Titel, Farben, Schriftarten und welche Felder im Buchungsformular erscheinen. Die Felder sind nach den 5 Schritten des Formulars gruppiert.</p>
@@ -160,12 +193,12 @@ const content: Record<string, React.ReactNode> = {
           {[
             ["Event-Name", "Bezeichnung des Events"],
             ["Beschreibung", "Ausführlicher Text, erscheint beim Aufklappen der Karte"],
-            ["Bild", "Optional, JPEG/PNG/WebP, max. 5MB"],
+            ["Bild", "Optional, JPEG/PNG/WebP, max. 4 MB — wird automatisch optimiert"],
             ["Von / Bis", "Zeitraum des Events"],
             ["Preis pro Person", "In Euro"],
             ["Min. Teilnehmer", "Kleinste Personenzahl pro einzelner Anfrage"],
             ["Max. Teilnehmer", "Gesamtkapazität des Events über alle Anfragen zusammen, nicht pro Anfrage — leer lassen für unbegrenzt"],
-            ["Farbe", "Für die Anzeige im Kalender"],
+            ["Farbe", "Erscheint als farbiger Balken im Kalender und als Streifen oben auf der Karte in der Events-Übersicht"],
             ["Intern", "Sperrt zusätzlich den Zeitraum im allgemeinen Kalender für andere Anfragen"],
             ["Aktiv", "Nur aktive Events erscheinen im Buchungswidget"],
           ].map(([feld, desc]) => (
@@ -179,6 +212,8 @@ const content: Record<string, React.ReactNode> = {
       <Callout>Das Startdatum darf nicht in der Vergangenheit liegen. Beim Bearbeiten eines bereits vergangenen Events kannst du trotzdem andere Felder anpassen, ohne das Datum ändern zu müssen.</Callout>
       <H3>Buchungen & Kapazität</H3>
       <p>Meldet sich jemand über das Events-Widget an, wird der Platz sofort reserviert. Lehnst du ab oder storniert der Gast, wird er automatisch wieder freigegeben. Unbeantwortete Anfragen laufen nach 48 Stunden automatisch ab.</p>
+      <H3>Wie viele Events sind erlaubt?</H3>
+      <p>Im <strong>Basis-Paket</strong> können bis zu 3 Events gleichzeitig aktiv sein, im <strong>Pro-</strong> und <strong>Premium-Paket</strong> unbegrenzt viele. Über dem Formular siehst du, wie viele aktive Events du gerade hast. Bei einem Paket-Wechsel bleiben bestehende Events nutzbar — es lassen sich nur keine weiteren anlegen, solange das Limit überschritten ist. Vergangene und inaktive Events zählen nicht mit.</p>
       <H3>Liste, Duplizieren & Teilnehmer</H3>
       <p>Events werden nach <strong>Bevorstehend</strong> und <strong>Vergangen</strong> (einklappbar) gruppiert. Über <strong>Duplizieren</strong> legst du schnell eine Wiederholung an. Klick auf den Event-Namen zeigt dir, wer sich mit wie vielen Personen angemeldet hat.</p>
 
@@ -191,7 +226,7 @@ const content: Record<string, React.ReactNode> = {
           {[
             ["Raum-Name", "Bezeichnung, erscheint als Karte im Formular"],
             ["Beschreibung", "Optional, ausführlicher Text"],
-            ["Bild", "Optional, JPEG/PNG/WebP, max. 5MB"],
+            ["Bild", "Optional, JPEG/PNG/WebP, max. 4 MB — wird automatisch optimiert"],
             ["Kapazität", "Max. Personenanzahl, leer lassen für unbegrenzt"],
             ["Sortierung", "Reihenfolge der Raum-Karten im Formular"],
             ["Aktiv", "Nur aktive Räume erscheinen im Buchungsformular"],
@@ -257,13 +292,13 @@ const content: Record<string, React.ReactNode> = {
       <H3>Als PDF speichern</H3>
       <p>Klicke auf <strong>Drucken / PDF</strong> im Angebot. Im Browser-Dialog wähle „Als PDF speichern" als Drucker.</p>
       <H3>Archiv</H3>
-      <p>Unter <strong>Dokumente</strong> findest du alle Angebote mit Filterung nach Status (Offen / Storniert).</p>
+      <p>Unter <strong>Angebote</strong> findest du alle Angebote mit Filterung nach Status (Offen / Storniert).</p>
       <Callout>Angebote können storniert, aber nicht gelöscht werden.</Callout>
     </>
   ),
   einbetten: (
     <>
-      <p>Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Anfragen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
+      <p>Klicke auf einen Eintrag, um ihn aufzuklappen. Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Anfragen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
       <Callout>Bei <strong>Framer</strong> funktioniert die automatische Höhenanpassung über den normalen HTML-Code nicht (Framer verpackt ihn in ein eigenes iFrame). Nutze stattdessen eine Code Component — den fertigen Code dafür findest du direkt weiter unten auf dieser Seite unter „Einbetten in Framer".</Callout>
     </>
   ),
@@ -276,9 +311,57 @@ const content: Record<string, React.ReactNode> = {
       <Callout>Die Vorschau zeigt aktuell nur das Anfrageformular. Für die Events-Liste rufst du deinen Events-Embed-Link direkt im Browser auf.</Callout>
     </>
   ),
+  sicherheit: (
+    <>
+      <H3>Passwort vergessen</H3>
+      <ol style={{ paddingLeft: "1.5rem", margin: "0.5rem 0", listStyleType: "decimal", listStylePosition: "outside" }}>
+        <li style={{ marginBottom: "0.35rem" }}>Klicke auf dem Login neben dem Passwort-Feld auf <strong>„Passwort vergessen?“</strong>.</li>
+        <li style={{ marginBottom: "0.35rem" }}>Gib deine E-Mail-Adresse ein und klicke auf <strong>Link senden</strong>.</li>
+        <li style={{ marginBottom: "0.35rem" }}>Öffne die E-Mail und klicke auf den Link. Er ist <strong>1 Stunde</strong> gültig und lässt sich nur einmal verwenden.</li>
+        <li style={{ marginBottom: "0.35rem" }}>Lege ein neues Passwort fest — danach bist du direkt angemeldet.</li>
+      </ol>
+      <Callout>Aus Sicherheitsgründen bekommst du immer dieselbe Bestätigung, auch wenn die Adresse bei uns nicht bekannt ist. Kommt keine E-Mail an, prüfe den Spam-Ordner und ob du die richtige Adresse verwendet hast. Ein neu angeforderter Link ersetzt den vorherigen. Nach dem Zurücksetzen werden alle anderen Anmeldungen (z.B. auf anderen Geräten) beendet.</Callout>
+      <H3>Welche Passwörter sind erlaubt?</H3>
+      <ul style={{ paddingLeft: "1.5rem", margin: "0.5rem 0", listStyleType: "disc", listStylePosition: "outside" }}>
+        <li style={{ marginBottom: "0.35rem" }}>Mindestens <strong>8</strong>, höchstens <strong>128 Zeichen</strong>.</li>
+        <li style={{ marginBottom: "0.35rem" }}>Zu leicht zu erratende Passwörter werden abgelehnt, z.B. nur Zahlen, „Passwort1“ oder „Sommer2024!“.</li>
+        <li style={{ marginBottom: "0.35rem" }}>Passwörter, die schon einmal in einem Datenleck aufgetaucht sind, werden ebenfalls abgelehnt. Dafür wird ein Prüfwert bei einem Sicherheitsdienst nachgefragt — dein Passwort selbst verlässt unsere Server dabei nicht.</li>
+      </ul>
+      <p style={{ marginTop: "0.75rem" }}>Tipp: Ein langer Satz aus mehreren Wörtern ist sicherer und leichter zu merken als ein kurzes Passwort mit Sonderzeichen. Diese Regeln gelten überall, wo du ein Passwort festlegst: beim Zurücksetzen, unter Einstellungen → Passwort und beim Einladungs-Link.</p>
+      <H3>Links und Fristen</H3>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.5rem", fontSize: "0.875rem" }}>
+        <tbody>
+          {[
+            ["Link „Passwort vergessen“", "1 Stunde, einmal verwendbar"],
+            ["Einladung ins Team / Willkommens-Link", "7 Tage"],
+            ["Anmeldung", "7 Tage, danach neu anmelden"],
+          ].map(([was, frist]) => (
+            <tr key={was} style={{ borderBottom: "1px solid var(--border)" }}>
+              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500 }}>{was}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{frist}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <H3>Zu viele Versuche</H3>
+      <p>Login und „Passwort vergessen“ sind gegen Ausprobieren geschützt: Nach 5 Versuchen in 15 Minuten kommt die Meldung „Zu viele Versuche“. Warte dann kurz und versuche es erneut.</p>
+    </>
+  ),
   faq: (
     <>
       {[
+        {
+          q: "Ich habe mein Passwort vergessen.",
+          a: "Klicke auf dem Login auf „Passwort vergessen?“, gib deine E-Mail ein und folge dem Link in der E-Mail (1 Stunde gültig). Details unter Passwort & Sicherheit.",
+        },
+        {
+          q: "Mein neues Passwort wird abgelehnt.",
+          a: "Es ist entweder zu leicht zu erraten (z.B. „Passwort1“, nur Zahlen) oder in einem bekannten Datenleck aufgetaucht. Wähle ein anderes, am besten einen längeren Satz aus mehreren Wörtern.",
+        },
+        {
+          q: "Wie öffne ich die Erklärung zu einem Feld?",
+          a: "Neben manchen Feldern steht ein kleines „i“. Mit der Maus darüberfahren oder am Handy antippen — ein Tipp daneben schließt die Erklärung wieder.",
+        },
         {
           q: "Das Widget zeigt meine Änderungen nicht an.",
           a: 'Einstellungen werden erst nach dem Klick auf „Änderungen speichern" übernommen. Danach ggf. den Browser-Cache leeren (Strg+Shift+R / Cmd+Shift+R).',
