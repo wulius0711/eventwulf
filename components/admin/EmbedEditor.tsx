@@ -5,6 +5,30 @@ interface Props {
   slug: string;
 }
 
+// Collapsible card. The whole header row is the click target (full width, 1rem
+// padding) and shows a small ▸/▾ like the other collapsible sections in the admin.
+function EmbedCard({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details
+      open={open}
+      onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
+      style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}
+    >
+      <summary
+        style={{
+          cursor: "pointer", listStyle: "none", padding: "1rem 1.5rem",
+          fontSize: "0.95rem", fontWeight: 600, color: "var(--text)",
+          borderBottom: open ? "1px solid var(--border)" : "none",
+        }}
+      >
+        {open ? "▾" : "▸"} {title}
+      </summary>
+      <div style={{ padding: "1.5rem" }}>{children}</div>
+    </details>
+  );
+}
+
 function EmbedSnippet({ title, description, src, origin, iframeId }: { title: string; description: string; src: string; origin: string; iframeId: string }) {
   const [copied, setCopied] = useState(false);
   const snippet = `<iframe id="${iframeId}" src="${src}" width="100%" frameborder="0" style="border:none;display:block" scrolling="no"></iframe>
@@ -18,9 +42,8 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
   }
 
   return (
-    <details style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
-      <summary style={{ cursor: "pointer", fontSize: "0.95rem", fontWeight: 600 }}>{title}</summary>
-      <p style={{ margin: "0.75rem 0", fontSize: "0.85rem", color: "var(--muted)" }}>{description}</p>
+    <EmbedCard title={title}>
+      <p style={{ margin: "0 0 0.75rem", fontSize: "0.85rem", color: "var(--muted)" }}>{description}</p>
       <textarea
         readOnly
         value={snippet}
@@ -43,7 +66,7 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
       >
         {copied ? "✓ In der Zwischenablage" : "Code kopieren"}
       </button>
-    </details>
+    </EmbedCard>
   );
 }
 
@@ -111,9 +134,8 @@ addPropertyControls(EventwulfWidget, {
   }
 
   return (
-    <details style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
-      <summary style={{ cursor: "pointer", fontSize: "0.95rem", fontWeight: 600 }}>Einbetten in Framer</summary>
-      <p style={{ margin: "0.75rem 0", fontSize: "0.85rem", color: "var(--muted)" }}>
+    <EmbedCard title="Einbetten in Framer">
+      <p style={{ margin: "0 0 0.75rem", fontSize: "0.85rem", color: "var(--muted)" }}>
         Framer verpackt den HTML-Code oben in ein eigenes iFrame, wodurch die automatische Höhenanpassung dort nicht funktioniert. Lege stattdessen eine <strong>Code Component</strong> an (Assets → Code → + → New Code File), füge diesen Code ein und ziehe die Component danach aus dem Insert-Panel auf deine Seite. Die Component musst du nur <strong>einmal</strong> anlegen — willst du Formular und Events auf derselben oder auf getrennten Seiten zeigen, ziehst du sie einfach zweimal auf die Seite(n) und stellst bei der zweiten Instanz die Property „Widget" auf „Events":
       </p>
       <textarea
@@ -138,7 +160,7 @@ addPropertyControls(EventwulfWidget, {
       >
         {copied ? "✓ In der Zwischenablage" : "Code kopieren"}
       </button>
-    </details>
+    </EmbedCard>
   );
 }
 
