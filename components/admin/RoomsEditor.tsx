@@ -5,6 +5,7 @@ import { PLAN_LABELS, isPlan, type Plan } from "@/lib/plan";
 import Toggle from "./Toggle";
 import RichTextEditor from "./RichTextEditor";
 import UpgradeButton from "./UpgradeButton";
+import InfoTip from "@/components/admin/InfoTip";
 
 function emptyForm() {
   return { name: "", description: "", image: "", capacity: "", isActive: true, sortOrder: "0" };
@@ -228,7 +229,10 @@ export default function RoomsEditor() {
         </div>
 
         <div>
-          <label>Bild</label>
+          <label>
+            Bild
+            <InfoTip text="JPEG, PNG oder WebP, wird automatisch optimiert (max. 4 MB)." />
+          </label>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
               {form.image && <img src={form.image} alt="" style={{ width: "3rem", height: "3rem", borderRadius: "6px", objectFit: "cover" }} />}
@@ -253,9 +257,9 @@ export default function RoomsEditor() {
               </button>
               {uploading && <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>Lädt hoch…</span>}
             </div>
-            <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
-              {form.image ? "Neues Bild wählen, um das aktuelle zu ersetzen" : "JPEG, PNG oder WebP, wird automatisch optimiert (max. 4MB)"}
-            </span>
+            {form.image && (
+              <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Neues Bild wählen, um das aktuelle zu ersetzen</span>
+            )}
             {uploadError && <span style={{ fontSize: "0.8rem", color: "var(--error)" }}>{uploadError}</span>}
           </div>
         </div>

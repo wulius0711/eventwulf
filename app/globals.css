@@ -144,9 +144,21 @@ label {
   left: auto;
   right: 0;
 }
-.ew-infotip:hover::after {
+/* Hover only where a real hover exists — on touch screens the tip opens by tap
+   (.ew-infotip--open), so it can also be closed again by tapping. */
+@media (hover: hover) {
+  .ew-infotip:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+.ew-infotip--open::after {
   opacity: 1;
   visibility: visible;
+}
+.ew-infotip[role="button"]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* ─── Widget: stärkere Rahmen (≥ 3:1), nur im Embed – Admin bleibt unberührt ─── */
@@ -486,6 +498,8 @@ button:active:not(:disabled) {
   --primary-dim:  rgba(52,211,153,0.20);
   --primary-text: #6ee7b7;
   --error:        #f87171;
+  /* Native controls (date/time picker icon, checkbox, number spinner, scrollbar, file button) follow the dark theme */
+  color-scheme: dark;
 }
 
 .admin-shell input,
@@ -498,8 +512,6 @@ button:active:not(:disabled) {
 }
 
 .admin-shell input[type="checkbox"],
-  /* Native controls (date/time picker icon, checkbox, number spinner, scrollbar, file button) follow the dark theme */
-  color-scheme: dark;
 .admin-shell input[type="radio"] {
   width: auto;
   padding: 0;

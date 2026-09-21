@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { EventEntry, RoomEntry } from "@/lib/types";
 import { PLAN_LABELS, isPlan, type Plan } from "@/lib/plan";
+import InfoTip from "@/components/admin/InfoTip";
 import Toggle from "./Toggle";
 import RichTextEditor from "./RichTextEditor";
 import UpgradeButton from "./UpgradeButton";
@@ -43,14 +44,6 @@ function todayIso() {
 
 function fmtPrice(n: number) {
   return n.toLocaleString("de-AT", { style: "currency", currency: "EUR" });
-}
-
-function InfoTip({ text, align = "left" }: { text: string; align?: "left" | "right" }) {
-  return (
-    <span className={`ew-infotip${align === "right" ? " ew-infotip--right" : ""}`} data-tip={text}>
-      i
-    </span>
-  );
 }
 
 function emptyForm() {
@@ -326,7 +319,10 @@ export default function EventsEditor() {
         </div>
 
         <div>
-          <label>Bild</label>
+          <label>
+            Bild
+            <InfoTip text="JPEG, PNG oder WebP, wird automatisch optimiert (max. 4 MB)." />
+          </label>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
               {form.image && <img src={form.image} alt="" style={{ width: "3rem", height: "3rem", borderRadius: "6px", objectFit: "cover" }} />}
@@ -351,9 +347,9 @@ export default function EventsEditor() {
               </button>
               {uploading && <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>Lädt hoch…</span>}
             </div>
-            <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
-              {form.image ? "Neues Bild wählen, um das aktuelle zu ersetzen" : "JPEG, PNG oder WebP, wird automatisch optimiert (max. 4MB)"}
-            </span>
+            {form.image && (
+              <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Neues Bild wählen, um das aktuelle zu ersetzen</span>
+            )}
           </div>
         </div>
 
@@ -410,7 +406,10 @@ export default function EventsEditor() {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "1rem", alignItems: "end" }}>
           <div>
-            <label>Farbe</label>
+            <label>
+              Farbe
+              <InfoTip text="So erscheint das Event im Kalender: als farbiger Balken über den Zeitraum. Auch die Karte in der Event-Übersicht trägt diese Farbe." />
+            </label>
             <div style={{ display: "flex", gap: "0.4rem" }}>
               {EVENT_COLORS.map((c) => (
                 <button key={c.value} type="button" onClick={() => set("color", c.value)} title={c.label} style={{
