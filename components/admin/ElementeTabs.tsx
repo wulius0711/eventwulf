@@ -10,12 +10,14 @@ import AvailabilityEditor from "@/components/admin/AvailabilityEditor";
 interface Props {
   initialConfig: EventConfig;
   plan: Plan | null;
+  initialTab?: string;
 }
 
 type Tab = "formular" | "events" | "raeume" | "sperrzeiten";
+const TABS: Tab[] = ["formular", "events", "raeume", "sperrzeiten"];
 
-export default function ElementeTabs({ initialConfig, plan }: Props) {
-  const [tab, setTab] = useState<Tab>("formular");
+export default function ElementeTabs({ initialConfig, plan, initialTab }: Props) {
+  const [tab, setTab] = useState<Tab>(TABS.find((t) => t === initialTab) ?? "formular");
 
   const tabStyle = (t: Tab) => ({
     padding: "0.5rem 1rem",

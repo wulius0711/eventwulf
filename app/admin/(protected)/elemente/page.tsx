@@ -5,7 +5,8 @@ import { loadConfigFromDB } from "@/lib/loadConfig";
 import { isPlan } from "@/lib/plan";
 import ElementeTabs from "@/components/admin/ElementeTabs";
 
-export default async function ElementePage() {
+export default async function ElementePage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const { tab } = await searchParams;
   const session = await getSession();
   if (!session) redirect("/admin/login");
 
@@ -24,7 +25,7 @@ export default async function ElementePage() {
       <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
         Elemente
       </h1>
-      <ElementeTabs initialConfig={config} plan={plan} />
+      <ElementeTabs initialConfig={config} plan={plan} initialTab={typeof tab === "string" ? tab : undefined} />
     </div>
   );
 }
