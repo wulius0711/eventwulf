@@ -102,13 +102,6 @@ export function str(val: unknown, max: number): string | null {
   return val;
 }
 
-export function validatePassword(val: unknown): string | null {
-  if (typeof val !== "string") return "Passwort muss ein String sein";
-  if (val.length < 8) return "Passwort muss mindestens 8 Zeichen lang sein";
-  if (val.length > 128) return "Passwort zu lang";
-  return null;
-}
-
 export function isStringArray(val: unknown): val is string[] {
   return Array.isArray(val) && val.every((v) => typeof v === "string" && v.length <= 200);
 }

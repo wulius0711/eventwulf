@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { hashSync, compareSync } from "bcryptjs";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { validatePassword } from "@/lib/validate";
+import { validateNewPassword } from "@/lib/passwordPolicy";
 
 export async function PUT(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
 
   const { currentPassword, newPassword } = await req.json();
-  const pwError = validatePassword(newPassword);
+  const pwError = await validateNewPassword(newPassword);
   if (pwError) return NextResponse.json({ error: pwError }, { status: 400 });
 
   const user = await prisma.user.findUnique({ where: { id: session.userId } });

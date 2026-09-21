@@ -32,6 +32,8 @@ export default defineConfig({
       // See lib/ratelimit.ts — regression tests fire many requests from the
       // same IP in quick succession and must not trip the 5-req/10min limiter.
       RATELIMIT_DISABLED: "true",
+      // The Have-I-Been-Pwned lookup needs the network and would reject the fixed test passwords.
+      PASSWORD_BREACH_CHECK_DISABLED: "true",
       // Not set anywhere else locally, so cron endpoints 401 without this —
       // fixed value only for the test server, never used against real data.
       CRON_SECRET: "test-cron-secret",

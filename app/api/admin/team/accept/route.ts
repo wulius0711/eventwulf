@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { hashSync } from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signToken, cookieName, cookieOptions } from "@/lib/auth";
-import { validatePassword } from "@/lib/validate";
+import { validateNewPassword } from "@/lib/passwordPolicy";
 
 async function findValidInvite(token: string) {
   if (!token) return null;
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const user = await findValidInvite(token);
   if (!user) return NextResponse.json({ error: "Einladung ungültig oder abgelaufen" }, { status: 400 });
 
-  const pwError = validatePassword(password);
+  const pwError = await validateNewPassword(password);
   if (pwError) return NextResponse.json({ error: pwError }, { status: 400 });
 
   if (!user.organizationId) return NextResponse.json({ error: "Organisation nicht gefunden" }, { status: 404 });

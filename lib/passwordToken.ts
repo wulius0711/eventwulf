@@ -1,7 +1,7 @@
 import { hashSync } from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signToken } from "@/lib/auth";
-import { validatePassword } from "@/lib/validate";
+import { validateNewPassword } from "@/lib/passwordPolicy";
 
 // Reset links reuse the user's inviteToken columns (one active link per user),
 // so no schema change is needed. A reset link is short-lived.
@@ -24,7 +24,7 @@ export async function setPasswordFromToken(token: unknown, password: unknown): P
   const user = await findUserByToken(token);
   if (!user) return { ok: false, status: 400, error: "Link ungültig oder abgelaufen" };
 
-  const pwError = validatePassword(password);
+  const pwError = await validateNewPassword(password);
   if (pwError) return { ok: false, status: 400, error: pwError };
   if (!user.organizationId) return { ok: false, status: 404, error: "Organisation nicht gefunden" };
 
