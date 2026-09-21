@@ -177,6 +177,11 @@ function SignupForm() {
               {loading ? "Weiter zu Stripe…" : "Kostenlose Testphase starten"}
             </button>
           </form>
+
+          <p style={{ margin: "1.25rem 0 0", textAlign: "center", fontSize: "0.85rem", color: "var(--muted)" }}>
+            Schon ein Konto?{" "}
+            <a href="/admin/login" style={{ color: "var(--text)", textDecoration: "underline" }}>Anmelden</a>
+          </p>
         </div>
         </div>
         <div style={{ marginTop: "1.5rem", fontSize: "0.78rem", textAlign: "center" }}>
