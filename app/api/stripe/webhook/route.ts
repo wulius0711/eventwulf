@@ -6,7 +6,7 @@ import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
 import { stripe, subscriptionSync } from "@/lib/stripe";
-import { sanitizeEmailHeader } from "@/lib/validate";
+import { welcomeEmailHtml } from "@/lib/emailTemplates";
 import { resolveBaseUrl } from "@/app/api/submit/route";
 
 // Matches the team-invite TTL (app/api/admin/team/route.ts) — well within
@@ -94,16 +94,11 @@ export async function POST(req: NextRequest) {
           from: `eventwulf <anfrage@eventwulf.at>`,
           to: email,
           subject: `Willkommen bei eventwulf — Konto aktivieren`,
-          html: `
-            <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:2rem">
-              <h2 style="margin:0 0 0.5rem;font-size:1.2rem;color:#1a1612">Willkommen bei eventwulf, ${sanitizeEmailHeader(meta.companyName)}!</h2>
-              <p style="margin:0 0 1.5rem;color:#6b7280;font-size:0.9rem">
-                Deine 14-tägige Testphase hat begonnen. Setze jetzt ein Passwort, um dich einzuloggen und loszulegen.
-              </p>
-              <p style="margin:0 0 1.5rem"><a href="${inviteUrl}" style="display:inline-block;padding:10px 20px;background:#996C1E;color:#ffffff;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600">Konto aktivieren</a></p>
-              <p style="margin:0;color:#6b7280;font-size:0.8rem">Der Link ist 7 Tage gültig.</p>
-            </div>
-          `,
+          // welcomeEmailHtml (lib/emailTemplates.ts) HTML-escapes
+          // meta.companyName — the customer's own signup input, previously
+          // interpolated raw (see the identical fix in
+          // app/api/admin/team/route.ts).
+          html: welcomeEmailHtml(meta.companyName, inviteUrl),
         });
       } catch (e) {
         console.error(`Failed to send welcome email for signup ${email}:`, e);

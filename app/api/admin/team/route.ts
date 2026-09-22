@@ -7,6 +7,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isValidEmail, sanitizeEmailHeader } from "@/lib/validate";
 import { effectivePlan, teamLimitFor, PLAN_LABELS, PlanLimitExceededError } from "@/lib/plan";
+import { inviteEmailHtml } from "@/lib/emailTemplates";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -118,19 +119,15 @@ export async function POST(req: NextRequest) {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
+      // sanitizeEmailHeader() (header-injection protection, \r\n\t only) is
+      // still correct here — this sink is an email header, not HTML.
       from: `${sanitizeEmailHeader(org.name)} <anfrage@eventwulf.at>`,
       to: email,
       subject: `Einladung zu eventwulf`,
-      html: `
-        <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:2rem">
-          <h2 style="margin:0 0 0.5rem;font-size:1.2rem;color:#1a1612">Du wurdest zu eventwulf eingeladen</h2>
-          <p style="margin:0 0 1.5rem;color:#6b7280;font-size:0.9rem">
-            ${sanitizeEmailHeader(session.email)} hat dich zum Team von "${sanitizeEmailHeader(org.name)}" auf eventwulf eingeladen.
-          </p>
-          <p style="margin:0 0 1.5rem"><a href="${inviteUrl}" style="display:inline-block;padding:10px 20px;background:#996C1E;color:#ffffff;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600">Einladung annehmen</a></p>
-          <p style="margin:0;color:#6b7280;font-size:0.8rem">Der Link ist 7 Tage gültig.</p>
-        </div>
-      `,
+      // inviteEmailHtml (lib/emailTemplates.ts) HTML-escapes org.name and
+      // session.email — sanitizeEmailHeader() above never did (it only
+      // strips \r\n\t), so this HTML-body sink was unescaped until now.
+      html: inviteEmailHtml(session.email, org.name, inviteUrl),
     });
   } catch (e) {
     console.error(`Failed to send invite email to ${user.id}:`, e);
