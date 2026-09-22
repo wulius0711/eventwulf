@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import AdminNav from "./AdminNav";
 import LogoutButton from "./LogoutButton";
@@ -66,7 +66,14 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
       </aside>
 
       <main className="ew-shell-main">
-        {children}
+        {/* React 19s eingebaute View-Transition-Integration statt manuellem
+            document.startViewTransition(): Next-Navigationen sind bereits
+            Transitions, ViewTransition greift automatisch zum richtigen
+            Zeitpunkt (also nachdem der neue Seiteninhalt wirklich gerendert
+            ist) statt zu früh, wie es beim Handverdrahten der Fall war. */}
+        <ViewTransition name="ew-main">
+          {children}
+        </ViewTransition>
       </main>
     </ToastProvider>
   );
