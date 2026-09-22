@@ -1,4 +1,5 @@
 "use client";
+import { startTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { NavIcons } from "./icons";
 
@@ -39,12 +40,37 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCo
     router.refresh();
   }
 
+  // Client-seitige Navigation statt echtem <a href>-Seitenwechsel: die
+  // browsereigene Cross-Document-View-Transition bricht bei einer neuen
+  // vollen Seitenladung gelegentlich zufällig ab, wenn die Serverantwort
+  // (DB-Abfrage, Coldstart) nicht rechtzeitig fertig ist – wirkt dann wie
+  // ein Aufblitzen. document.startViewTransition() läuft dagegen erst,
+  // wenn der Router-Wechsel bereits im Browser vorliegt, also ohne dieses
+  // Zeitfenster, und daher konsistent bei jedem Klick.
+  function navigate(e: React.MouseEvent, href: string) {
+    e.preventDefault();
+    onNavigate?.();
+    if (!document.startViewTransition) {
+      router.push(href);
+      return;
+    }
+    document.startViewTransition(() => {
+      // refresh() erzwingt frische Server-Daten für das geteilte Layout
+      // (Badge-Zahlen) – ohne das bliebe der Client-Cache stehen, anders
+      // als beim bisherigen vollen Seitenwechsel, der das immer neu holt.
+      startTransition(() => {
+        router.refresh();
+        router.push(href);
+      });
+    });
+  }
+
   return (
     <>
       {links.map(({ href, label, icon }) => {
         const badge = badgeCounts[href] ?? 0;
         return (
-          <a key={href} href={href} className={`ew-nav-link${pathname.startsWith(href) ? " active" : ""}`} onClick={onNavigate}>
+          <a key={href} href={href} className={`ew-nav-link${pathname.startsWith(href) ? " active" : ""}`} onClick={(e) => navigate(e, href)}>
             <span className="ew-nav-icon">{NavIcons[icon]}</span>
             {label}
             {badge > 0 && (
@@ -63,7 +89,7 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCo
       })}
 
       {isSuperAdmin && (
-        <a href="/admin/clients" className={`ew-nav-link${pathname.startsWith("/admin/clients") ? " active" : ""}`} onClick={onNavigate}>
+        <a href="/admin/clients" className={`ew-nav-link${pathname.startsWith("/admin/clients") ? " active" : ""}`} onClick={(e) => navigate(e, "/admin/clients")}>
           <span className="ew-nav-icon">{NavIcons.clients}</span>
           Kunden
         </a>
