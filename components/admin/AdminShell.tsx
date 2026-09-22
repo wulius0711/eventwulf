@@ -1,5 +1,5 @@
 "use client";
-import { useState, ViewTransition } from "react";
+import { useState } from "react";
 import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import AdminNav from "./AdminNav";
 import LogoutButton from "./LogoutButton";
@@ -65,15 +65,14 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
         </div>
       </aside>
 
+      {/* Kein <ViewTransition> hier: AdminShell wird vom (protected)-Layout
+          gerendert, Layouts bleiben über Navigationen hinweg bestehen und
+          werden nie neu gemountet – enter/exit feuern laut Next-Doku dort
+          nie. Der Wrapper sitzt stattdessen in jeder einzelnen page.tsx
+          (components/admin/PageTransition.tsx), wo React die Seite bei
+          jeder Navigation tatsächlich neu montiert. */}
       <main className="ew-shell-main">
-        {/* React 19s eingebaute View-Transition-Integration statt manuellem
-            document.startViewTransition(): Next-Navigationen sind bereits
-            Transitions, ViewTransition greift automatisch zum richtigen
-            Zeitpunkt (also nachdem der neue Seiteninhalt wirklich gerendert
-            ist) statt zu früh, wie es beim Handverdrahten der Fall war. */}
-        <ViewTransition name="ew-main">
-          {children}
-        </ViewTransition>
+        {children}
       </main>
     </ToastProvider>
   );

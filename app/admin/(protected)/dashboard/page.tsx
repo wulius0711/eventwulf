@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { InquiryFormData } from "@/lib/types";
 import { NavIcons } from "@/components/admin/icons";
+import PageTransition from "@/components/admin/PageTransition";
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -28,10 +29,12 @@ export default async function DashboardPage() {
 
   if (!activeClient) {
     return (
-      <div>
-        <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.3rem", fontWeight: 700 }}>Dashboard</h1>
-        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--muted)" }}>Kein Kunde ausgewählt.</p>
-      </div>
+      <PageTransition>
+        <div>
+          <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.3rem", fontWeight: 700 }}>Dashboard</h1>
+          <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--muted)" }}>Kein Kunde ausgewählt.</p>
+        </div>
+      </PageTransition>
     );
   }
 
@@ -49,46 +52,48 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      <div>
-        <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.3rem", fontWeight: 700 }}>Dashboard</h1>
-        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--muted)" }}>Überblick über offene Anfragen, Events und Angebote.</p>
-      </div>
+    <PageTransition>
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <div>
+          <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.3rem", fontWeight: 700 }}>Dashboard</h1>
+          <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--muted)" }}>Überblick über offene Anfragen, Events und Angebote.</p>
+        </div>
 
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-        <StatCard href="/admin/inquiries" label="Offene Anfragen" value={openInquiryCount} icon="inquiries" />
-        <StatCard href="/admin/elemente?tab=events" label="Anstehende Events" value={upcomingEventCount} icon="elemente" />
-        <StatCard href="/admin/invoices" label="Offene Angebote" value={openInvoiceCount} icon="invoices" />
-      </div>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <StatCard href="/admin/inquiries" label="Offene Anfragen" value={openInquiryCount} icon="inquiries" />
+          <StatCard href="/admin/elemente?tab=events" label="Anstehende Events" value={upcomingEventCount} icon="elemente" />
+          <StatCard href="/admin/invoices" label="Offene Angebote" value={openInvoiceCount} icon="invoices" />
+        </div>
 
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem 1.5rem" }}>
-        <h2 style={{ margin: "0 0 0.9rem", fontSize: "0.95rem", fontWeight: 600 }}>Neueste Anfragen</h2>
-        {recentInquiries.length === 0 ? (
-          <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>Keine offenen Anfragen.</p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-            {recentInquiries.map((inq) => {
-              const d = JSON.parse(inq.data) as InquiryFormData;
-              return (
-                <a
-                  key={inq.id}
-                  href="/admin/inquiries"
-                  style={{
-                    display: "flex", justifyContent: "space-between", gap: "1rem", fontSize: "0.85rem",
-                    padding: "0.5rem 0", borderBottom: "1px solid var(--border)", textDecoration: "none", color: "inherit",
-                  }}
-                >
-                  <span>
-                    <strong>{d.nameGruppenleitung || "Unbekannt"}</strong>
-                    {d.artTitel ? ` — ${d.artTitel}` : ""}
-                  </span>
-                  <span style={{ color: "var(--muted)", whiteSpace: "nowrap" }}>{fmtDate(inq.createdAt.toISOString())}</span>
-                </a>
-              );
-            })}
-          </div>
-        )}
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem 1.5rem" }}>
+          <h2 style={{ margin: "0 0 0.9rem", fontSize: "0.95rem", fontWeight: 600 }}>Neueste Anfragen</h2>
+          {recentInquiries.length === 0 ? (
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>Keine offenen Anfragen.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              {recentInquiries.map((inq) => {
+                const d = JSON.parse(inq.data) as InquiryFormData;
+                return (
+                  <a
+                    key={inq.id}
+                    href="/admin/inquiries"
+                    style={{
+                      display: "flex", justifyContent: "space-between", gap: "1rem", fontSize: "0.85rem",
+                      padding: "0.5rem 0", borderBottom: "1px solid var(--border)", textDecoration: "none", color: "inherit",
+                    }}
+                  >
+                    <span>
+                      <strong>{d.nameGruppenleitung || "Unbekannt"}</strong>
+                      {d.artTitel ? ` — ${d.artTitel}` : ""}
+                    </span>
+                    <span style={{ color: "var(--muted)", whiteSpace: "nowrap" }}>{fmtDate(inq.createdAt.toISOString())}</span>
+                  </a>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

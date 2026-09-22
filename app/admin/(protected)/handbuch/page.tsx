@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
+import PageTransition from "@/components/admin/PageTransition";
 
 const sections = [
   { id: "login",          title: "Login" },
@@ -423,6 +424,7 @@ export default function HanbbuchPage() {
   }
 
   return (
+    <PageTransition>
     <div>
       <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.25rem" }}>Handbuch</h1>
 
@@ -486,5 +488,6 @@ export default function HanbbuchPage() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }
