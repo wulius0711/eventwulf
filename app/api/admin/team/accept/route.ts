@@ -3,6 +3,7 @@ import { hashSync } from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signToken, cookieName, cookieOptions } from "@/lib/auth";
 import { validateNewPassword } from "@/lib/passwordPolicy";
+import { getIp, rateLimit } from "@/lib/ratelimit";
 
 async function findValidInvite(token: string) {
   if (!token) return null;
@@ -13,7 +14,19 @@ async function findValidInvite(token: string) {
 
 // Lets the invite acceptance page confirm the token is still valid (and show
 // which email it's for) before rendering the "set a password" form.
+//
+// Unauthenticated (only a token in the querystring/body), so this and POST
+// below are keyed by IP, not organizationId — mirrors app/api/admin/reset
+// (also an unauthenticated token-consuming flow) exactly, same limits. The
+// invite token itself already has 256 bits of entropy (Durchgang 3), so
+// brute-forcing it isn't the concern here — this is the same secondary
+// protection reset/route.ts's limits provide: general abuse/DoS containment
+// on an unauthenticated endpoint, at the same order of magnitude of
+// exposure, not a token-guessing defense.
 export async function GET(req: NextRequest) {
+  if (!(await rateLimit(`team-accept-check:${getIp(req)}`, 30, 15 * 60 * 1000))) {
+    return NextResponse.json({ error: "Zu viele Versuche. Bitte warte 15 Minuten." }, { status: 429 });
+  }
   const token = req.nextUrl.searchParams.get("token") ?? "";
   const user = await findValidInvite(token);
   if (!user) return NextResponse.json({ error: "Einladung ungültig oder abgelaufen" }, { status: 400 });
@@ -21,6 +34,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!(await rateLimit(`team-accept:${getIp(req)}`, 10, 15 * 60 * 1000))) {
+    return NextResponse.json({ error: "Zu viele Versuche. Bitte warte 15 Minuten." }, { status: 429 });
+  }
   const { token, password } = await req.json();
   const user = await findValidInvite(token);
   if (!user) return NextResponse.json({ error: "Einladung ungültig oder abgelaufen" }, { status: 400 });

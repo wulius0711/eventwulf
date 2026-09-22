@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { isValidEmail, sanitizeEmailHeader } from "@/lib/validate";
 import { effectivePlan, teamLimitFor, PLAN_LABELS, PlanLimitExceededError } from "@/lib/plan";
 import { inviteEmailHtml } from "@/lib/emailTemplates";
+import { rateLimit } from "@/lib/ratelimit";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -52,6 +53,20 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
+
+  // Durchgang 3, Fund 4 (secondary concern): this endpoint sends a real
+  // email to an address the caller fully controls, not their own — a
+  // compromised (or malicious) org member could otherwise fire off
+  // unlimited invite mails to arbitrary addresses, unrelated to anyone
+  // actually joining this org (spam / Resend sender reputation risk).
+  // Keyed on organizationId, not IP — same reasoning as
+  // /api/stripe/checkout and /api/stripe/portal (Phase 5): the caller is
+  // already authenticated, so this is a server-verified identity, not a
+  // spoofable one. 20/hour mirrors the portal's headroom — inviting
+  // several team members in one onboarding sitting is normal admin use.
+  if (!(await rateLimit(`team-invite:${session.organizationId}`, 20, 60 * 60 * 1000))) {
+    return NextResponse.json({ error: "Zu viele Versuche. Bitte warte eine Stunde." }, { status: 429 });
+  }
 
   const { email } = await req.json();
   if (!isValidEmail(email)) return NextResponse.json({ error: "E-Mail ungültig" }, { status: 400 });
