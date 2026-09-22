@@ -1,6 +1,7 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { AuthWordmark } from "@/components/AuthWordmark";
 
 const MAX_ATTEMPTS = 10;
 const POLL_INTERVAL_MS = 1500;
@@ -64,7 +65,7 @@ function SignupCompleteInner() {
         textAlign: "center",
       }}
     >
-      <img src="/eventwulf-logo.png" alt="eventwulf" style={{ height: "32px", width: "auto", filter: "brightness(0) invert(1)" }} />
+      <AuthWordmark size={25} />
       <div
         style={{
           width: "100%",
