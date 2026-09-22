@@ -77,6 +77,13 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
 
     setSaving(false);
     if (res.ok) {
+      // The server may have silently normalized a value we sent (e.g. a
+      // Pro+-only form field left over from before a downgrade) — apply
+      // whatever it actually persisted instead of trusting our own copy, so
+      // the UI can't show a checked-but-locked field that's really false in
+      // the DB until the next full reload.
+      const data = await res.json().catch(() => ({}));
+      if (data.config) setConfig(data.config);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } else {
