@@ -36,18 +36,22 @@ model Client {
   invoices       Invoice[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
 }
 
 model User {
-  id                    String        @id @default(cuid())
-  email                 String        @unique
-  password              String // bcrypt hash
-  organizationId        String?
-  organization          Organization? @relation(fields: [organizationId], references: [id])
-  createdAt             DateTime      @default(now())
-  passwordChangedAt     DateTime?
-  inviteToken           String?       @unique
-  inviteTokenExpiresAt  DateTime?
+  id                   String        @id @default(cuid())
+  email                String        @unique
+  password             String // bcrypt hash
+  organizationId       String?
+  organization         Organization? @relation(fields: [organizationId], references: [id])
+  createdAt            DateTime      @default(now())
+  passwordChangedAt    DateTime?
+  inviteToken          String?       @unique
+  inviteTokenExpiresAt DateTime?
+
+  @@index([organizationId])
 }
 
 model BlockedDate {
@@ -58,6 +62,8 @@ model BlockedDate {
   endDate   DateTime
   label     String   @default("nicht verfügbar")
   createdAt DateTime @default(now())
+
+  @@index([clientId])
 }
 
 model Inquiry {
@@ -78,6 +84,18 @@ model Inquiry {
   cancelledAt      DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+
+  // Admin inquiry list: filter by client, newest first.
+  @@index([clientId, createdAt])
+  // event-holds cron scans across all clients for expiring event holds.
+  // room-holds does the same for rooms; both narrow by status + holdExpiresAt
+  // first, so one composite index serves both instead of two near-duplicates.
+  @@index([status, holdExpiresAt])
+  // Availability check (booking widget) filters a room's inquiries by status
+  // on every request — this is the hottest read path in the schema.
+  @@index([roomId, status])
+  // Participant list / capacity bookkeeping for a specific event.
+  @@index([eventId, status])
 }
 
 model Invoice {
@@ -100,6 +118,8 @@ model Invoice {
 
   // Invoice numbers are now scoped per client (Medium finding 7) — two
   // different clients can both legitimately have "ANB-2026-0001".
+  // (clientId, number) above already indexes clientId as its leftmost
+  // column, so a plain @@index([clientId]) here would be redundant.
   @@unique([clientId, number])
 }
 
@@ -119,19 +139,21 @@ model UsedAutologinToken {
 }
 
 model Room {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   clientId    String
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   name        String
-  description String   @default("")
-  image       String   @default("")
+  description String    @default("")
+  image       String    @default("")
   capacity    Int?
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
   inquiries   Inquiry[]
   events      Event[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([clientId])
 }
 
 model Event {
@@ -157,6 +179,8 @@ model Event {
   inquiries       Inquiry[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([clientId])
 }
 
 // Fixed-window counters for lib/ratelimit.ts. Keys are hashed; rows older than
