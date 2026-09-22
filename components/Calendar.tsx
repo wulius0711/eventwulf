@@ -17,7 +17,11 @@ interface Props {
   onInvalidSelectionCleared?: () => void;
 }
 
-interface CalendarDay {
+// Exported for direct testing (see calendar-blocked-label.spec.ts) — the
+// bug this fixed (Sperrzeit labels never reaching the calendar banner) sits
+// entirely in this pure computation, no DOM/browser rendering needed to
+// verify it.
+export interface CalendarDay {
   date: Date;
   inMonth: boolean;
 }
@@ -60,13 +64,17 @@ function blocksCalendar(e: BlockedDateEntry) {
   return e.type === "blocked" || e.intern === true;
 }
 
-function isBlocked(date: Date, blocked: BlockedDateEntry[]) {
+function findBlockedEntry(date: Date, blocked: BlockedDateEntry[]): BlockedDateEntry | undefined {
   const t = date.getTime();
-  return blocked.filter(blocksCalendar).some((b) => {
+  return blocked.filter(blocksCalendar).find((b) => {
     const s = new Date(b.startDate).setHours(0, 0, 0, 0);
     const e = new Date(b.endDate).setHours(23, 59, 59, 999);
     return t >= s && t <= e;
   });
+}
+
+function isBlocked(date: Date, blocked: BlockedDateEntry[]) {
+  return findBlockedEntry(date, blocked) !== undefined;
 }
 
 function hasBlockedBetween(a: Date, b: Date, blocked: BlockedDateEntry[]) {
@@ -87,19 +95,29 @@ function isRangeEdge(date: Date, start: Date | null, end: Date | null, hover: Da
   return d === s || (e !== null && d === e);
 }
 
-function weekBlockedRange(week: CalendarDay[], entries: BlockedDateEntry[]) {
+export function weekBlockedRange(week: CalendarDay[], entries: BlockedDateEntry[]) {
   // A "silent" block (e.g. a room's own assigned Event) still disables the days via
   // isBlocked()/blocksCalendar() elsewhere — it just skips this redundant "nicht
   // verfügbar" banner, since the Event's own colored banner already explains why.
   const blocked = entries.filter((e) => e.type === "blocked" && !e.silent);
   let start = -1, end = -1;
+  let matched: BlockedDateEntry | undefined;
   for (let i = 0; i < week.length; i++) {
-    if (isBlocked(week[i].date, blocked)) {
-      if (start === -1) start = i;
+    const entry = findBlockedEntry(week[i].date, blocked);
+    if (entry) {
+      if (start === -1) { start = i; matched = entry; }
       end = i;
     }
   }
-  return start === -1 ? null : { start, end };
+  // Known limitation, not something this fix changes: this still draws one
+  // merged bar per week regardless of how many distinct Sperrzeit entries
+  // contributed to it (unlike weekEvents() below, which draws one banner
+  // per entry) — two separate, non-adjacent blocked ranges in the same week
+  // show only the first (earliest) one's label. Splitting this into
+  // per-entry banners like events would be a separate, larger change.
+  return start === -1 || !matched
+    ? null
+    : { start, end, label: matched.label, startDate: matched.startDate, endDate: matched.endDate };
 }
 
 // Selected-range pill drawn once per row (like weekBlockedRange/weekEvents below),
@@ -356,21 +374,25 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
                 <div style={{ padding: "0 0 0.35rem", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
                   {blockedRange && (
                     <div style={{ position: "relative", height: "1.2rem" }}>
-                      <div style={{
-                        position: "absolute",
-                        left: `calc(${blockedRange.start} * (100% / 7))`,
-                        width: `calc(${blockedRange.end - blockedRange.start + 1} * (100% / 7))`,
-                        background: "var(--primary)",
-                        color: "var(--btn-text)",
-                        fontSize: "0.68rem",
-                        fontWeight: 500,
-                        padding: "0.15rem 0.5rem",
-                        borderRadius: "3px",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}>
-                        nicht verfügbar
+                      <div
+                        onMouseEnter={(e) => setTooltip({ label: blockedRange.label || "nicht verfügbar", start: blockedRange.startDate, end: blockedRange.endDate, roomName: null, x: e.clientX, y: e.clientY })}
+                        onMouseLeave={() => setTooltip(null)}
+                        style={{
+                          position: "absolute",
+                          left: `calc(${blockedRange.start} * (100% / 7))`,
+                          width: `calc(${blockedRange.end - blockedRange.start + 1} * (100% / 7))`,
+                          background: "var(--primary)",
+                          color: "var(--btn-text)",
+                          fontSize: "0.68rem",
+                          fontWeight: 500,
+                          padding: "0.15rem 0.5rem",
+                          borderRadius: "3px",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          cursor: "default",
+                        }}>
+                        {blockedRange.label || "nicht verfügbar"}
                       </div>
                     </div>
                   )}
