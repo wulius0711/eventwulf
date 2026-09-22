@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useToast } from "@/components/admin/Toast";
 
 interface BlockedRow {
   id: string;
@@ -18,6 +19,7 @@ function isoDate(iso: string) {
 }
 
 export default function AvailabilityEditor() {
+  const { showToast } = useToast();
   const [entries, setEntries]     = useState<BlockedRow[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm]   = useState(false);
@@ -83,8 +85,10 @@ export default function AvailabilityEditor() {
           : [...prev, saved]
       );
       cancelEdit();
+      showToast("success", editingId ? "Sperrzeit gespeichert" : "Sperrzeit erstellt");
     } else {
       setError("Fehler beim Speichern");
+      showToast("error", "Fehler beim Speichern");
     }
     setLoading(false);
   }
@@ -99,6 +103,9 @@ export default function AvailabilityEditor() {
     if (res.ok) {
       setEntries((prev) => prev.filter((e) => e.id !== id));
       if (editingId === id) cancelEdit();
+      showToast("success", "Sperrzeit gelöscht");
+    } else {
+      showToast("error", "Fehler beim Löschen");
     }
   }
 

@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import type { InvoiceEntry } from "@/lib/types";
+import { useToast } from "@/components/admin/Toast";
+import { InboxEmptyIcon, FilterEmptyIcon } from "@/components/admin/icons";
 
 const STATUS_LABELS: Record<string, string> = { offen: "Offen", storniert: "Storniert" };
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
@@ -13,6 +15,7 @@ function fmtDate(iso: string) {
 }
 
 export default function InvoiceArchive() {
+  const { showToast } = useToast();
   const [invoices, setInvoices] = useState<InvoiceEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "offen" | "storniert">("all");
@@ -30,7 +33,8 @@ export default function InvoiceArchive() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    if (res.ok) setInvoices((prev) => prev.map((i) => i.id === id ? { ...i, status } : i));
+    if (res.ok) { setInvoices((prev) => prev.map((i) => i.id === id ? { ...i, status } : i)); showToast("success", "Status aktualisiert"); }
+    else showToast("error", "Fehler beim Ändern des Status");
   }
 
   const filtered = filter === "all" ? invoices : invoices.filter((i) => i.status === filter);
@@ -56,7 +60,18 @@ export default function InvoiceArchive() {
       {/* List */}
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
         {filtered.length === 0 ? (
-          <p style={{ padding: "1.5rem", color: "var(--muted)", fontSize: "0.85rem" }}>Keine Angebote gefunden.</p>
+          <div className="ew-empty-state" style={{ border: "none", borderRadius: 0 }}>
+            <span className="ew-empty-state-icon">{filter === "all" ? InboxEmptyIcon : FilterEmptyIcon}</span>
+            <div className="ew-empty-state-title">{filter === "all" ? "Noch keine Angebote" : "Keine Treffer"}</div>
+            <p className="ew-empty-state-body">
+              {filter === "all" ? "Angebote, die du aus Anfragen erstellst, erscheinen hier." : `Keine Angebote mit Status „${STATUS_LABELS[filter]}".`}
+            </p>
+            {filter !== "all" && (
+              <button type="button" className="ew-admin-btn ew-admin-btn-outline ew-empty-state-action" onClick={() => setFilter("all")}>
+                Filter zurücksetzen
+              </button>
+            )}
+          </div>
         ) : filtered.map((inv) => {
           const sc = STATUS_COLORS[inv.status] ?? STATUS_COLORS.offen;
           const gross = inv.lineItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * (1 + inv.taxRate);

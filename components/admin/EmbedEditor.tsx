@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useToast } from "@/components/admin/Toast";
 
 interface Props {
   slug: string;
@@ -30,6 +31,7 @@ function EmbedCard({ title, children }: { title: string; children: React.ReactNo
 }
 
 function EmbedSnippet({ title, description, src, origin, iframeId }: { title: string; description: string; src: string; origin: string; iframeId: string }) {
+  const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
   const snippet = `<iframe id="${iframeId}" src="${src}" width="100%" frameborder="0" style="border:none;display:block" scrolling="no"></iframe>
 <script src="${origin}/embed.js"><\/script>`;
@@ -38,6 +40,7 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
     navigator.clipboard.writeText(snippet).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+      showToast("success", "In die Zwischenablage kopiert");
     });
   }
 
@@ -71,6 +74,7 @@ function EmbedSnippet({ title, description, src, origin, iframeId }: { title: st
 }
 
 function FramerSnippet({ origin, slug }: { origin: string; slug: string }) {
+  const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
   const code = `import { useEffect, useRef, useState } from "react"
 import { addPropertyControls, ControlType } from "framer"
@@ -130,6 +134,7 @@ addPropertyControls(EventwulfWidget, {
     navigator.clipboard.writeText(code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+      showToast("success", "In die Zwischenablage kopiert");
     });
   }
 

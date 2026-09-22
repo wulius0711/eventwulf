@@ -6,6 +6,7 @@ import InfoTip from "@/components/admin/InfoTip";
 import Toggle from "./Toggle";
 import RichTextEditor from "./RichTextEditor";
 import UpgradeButton from "./UpgradeButton";
+import { useToast } from "@/components/admin/Toast";
 
 const EVENT_COLORS = [
   { label: "Grün",   value: "#16a34a" },
@@ -55,6 +56,7 @@ function emptyForm() {
 }
 
 export default function EventsEditor() {
+  const { showToast } = useToast();
   const [events, setEvents] = useState<EventEntry[]>([]);
   const [eventLimit, setEventLimit] = useState<number | null>(null);
   const [eventPlan, setEventPlan] = useState<Plan | null>(null);
@@ -175,9 +177,11 @@ export default function EventsEditor() {
       const saved = await res.json();
       setEvents((prev) => editingId ? prev.map((e) => e.id === editingId ? saved : e) : [...prev, saved]);
       cancelEdit();
+      showToast("success", editingId ? "Event gespeichert" : "Event erstellt");
     } else {
       const { error: msg } = await res.json().catch(() => ({ error: "Fehler beim Speichern" }));
       setError(msg);
+      showToast("error", msg);
     }
     setLoading(false);
   }
@@ -196,6 +200,9 @@ export default function EventsEditor() {
     if (res.ok) {
       setEvents((prev) => prev.filter((e) => e.id !== id));
       if (editingId === id) cancelEdit();
+      showToast("success", "Event gelöscht");
+    } else {
+      showToast("error", "Fehler beim Löschen");
     }
   }
 

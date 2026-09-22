@@ -4,6 +4,8 @@ import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import AdminNav from "./AdminNav";
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
+import { ToastProvider } from "./Toast";
+import { MenuIcon, CloseIcon, BrandMark } from "./icons";
 
 interface Props {
   bookingAppUrl: string | null;
@@ -20,11 +22,11 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
   const [open, setOpen] = useState(false);
 
   return (
-    <>
+    <ToastProvider>
       {/* Mobile topbar with hamburger */}
       <div className="ew-topbar">
         <button className="ew-hamburger" onClick={() => setOpen(!open)} aria-label="Menü">
-          {open ? "✕" : "☰"}
+          {open ? CloseIcon : MenuIcon}
         </button>
         <span className="ew-topbar-brand">eventwulf</span>
       </div>
@@ -34,6 +36,7 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
 
       <aside className={`ew-sidebar${open ? " ew-sidebar--open" : ""}`}>
         <div className="ew-sidebar-brand">
+          {BrandMark}
           <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--primary)", letterSpacing: "-0.03em" }}>eventwulf</span>
         </div>
 
@@ -65,6 +68,6 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
       <main className="ew-shell-main">
         {children}
       </main>
-    </>
+    </ToastProvider>
   );
 }

@@ -552,7 +552,7 @@ button:active:not(:disabled) {
 
 /* Sidebar layout */
 .ew-sidebar {
-  width: 220px;
+  width: 248px;
   flex-shrink: 0;
   background: var(--surface);
   border-right: 1px solid var(--border);
@@ -565,8 +565,13 @@ button:active:not(:disabled) {
 }
 
 .ew-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 1.5rem 1.25rem 1.25rem;
   border-bottom: 1px solid var(--border);
+  /* Sehr dezenter Marken-Verlauf im Kopf, einziger Gradient-Akzent der Sidebar */
+  background: linear-gradient(160deg, var(--primary-tint) 0%, transparent 65%);
 }
 
 .ew-sidebar-nav {
@@ -580,15 +585,19 @@ button:active:not(:disabled) {
 .ew-nav-link {
   display: flex;
   align-items: center;
+  gap: 0.7rem;
   padding: 0.55rem 0.875rem;
   border-radius: 7px;
   font-size: 0.875rem;
   font-weight: 400;
   color: var(--muted);
   text-decoration: none;
-  transition: background 0.12s, color 0.12s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
   white-space: nowrap;
+  border-left: 2.5px solid transparent;
+  margin-left: -2.5px;
 }
+.ew-nav-icon { display: flex; flex-shrink: 0; color: inherit; opacity: 0.75; }
 
 .ew-nav-link:hover {
   background: var(--bg2);
@@ -599,7 +608,9 @@ button:active:not(:disabled) {
   background: var(--primary-tint);
   color: var(--primary);
   font-weight: 600;
+  border-left-color: var(--primary);
 }
+.ew-nav-link.active .ew-nav-icon { opacity: 1; }
 
 .ew-sidebar-footer {
   padding: 1rem 1.25rem;
@@ -608,6 +619,104 @@ button:active:not(:disabled) {
   flex-direction: column;
   gap: 0.5rem;
 }
+
+/* ─── KPI / Stat cards – sehr dezenter Verlauf statt Flat-Fill ─────────── */
+.ew-stat-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 1 1 200px;
+  background: linear-gradient(160deg, var(--surface) 0%, var(--bg2) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.ew-stat-card:hover { border-color: var(--primary); transform: translateY(-1px); }
+.ew-stat-icon {
+  width: 2.25rem; height: 2.25rem; border-radius: 9px; flex-shrink: 0;
+  background: var(--primary-tint); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ─── Empty states – Icon + Copy statt reinem Fließtext ─────────────────── */
+.ew-empty-state {
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+  background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius);
+  padding: 2.75rem 2rem; text-align: center; color: var(--muted);
+}
+.ew-empty-state-icon { color: var(--muted); opacity: 0.55; }
+.ew-empty-state-title { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+.ew-empty-state-body { font-size: 0.85rem; max-width: 360px; line-height: 1.5; }
+.ew-empty-state-action { margin-top: 0.25rem; }
+
+/* ─── Toasts – einziger Ort mit sichtbarem Glaseffekt (schwebt über Content) ─ */
+.ew-toast {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem; font-weight: 500;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  animation: ew-toast-in 0.2s ease both;
+}
+/* Lightning CSS has silently dropped the unprefixed property when combined
+   with -webkit-backdrop-filter in the same rule before (see the .ew-auth-wrap
+   comment above) — kept in its own standalone rule so it survives the build. */
+.ew-toast { backdrop-filter: blur(10px); }
+@keyframes ew-toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.ew-toast[data-type="success"] .ew-toast-icon { color: var(--success); }
+.ew-toast[data-type="error"] .ew-toast-icon { color: var(--error); }
+.ew-toast-icon { display: flex; flex-shrink: 0; }
+.ew-toast-msg { flex: 1; }
+
+/* ─── Sanfte Seitenübergänge – nativ, ohne JS ────────────────────────────
+   Die Admin-Navigation nutzt volle Seitenwechsel (<a href>, kein next/link),
+   dafür ist die View-Transitions-API gemacht: der Browser überblendet Alt-
+   und Neu-Zustand selbst, kostet 0 KB JS. Tut in nicht unterstützten
+   Browsern (Safari, Firefox) einfach nichts – kein Fallback nötig.
+   Respektiert prefers-reduced-motion automatisch, indem die Regel dort
+   erst gar nicht aktiv wird.
+
+   Sidebar bekommt einen eigenen view-transition-name und bleibt unanimiert:
+   sonst überblendet der Browser den GESAMTEN Viewport als ein Bild – die
+   Sidebar sieht auf Alt- und Neu-Zustand identisch aus, "überblendet" also
+   sichtbar mit sich selbst = keine erkennbare Bewegung. Nur der Hauptbereich
+   bekommt das eigentliche Fade+Slide, dort findet die Seite ja tatsächlich
+   statt. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+
+  .ew-sidebar { view-transition-name: ew-sidebar; }
+  .ew-shell-main { view-transition-name: ew-main; }
+
+  ::view-transition-old(ew-sidebar), ::view-transition-new(ew-sidebar) {
+    animation: none;
+  }
+
+  ::view-transition-old(ew-main) {
+    animation: 160ms ease-in both ew-vt-out;
+  }
+  ::view-transition-new(ew-main) {
+    animation: 220ms ease-out both ew-vt-in;
+  }
+}
+
+@keyframes ew-vt-out {
+  to { opacity: 0; transform: translateY(-8px); }
+}
+@keyframes ew-vt-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+
 
 .ew-logout-btn {
   width: fit-content;
@@ -736,13 +845,16 @@ button:active:not(:disabled) {
     transform: translateX(0);
   }
 
-  /* Backdrop */
+  /* Backdrop – Glaseffekt: Inhalt schimmert angedeutet durch, Sidebar bleibt deckend */
   .ew-nav-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(15, 23, 20, 0.38);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 199;
   }
+  /* Standalone, same reason as .ew-toast above */
+  .ew-nav-backdrop { backdrop-filter: blur(6px); }
 
   .ew-shell-main { padding: 1.5rem 1rem; }
 

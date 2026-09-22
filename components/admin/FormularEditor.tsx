@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { EventConfig } from "@/lib/types";
 import type { Plan } from "@/lib/plan";
 import Toggle from "@/components/admin/Toggle";
+import { useToast } from "@/components/admin/Toast";
 
 interface Props {
   initialConfig: EventConfig;
@@ -51,6 +52,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default function FormularEditor({ initialConfig, plan }: Props) {
+  const { showToast } = useToast();
   const [config, setConfig] = useState<EventConfig>(initialConfig);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -107,8 +109,10 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
     if (res.ok) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
+      showToast("success", "Formular gespeichert");
     } else {
       setSaveError("Fehler beim Speichern");
+      showToast("error", "Fehler beim Speichern");
     }
   }
 

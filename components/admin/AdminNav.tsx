@@ -1,5 +1,6 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
+import { NavIcons } from "./icons";
 
 interface Props {
   isSuperAdmin: boolean;
@@ -11,14 +12,14 @@ interface Props {
 }
 
 const links = [
-  { href: "/admin/dashboard",    label: "Dashboard" },
-  { href: "/admin/config",       label: "Einstellungen" },
-  { href: "/admin/elemente",     label: "Elemente" },
-  { href: "/admin/embed",        label: "Embed-Codes" },
-  { href: "/admin/inquiries",    label: "Anfragen" },
-  { href: "/admin/invoices",     label: "Angebote" },
-  { href: "/admin/vorschau",     label: "Vorschau" },
-  { href: "/admin/handbuch",     label: "Handbuch" },
+  { href: "/admin/dashboard",    label: "Dashboard",      icon: "dashboard" },
+  { href: "/admin/config",       label: "Einstellungen",  icon: "config" },
+  { href: "/admin/elemente",     label: "Elemente",       icon: "elemente" },
+  { href: "/admin/embed",        label: "Embed-Codes",    icon: "embed" },
+  { href: "/admin/inquiries",    label: "Anfragen",       icon: "inquiries" },
+  { href: "/admin/invoices",     label: "Angebote",       icon: "invoices" },
+  { href: "/admin/vorschau",     label: "Vorschau",       icon: "vorschau" },
+  { href: "/admin/handbuch",     label: "Handbuch",       icon: "handbuch" },
 ];
 
 export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCount, openInvoiceCount, onNavigate }: Props) {
@@ -40,15 +41,16 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCo
 
   return (
     <>
-      {links.map(({ href, label }) => {
+      {links.map(({ href, label, icon }) => {
         const badge = badgeCounts[href] ?? 0;
         return (
           <a key={href} href={href} className={`ew-nav-link${pathname.startsWith(href) ? " active" : ""}`} onClick={onNavigate}>
+            <span className="ew-nav-icon">{NavIcons[icon]}</span>
             {label}
             {badge > 0 && (
               <span
                 style={{
-                  marginLeft: "0.5rem", background: "#dc2626", color: "#fff", borderRadius: "999px",
+                  marginLeft: "auto", background: "#dc2626", color: "#fff", borderRadius: "999px",
                   fontSize: "0.72rem", fontWeight: 700, lineHeight: 1, padding: "0.2rem 0.45rem", minWidth: "1.1rem",
                   textAlign: "center", display: "inline-block",
                 }}
@@ -62,6 +64,7 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCo
 
       {isSuperAdmin && (
         <a href="/admin/clients" className={`ew-nav-link${pathname.startsWith("/admin/clients") ? " active" : ""}`} onClick={onNavigate}>
+          <span className="ew-nav-icon">{NavIcons.clients}</span>
           Kunden
         </a>
       )}

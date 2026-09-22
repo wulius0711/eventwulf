@@ -62,6 +62,10 @@ const nextConfig: NextConfig = {
   // package so its .node/.so files are copied into the deployed function output
   // instead of getting dropped by the bundler.
   serverExternalPackages: ["sharp"],
+  // Dev-only indicator badge, default bottom-left — overlaps the admin
+  // sidebar's own bottom-left controls (theme toggle). Never renders in
+  // production, purely a local-dev convenience move.
+  devIndicators: { position: "top-right" },
   async headers() {
     // Keeps this app's own CSP/security headers off the proxied Framer
     // content (see proxy.ts) — Framer's fonts/scripts/images would

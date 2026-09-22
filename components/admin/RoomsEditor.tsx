@@ -6,12 +6,14 @@ import Toggle from "./Toggle";
 import RichTextEditor from "./RichTextEditor";
 import UpgradeButton from "./UpgradeButton";
 import InfoTip from "@/components/admin/InfoTip";
+import { useToast } from "@/components/admin/Toast";
 
 function emptyForm() {
   return { name: "", description: "", image: "", capacity: "", isActive: true, sortOrder: "0" };
 }
 
 export default function RoomsEditor() {
+  const { showToast } = useToast();
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [roomLimit, setRoomLimit] = useState<number | null>(null);
   const [roomPlan, setRoomPlan] = useState<Plan | null>(null);
@@ -117,9 +119,11 @@ export default function RoomsEditor() {
       const saved = await res.json();
       setRooms((prev) => editingId ? prev.map((r) => r.id === editingId ? saved : r) : [...prev, saved]);
       cancelEdit();
+      showToast("success", editingId ? "Raum gespeichert" : "Raum erstellt");
     } else {
       const { error: msg } = await res.json().catch(() => ({ error: "Fehler beim Speichern" }));
       setError(msg);
+      showToast("error", msg);
     }
     setLoading(false);
   }
@@ -154,6 +158,9 @@ export default function RoomsEditor() {
     if (res.ok) {
       setRooms((prev) => prev.filter((r) => r.id !== id));
       if (editingId === id) cancelEdit();
+      showToast("success", "Raum gelöscht");
+    } else {
+      showToast("error", "Fehler beim Löschen");
     }
   }
 

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { PLAN_LABELS, type Plan } from "@/lib/plan";
+import { useToast } from "@/components/admin/Toast";
 
 interface OrgEntry {
   id: string;
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function ClientsEditor({ superadminSlug }: Props) {
+  const { showToast } = useToast();
   const [orgs, setOrgs] = useState<OrgEntry[]>([]);
   const [slug, setSlug] = useState("");
   const [email, setEmail] = useState("");
@@ -97,9 +99,11 @@ export default function ClientsEditor({ superadminSlug }: Props) {
     if (res.ok) {
       setOrgs((prev) => prev.filter((o) => o.id !== id));
       setDeleteOrgConfirm(null);
+      showToast("success", "Organisation gelöscht");
     } else {
       const data = await res.json().catch(() => ({}));
       setDeleteError(data.error ?? "Fehler beim Löschen");
+      showToast("error", data.error ?? "Fehler beim Löschen");
     }
   }
 
@@ -111,7 +115,8 @@ export default function ClientsEditor({ superadminSlug }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: orgId, plan }),
     });
-    if (!res.ok) setOrgs(prev); // revert on failure
+    if (res.ok) showToast("success", "Paket geändert");
+    else { setOrgs(prev); showToast("error", "Fehler beim Ändern des Pakets"); } // revert on failure
   }
 
   async function handleToggleActive(orgId: string, slug: string, isActive: boolean) {
@@ -126,10 +131,13 @@ export default function ClientsEditor({ superadminSlug }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slug, isActive }),
     });
-    if (!res.ok) {
+    if (res.ok) {
+      showToast("success", isActive ? "Kunde aktiviert" : "Kunde deaktiviert");
+    } else {
       setOrgs(prev); // revert on failure (e.g. reactivation blocked by the plan limit)
       const data = await res.json().catch(() => ({}));
       setDeleteError(data.error ?? "Fehler");
+      showToast("error", data.error ?? "Fehler");
     }
   }
 
@@ -146,9 +154,11 @@ export default function ClientsEditor({ superadminSlug }: Props) {
         : o
       ));
       setDeleteSlugConfirm(null);
+      showToast("success", "Kunde gelöscht");
     } else {
       const data = await res.json().catch(() => ({}));
       setDeleteError(data.error ?? "Fehler beim Löschen");
+      showToast("error", data.error ?? "Fehler beim Löschen");
     }
   }
 

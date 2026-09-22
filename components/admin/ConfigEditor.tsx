@@ -6,6 +6,7 @@ import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import UpgradeButton from "./UpgradeButton";
 import ManageBillingButton from "./ManageBillingButton";
 import TeamEditor from "./TeamEditor";
+import { useToast } from "@/components/admin/Toast";
 
 interface Props {
   initialConfig: EventConfig;
@@ -51,6 +52,7 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const { showToast } = useToast();
 
   // Password change state
   const [currentPw, setCurrentPw] = useState("");
@@ -87,8 +89,10 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
       if (data.config) setConfig(data.config);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
+      showToast("success", "Einstellungen gespeichert");
     } else {
       setSaveError("Fehler beim Speichern");
+      showToast("error", "Fehler beim Speichern");
     }
   }
 

@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import type { InquiryFormData } from "@/lib/types";
 import InvoicePanel from "@/components/admin/InvoicePanel";
+import { useToast } from "@/components/admin/Toast";
+import { InboxEmptyIcon, FilterEmptyIcon } from "@/components/admin/icons";
 
 interface Inquiry {
   id: string;
@@ -80,6 +82,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function InquiryInbox() {
+  const { showToast } = useToast();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,9 +107,10 @@ export default function InquiryInbox() {
     if (res.ok) {
       const updated = await res.json() as Inquiry;
       setInquiries((prev) => prev.map((i) => i.id === id ? { ...i, status: updated.status, updatedAt: updated.updatedAt } : i));
+      showToast("success", "Status aktualisiert");
     } else {
       const d = await res.json().catch(() => ({})) as { error?: string };
-      window.alert(d.error ?? "Fehler beim Ändern des Status");
+      showToast("error", d.error ?? "Fehler beim Ändern des Status");
       if (res.status === 409) {
         fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
       }
@@ -120,14 +124,17 @@ export default function InquiryInbox() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    if (res.ok) setInquiries((prev) => prev.filter((i) => i.id !== id));
+    if (res.ok) { setInquiries((prev) => prev.filter((i) => i.id !== id)); showToast("success", "Anfrage gelöscht"); }
+    else showToast("error", "Fehler beim Löschen");
   }
 
   if (loading) return <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>Lade Anfragen…</p>;
   if (inquiries.length === 0) {
     return (
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "2.5rem", textAlign: "center", color: "var(--muted)", fontSize: "0.9rem" }}>
-        Noch keine Anfragen eingegangen.
+      <div className="ew-empty-state">
+        <span className="ew-empty-state-icon">{InboxEmptyIcon}</span>
+        <div className="ew-empty-state-title">Noch keine Anfragen</div>
+        <p className="ew-empty-state-body">Hier erscheinen Anfragen, sobald jemand über dein Buchungswidget anfragt.</p>
       </div>
     );
   }
@@ -174,8 +181,13 @@ export default function InquiryInbox() {
       </div>
 
       {filtered.length === 0 && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "2.5rem", textAlign: "center", color: "var(--muted)", fontSize: "0.9rem" }}>
-          Keine Anfragen für diese Auswahl.
+        <div className="ew-empty-state">
+          <span className="ew-empty-state-icon">{FilterEmptyIcon}</span>
+          <div className="ew-empty-state-title">Keine Treffer</div>
+          <p className="ew-empty-state-body">Für „{STATUS_GROUPS.find((g) => g.key === statusFilter)?.label}"{search.trim() ? ` und „${search}"` : ""} wurde nichts gefunden.</p>
+          <button type="button" className="ew-admin-btn ew-admin-btn-outline ew-empty-state-action" onClick={() => { setStatusFilter("alle"); setSearch(""); }}>
+            Filter zurücksetzen
+          </button>
         </div>
       )}
 
