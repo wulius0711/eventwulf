@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useFormStore } from "@/store/form";
 import Calendar from "@/components/Calendar";
 import type { EventConfig, RoomEntry } from "@/lib/types";
@@ -19,6 +19,8 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
   const { form, setField } = useFormStore();
   const [rooms, setRooms] = useState<RoomEntry[]>(initialRooms ?? []);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [truncatedIds, setTruncatedIds] = useState<Set<string>>(new Set());
+  const descRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   // Server already provided the unfiltered room list for the no-dates-selected
   // case — skip re-fetching that exact same thing on mount (it caused a second,
   // late layout shift as the iframe embed resized again right after the user's
@@ -37,6 +39,27 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
     fetch(`/api/rooms?slug=${encodeURIComponent(slug)}${dateParams}`)
       .then((r) => r.json()).then(setRooms).catch(() => {});
   }, [slug, form.datumVon, form.datumBis]);
+
+  // Detect which descriptions actually overflow their 2-line clamp, so the
+  // "Mehr anzeigen" toggle only shows up where it does something. Skip the
+  // currently expanded room — its box is unclamped so it always measures as
+  // non-overflowing, which would otherwise make the button disappear mid-read.
+  useLayoutEffect(() => {
+    function measure() {
+      setTruncatedIds((prev) => {
+        const next = new Set(prev);
+        descRefs.current.forEach((el, id) => {
+          if (id === expandedId) return;
+          if (el.scrollHeight > el.clientHeight + 1) next.add(id);
+          else next.delete(id);
+        });
+        return next;
+      });
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [rooms, expandedId]);
 
   if (config.formFields?.raum === false || rooms.length === 0) return null;
 
@@ -86,41 +109,43 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
               ) : (
                 <div style={{ width: "100%", aspectRatio: "16/9", background: "var(--bg2)" }} />
               )}
-              <div style={{ padding: "0.5rem 0.65rem" }}>
+              <div style={{ padding: "0.5rem 0.65rem", display: "flex", flexDirection: "column", flex: 1 }}>
                 <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>{room.name}</div>
                 {room.capacity != null && (
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>bis {room.capacity} Personen</div>
                 )}
                 {room.description && (
-                  <div style={{ marginTop: "0.25rem" }}>
-                    <div
-                      className="ew-desc"
-                      style={{
-                        fontSize: "0.75rem", color: "var(--muted)", lineHeight: 1.4,
-                        display: descExpanded ? "block" : "-webkit-box",
-                        WebkitLineClamp: descExpanded ? "unset" : 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: descExpanded ? "visible" : "hidden",
-                      }}
-                      dangerouslySetInnerHTML={{ __html: room.description }}
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setExpandedId((prev) => (prev === room.id ? null : room.id));
-                      }}
-                      style={{
-                        marginTop: "0.15rem", background: "none", border: "none", padding: 0,
-                        color: "var(--primary-text)", fontWeight: 600, fontSize: "0.72rem", cursor: "pointer",
-                      }}
-                    >
-                      {descExpanded ? "▾ Weniger anzeigen" : "▸ Mehr anzeigen"}
-                    </button>
-                  </div>
+                  <div
+                    ref={(el) => {
+                      if (el) descRefs.current.set(room.id, el);
+                      else descRefs.current.delete(room.id);
+                    }}
+                    style={{
+                      fontSize: "0.75rem", color: "var(--muted)", lineHeight: 1.4, marginTop: "0.25rem",
+                      maxHeight: descExpanded ? "none" : "2.8em",
+                      overflow: descExpanded ? "visible" : "hidden",
+                    }}
+                    dangerouslySetInnerHTML={{ __html: room.description }}
+                  />
                 )}
                 {unavailable && (
                   <div style={{ fontSize: "0.72rem", color: "var(--error)", marginTop: "0.15rem" }}>Nicht verfügbar</div>
+                )}
+                {room.description && truncatedIds.has(room.id) && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setExpandedId((prev) => (prev === room.id ? null : room.id));
+                    }}
+                    style={{
+                      marginTop: "auto", alignSelf: "flex-start",
+                      background: "none", border: "none", padding: 0, paddingTop: "0.3rem",
+                      color: "var(--primary-text)", fontWeight: 600, fontSize: "0.72rem", cursor: "pointer",
+                    }}
+                  >
+                    {descExpanded ? "▾ Weniger anzeigen" : "▸ Mehr anzeigen"}
+                  </button>
                 )}
               </div>
             </div>
