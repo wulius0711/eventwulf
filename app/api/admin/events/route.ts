@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
 import { validateMinParticipants } from "@/lib/validate";
-import { eventLimitFor, isPlan, PLAN_LABELS } from "@/lib/plan";
+import { eventLimitFor, effectivePlan, PLAN_LABELS } from "@/lib/plan";
 
 function sanitizeDescription(html: string): string {
   return sanitizeHtml(html, {
@@ -48,8 +48,8 @@ async function getClientId(slug: string) {
 }
 
 async function getOrgPlan(organizationId: string) {
-  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { plan: true } });
-  return isPlan(org?.plan) ? org.plan : "basis";
+  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { plan: true, subscriptionStatus: true } });
+  return effectivePlan(org);
 }
 
 // Validates a submitted roomId belongs to this client. `null`/"" clears the room.

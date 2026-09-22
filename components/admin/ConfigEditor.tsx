@@ -10,6 +10,7 @@ import TeamEditor from "./TeamEditor";
 interface Props {
   initialConfig: EventConfig;
   plan: Plan;
+  paymentIssue: boolean;
   initialTab?: Tab;
   hasStripeCustomer: boolean;
 }
@@ -42,7 +43,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export default function ConfigEditor({ initialConfig, plan, initialTab, hasStripeCustomer }: Props) {
+export default function ConfigEditor({ initialConfig, plan, paymentIssue, initialTab, hasStripeCustomer }: Props) {
   const router = useRouter();
   const [config, setConfig] = useState<EventConfig>(initialConfig);
   const [tab, setTab] = useState<Tab>(initialTab ?? "firma");
@@ -171,6 +172,15 @@ export default function ConfigEditor({ initialConfig, plan, initialTab, hasStrip
 
       {tab === "abrechnung" && (
         <Section title="Plan">
+          {paymentIssue && (
+            <div style={{
+              background: "var(--surface)", border: "1px solid var(--error)",
+              borderRadius: "var(--radius-sm)", padding: "0.75rem 1rem", fontSize: "0.85rem", color: "var(--text)",
+              marginBottom: "1rem",
+            }}>
+              Die letzte Zahlung ist fehlgeschlagen — dein Zugriff ist bis zur Klärung eingeschränkt (Räume, Team-Einladungen und weitere Paket-Funktionen sind derzeit gesperrt). Bitte aktualisiere deine Zahlungsmethode über &quot;Zahlungsdaten verwalten&quot;, um wieder vollen Zugriff auf deinen {PLAN_LABELS[plan]}-Plan zu bekommen.
+            </div>
+          )}
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
             <span style={{ fontSize: "0.9rem" }}>Aktueller Plan: <strong>{PLAN_LABELS[plan]}</strong></span>
             <UpgradeButton currentPlan={plan} />

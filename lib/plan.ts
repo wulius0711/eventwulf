@@ -54,3 +54,34 @@ export function teamLimitFor(plan: Plan): number | null {
 export function isPlan(val: unknown): val is Plan {
   return typeof val === "string" && (PLAN_ORDER as string[]).includes(val);
 }
+
+// Statuses where Stripe has stopped collecting on an existing subscription
+// but hasn't canceled it yet (see
+// https://docs.stripe.com/billing/subscriptions/overview#subscription-statuses):
+// "past_due" fires right after the first failed recurring charge; whether it
+// later becomes "canceled" or "unpaid" depends on the Stripe account's
+// dashboard retry settings, so both are covered here rather than assuming
+// one. "incomplete"/"incomplete_expired" only apply to a subscription's
+// *first* payment — this app collects that payment during Stripe Checkout
+// itself (see app/api/signup/route.ts, app/api/stripe/checkout/route.ts), so
+// they shouldn't occur in practice, but are included for defensiveness.
+const PAYMENT_FAILURE_STATUSES = new Set(["past_due", "unpaid", "incomplete", "incomplete_expired"]);
+
+// The plan to enforce right now, as opposed to `org.plan` (the plan the
+// customer is actually subscribed/billed to). These differ exactly while a
+// payment has failed: `org.plan` is deliberately left untouched so a later
+// successful payment restores access without us needing to remember what
+// they had, but every feature/limit check should gate on this instead of
+// raw `org.plan` — otherwise a customer keeps full paid access for the
+// entire multi-week Stripe dunning cycle before `customer.subscription.deleted`
+// finally fires and resets `org.plan` itself.
+//
+// UI code showing the customer their plan (billing tab, upgrade button)
+// should keep using `org.plan` plus a separate payment-failure notice
+// instead of this — silently showing "Basis" here reads as an unannounced
+// downgrade, not a payment problem to fix. See eventwulf-security-notion.md.
+export function effectivePlan(org: { plan?: string | null; subscriptionStatus?: string | null } | null | undefined): Plan {
+  const plan = isPlan(org?.plan) ? org.plan : "basis";
+  if (org?.subscriptionStatus && PAYMENT_FAILURE_STATUSES.has(org.subscriptionStatus)) return "basis";
+  return plan;
+}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
-import { locationLimitFor, isPlan, PLAN_LABELS } from "@/lib/plan";
+import { locationLimitFor, effectivePlan, PLAN_LABELS } from "@/lib/plan";
 
 const SUPERADMIN = process.env.SUPERADMIN_SLUG ?? "admin";
 
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const existing = await prisma.client.findUnique({ where: { slug } });
   if (existing) return NextResponse.json({ error: "Slug bereits vergeben" }, { status: 400 });
 
-  const org = await prisma.organization.findUnique({ where: { id }, select: { plan: true } });
-  const plan = isPlan(org?.plan) ? org.plan : "basis";
+  const org = await prisma.organization.findUnique({ where: { id }, select: { plan: true, subscriptionStatus: true } });
+  const plan = effectivePlan(org);
   const limit = locationLimitFor(plan);
   if (limit !== null) {
     const count = await prisma.client.count({ where: { organizationId: id } });

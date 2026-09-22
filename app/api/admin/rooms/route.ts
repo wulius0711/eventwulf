@@ -3,7 +3,7 @@ import sanitizeHtml from "sanitize-html";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseRoomImage } from "@/lib/bunny";
-import { hasFeature, isPlan, minPlanFor, roomLimitFor, PLAN_LABELS, type Plan } from "@/lib/plan";
+import { hasFeature, effectivePlan, minPlanFor, roomLimitFor, PLAN_LABELS, type Plan } from "@/lib/plan";
 
 function sanitizeDescription(html: string): string {
   return sanitizeHtml(html, {
@@ -39,8 +39,8 @@ async function requireRoomsAccess(): Promise<
   const client = await prisma.client.findUnique({ where: { slug: session.clientSlug }, select: { id: true } });
   if (!client) return { ok: false, status: 404, error: "Client nicht gefunden" };
 
-  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true } });
-  const plan = isPlan(org?.plan) ? org.plan : "basis";
+  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true } });
+  const plan = effectivePlan(org);
   if (!hasFeature(plan, "rooms")) return { ok: false, status: 403, error: LOCKED_MESSAGE };
 
   return { ok: true, clientId: client.id, plan };

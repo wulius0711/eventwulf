@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { loadConfigFromDB } from "@/lib/loadConfig";
-import { isPlan } from "@/lib/plan";
+import { effectivePlan } from "@/lib/plan";
 import ElementeTabs from "@/components/admin/ElementeTabs";
 
 export default async function ElementePage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
@@ -17,8 +17,12 @@ export default async function ElementePage({ searchParams }: { searchParams: Pro
 
   const SUPERADMIN = process.env.SUPERADMIN_SLUG ?? "admin";
   const isSuperAdmin = session.clientSlug === SUPERADMIN;
-  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true } });
-  const plan = isSuperAdmin ? null : (isPlan(org?.plan) ? org.plan : "basis");
+  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true } });
+  // effectivePlan(), not org.plan directly: this feeds FormularEditor's
+  // "locked" gating for Pro+ form fields (e.g. the room picker), which is
+  // the only thing preventing a Basis-effective org from using them today —
+  // app/api/admin/config/route.ts doesn't re-check hasFeature() on save.
+  const plan = isSuperAdmin ? null : effectivePlan(org);
 
   return (
     <div>

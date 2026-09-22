@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { findUnavailableRoomIds } from "@/lib/roomAvailability";
 import { isValidDate } from "@/lib/validate";
-import { hasFeature, isPlan } from "@/lib/plan";
+import { hasFeature, effectivePlan } from "@/lib/plan";
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug");
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     where: { slug },
     select: {
       id: true,
-      organization: { select: { plan: true } },
+      organization: { select: { plan: true, subscriptionStatus: true } },
       rooms: {
         where: { isActive: true },
         orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
   // Rooms are a Pro+ feature — see app/page.tsx for the matching gate on the
   // initial server-rendered list.
-  const orgPlan = isPlan(client.organization?.plan) ? client.organization.plan : "basis";
+  const orgPlan = effectivePlan(client.organization);
   const rooms = hasFeature(orgPlan, "rooms") ? client.rooms : [];
 
   // Optional: annotate each room with whether it's free for a given date range, so

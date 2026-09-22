@@ -5,7 +5,7 @@ import { Resend } from "resend";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isValidEmail, sanitizeEmailHeader } from "@/lib/validate";
-import { isPlan, teamLimitFor, PLAN_LABELS } from "@/lib/plan";
+import { effectivePlan, teamLimitFor, PLAN_LABELS } from "@/lib/plan";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -29,7 +29,7 @@ export async function GET() {
   });
   if (!org) return NextResponse.json({ error: "Organisation nicht gefunden" }, { status: 404 });
 
-  const plan = isPlan(org.plan) ? org.plan : "basis";
+  const plan = effectivePlan(org);
   return NextResponse.json({ members: org.users.map((u) => serialize(u, session.userId)), limit: teamLimitFor(plan), plan });
 }
 
@@ -45,11 +45,11 @@ export async function POST(req: NextRequest) {
 
   const org = await prisma.organization.findUnique({
     where: { id: session.organizationId },
-    select: { plan: true, name: true, _count: { select: { users: true } } },
+    select: { plan: true, subscriptionStatus: true, name: true, _count: { select: { users: true } } },
   });
   if (!org) return NextResponse.json({ error: "Organisation nicht gefunden" }, { status: 404 });
 
-  const plan = isPlan(org.plan) ? org.plan : "basis";
+  const plan = effectivePlan(org);
   const limit = teamLimitFor(plan);
   if (limit !== null && org._count.users >= limit) {
     return NextResponse.json({ error: `Maximal ${limit} Team-Mitglied(er) im ${PLAN_LABELS[plan]}-Paket. Für mehr Mitglieder upgraden.` }, { status: 400 });

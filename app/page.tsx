@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import { buildThemeVars, DEFAULT_PRIMARY_COLOR } from "@/lib/theme";
 import { isSafeCssColor } from "@/lib/validate";
-import { hasFeature, isPlan } from "@/lib/plan";
+import { hasFeature, effectivePlan } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import Wizard from "@/components/Wizard";
 import IframeResizer from "@/components/IframeResizer";
@@ -34,7 +34,7 @@ export default async function Home({ searchParams }: Props) {
     select: {
       id: true,
       isDemo: true,
-      organization: { select: { plan: true } },
+      organization: { select: { plan: true, subscriptionStatus: true } },
       rooms: {
         where: { isActive: true },
         orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -45,7 +45,7 @@ export default async function Home({ searchParams }: Props) {
   // Rooms are a Pro+ feature — a downgraded-to-Basis org keeps its existing
   // room rows (so re-upgrading restores them instantly), but guests should
   // no longer see or book them while on a plan that doesn't include Rooms.
-  const orgPlan = isPlan(client?.organization?.plan) ? client.organization.plan : "basis";
+  const orgPlan = effectivePlan(client?.organization);
   const roomsFeatureEnabled = hasFeature(orgPlan, "rooms");
   const initialRooms = roomsFeatureEnabled ? (client?.rooms ?? []) : [];
   const hasRooms = initialRooms.length > 0;
