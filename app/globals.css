@@ -685,12 +685,14 @@ button:active:not(:disabled) {
    Respektiert prefers-reduced-motion automatisch, indem die Regel dort
    erst gar nicht aktiv wird.
 
-   Sidebar bekommt einen eigenen view-transition-name und bleibt unanimiert:
-   sonst überblendet der Browser den GESAMTEN Viewport als ein Bild – die
-   Sidebar sieht auf Alt- und Neu-Zustand identisch aus, "überblendet" also
-   sichtbar mit sich selbst = keine erkennbare Bewegung. Nur der Hauptbereich
-   bekommt das eigentliche Fade+Slide, dort findet die Seite ja tatsächlich
-   statt. */
+   Sidebar bekommt einen eigenen view-transition-name, damit sie nicht mit
+   dem Hauptbereich in einem Bild überblendet wird (sonst "überblendet" sie
+   sichtbar mit sich selbst = keine erkennbare Bewegung, nur der Hauptbereich
+   soll das Fade+Slide bekommen). Trotzdem NICHT animation:none: der aktive
+   Nav-Punkt wechselt ja von Link zu Link – ohne jede Überblendung wäre das
+   ein harter Sprung ("Aufblitzen"). Eine sehr kurze Eigen-Überblendung macht
+   diesen Wechsel weich, ohne dass die sonst identische Sidebar sichtbar
+   "huscht". */
 @media (prefers-reduced-motion: no-preference) {
   @view-transition { navigation: auto; }
 
@@ -698,7 +700,7 @@ button:active:not(:disabled) {
   .ew-shell-main { view-transition-name: ew-main; }
 
   ::view-transition-old(ew-sidebar), ::view-transition-new(ew-sidebar) {
-    animation: none;
+    animation: 110ms ease-in-out both;
   }
 
   ::view-transition-old(ew-main) {
