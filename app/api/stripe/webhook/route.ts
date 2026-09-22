@@ -8,6 +8,7 @@ import { loadConfig } from "@/lib/loadConfig";
 import { stripe, subscriptionSync } from "@/lib/stripe";
 import { disputeClosedResult } from "@/lib/plan";
 import { welcomeEmailHtml } from "@/lib/emailTemplates";
+import { recordSignupCardFingerprint } from "@/lib/trialAbuse";
 import { resolveBaseUrl } from "@/app/api/submit/route";
 
 // Matches the team-invite TTL (app/api/admin/team/route.ts) — well within
@@ -57,6 +58,41 @@ export async function POST(req: NextRequest) {
       // Idempotency guard — Stripe can redeliver the same event.
       const existingUser = await prisma.user.findUnique({ where: { email } });
       if (existingUser) break;
+
+      // Trial-abuse guard (business-risk finding): the same card, reused
+      // across throwaway emails, otherwise gets an unlimited number of free
+      // 14-day trials. The trial itself can't be prevented up front — it's
+      // set on the Checkout Session before the card is even known — so this
+      // reacts after the fact instead: recordSignupCardFingerprint()
+      // (lib/trialAbuse.ts) is the actual, DB-only reuse check; if the card
+      // was already used, the trial is ended immediately below rather than
+      // blocking this signup outright.
+      let cardFingerprintReused = false;
+      if (typeof checkoutSession.subscription === "string") {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(checkoutSession.subscription, { expand: ["default_payment_method"] });
+          const paymentMethod = subscription.default_payment_method;
+          const fingerprint = paymentMethod && typeof paymentMethod !== "string" ? paymentMethod.card?.fingerprint : undefined;
+          if (fingerprint) {
+            cardFingerprintReused = (await recordSignupCardFingerprint(fingerprint)).alreadyUsed;
+          }
+        } catch (e) {
+          // Fail OPEN, unlike the subscription-sync/dispute refetches
+          // elsewhere in this file (which return 500 so Stripe retries):
+          // this is a fraud-prevention safeguard on top of a real, already
+          // successful payment, not the core purpose of the handler. A
+          // transient Stripe hiccup here shouldn't block a real signup from
+          // completing.
+          console.error(`Failed to check card fingerprint for signup ${email}:`, e);
+        }
+      }
+      if (cardFingerprintReused) {
+        try {
+          await stripe.subscriptions.update(checkoutSession.subscription as string, { trial_end: "now" });
+        } catch (e) {
+          console.error(`Failed to end trial early for reused card fingerprint (signup ${email}):`, e);
+        }
+      }
 
       const slug = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + randomBytes(3).toString("hex");
       const defaultConfig = loadConfig("default");
