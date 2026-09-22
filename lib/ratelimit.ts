@@ -33,10 +33,23 @@ export async function rateLimit(key: string, maxRequests: number, windowMs: numb
   }
 }
 
+// Durchgang 1, Fund 6: empirically verified against a real Vercel deployment
+// (a temporary diagnostic route, sending fabricated X-Forwarded-For/X-Real-IP
+// values) — Vercel's edge overwrites all of these with the genuine client IP
+// before the app ever sees them; a client-supplied value is discarded, never
+// forwarded. So this isn't an active spoofing vector on the current
+// deployment. Two hardenings kept anyway, matching Vercel's own guidance:
+// x-vercel-forwarded-for first (per Vercel's docs, this is the one that
+// stays trustworthy even if something else proxies in front of Vercel
+// someday, whereas plain x-forwarded-for could then be overwritten again by
+// that new layer); and the LAST entry of a comma-separated list, not the
+// first, in case such a chain ever legitimately exists — the first entry is
+// the earliest (potentially client-supplied, least-trusted) hop, the last
+// is the one closest to us.
 export function getIp(req: Request): string {
-  return (
-    (req.headers as Headers).get("x-forwarded-for")?.split(",")[0].trim() ??
-    (req.headers as Headers).get("x-real-ip") ??
-    "unknown"
-  );
+  const headers = req.headers as Headers;
+  const raw = headers.get("x-vercel-forwarded-for") ?? headers.get("x-forwarded-for") ?? headers.get("x-real-ip");
+  if (!raw) return "unknown";
+  const parts = raw.split(",").map((p) => p.trim());
+  return parts[parts.length - 1] || "unknown";
 }
