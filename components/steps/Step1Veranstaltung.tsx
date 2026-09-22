@@ -18,6 +18,7 @@ const HOURS = Array.from({ length: 19 }, (_, i) => {
 function RoomPicker({ slug, config, initialRooms }: { slug: string; config: EventConfig; initialRooms?: RoomEntry[] }) {
   const { form, setField } = useFormStore();
   const [rooms, setRooms] = useState<RoomEntry[]>(initialRooms ?? []);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   // Server already provided the unfiltered room list for the no-dates-selected
   // case — skip re-fetching that exact same thing on mount (it caused a second,
   // late layout shift as the iframe embed resized again right after the user's
@@ -54,12 +55,22 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
         {rooms.map((room) => {
           const selected = form.roomId === room.id;
           const unavailable = room.available === false;
+          const descExpanded = expandedId === room.id;
           return (
-            <button
+            <div
               key={room.id}
-              type="button"
+              role="button"
+              tabIndex={unavailable ? -1 : 0}
+              aria-disabled={unavailable}
+              aria-pressed={selected}
               onClick={() => select(room)}
-              disabled={unavailable}
+              onKeyDown={(e) => {
+                if (unavailable) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  select(room);
+                }
+              }}
               title={unavailable ? "Für den gewählten Zeitraum nicht verfügbar" : undefined}
               style={{
                 textAlign: "left", padding: 0, overflow: "hidden",
@@ -80,11 +91,39 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
                 {room.capacity != null && (
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>bis {room.capacity} Personen</div>
                 )}
+                {room.description && (
+                  <div style={{ marginTop: "0.25rem" }}>
+                    <div
+                      className="ew-desc"
+                      style={{
+                        fontSize: "0.75rem", color: "var(--muted)", lineHeight: 1.4,
+                        display: descExpanded ? "block" : "-webkit-box",
+                        WebkitLineClamp: descExpanded ? "unset" : 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: descExpanded ? "visible" : "hidden",
+                      }}
+                      dangerouslySetInnerHTML={{ __html: room.description }}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedId((prev) => (prev === room.id ? null : room.id));
+                      }}
+                      style={{
+                        marginTop: "0.15rem", background: "none", border: "none", padding: 0,
+                        color: "var(--primary-text)", fontWeight: 600, fontSize: "0.72rem", cursor: "pointer",
+                      }}
+                    >
+                      {descExpanded ? "▾ Weniger anzeigen" : "▸ Mehr anzeigen"}
+                    </button>
+                  </div>
+                )}
                 {unavailable && (
                   <div style={{ fontSize: "0.72rem", color: "var(--error)", marginTop: "0.15rem" }}>Nicht verfügbar</div>
                 )}
               </div>
-            </button>
+            </div>
           );
         })}
       </div>
