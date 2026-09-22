@@ -11,6 +11,15 @@ import { resolveBaseUrl } from "@/app/api/submit/route";
 // account — so the form can't be used to find out who is registered.
 const GENERIC_OK = { ok: true };
 
+// Two branches below answer immediately with no DB write / no outbound mail
+// call, while the "account found" branch does both — an attacker could tell
+// the two apart purely by response time. This isn't a measurement of that
+// real cost, just a fixed approximation of it (a Resend round trip is
+// typically in this range); combined with the rate limits above it's enough
+// to defeat casual timing analysis without slowing down the real case.
+const NO_SEND_DELAY_MS = 300;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(`forgot:${getIp(req)}`, 5, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Zu viele Versuche. Bitte warte 15 Minuten." }, { status: 429 });
@@ -21,10 +30,16 @@ export async function POST(req: NextRequest) {
   if (!isValidEmail(email)) return NextResponse.json({ error: "E-Mail ungültig" }, { status: 400 });
 
   // One mail per address and hour at most — stops the form being used to spam someone.
-  if (!(await rateLimit(`forgot-mail:${email}`, 3, 60 * 60 * 1000))) return NextResponse.json(GENERIC_OK);
+  if (!(await rateLimit(`forgot-mail:${email}`, 3, 60 * 60 * 1000))) {
+    await delay(NO_SEND_DELAY_MS);
+    return NextResponse.json(GENERIC_OK);
+  }
 
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true, organizationId: true } });
-  if (!user?.organizationId) return NextResponse.json(GENERIC_OK);
+  if (!user?.organizationId) {
+    await delay(NO_SEND_DELAY_MS);
+    return NextResponse.json(GENERIC_OK);
+  }
 
   const token = randomBytes(32).toString("hex");
   await prisma.user.update({
