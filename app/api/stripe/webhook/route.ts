@@ -15,6 +15,15 @@ import { resolveBaseUrl } from "@/app/api/submit/route";
 // the 14-day trial, so a new signup always has time to set a password.
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
+// Thrown by any of the Stripe refetch/lookup calls below on failure — a
+// single mechanism for every error path in handleEvent (this one and any
+// unanticipated one, e.g. a Prisma error) so there's exactly one place
+// (the outer catch in POST) that decides the HTTP response, instead of a
+// second, parallel "return a NextResponse directly from a branch" path
+// that a future refactor could silently stop propagating (as happened once
+// already while building this — see the commit message).
+class StripeRefetchError extends Error {}
+
 // Stripe needs the raw body to verify the webhook signature — Next.js route
 // handlers don't parse bodies automatically, so req.text() below already
 // gives us the untouched payload.
@@ -33,6 +42,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ungültige Signatur" }, { status: 400 });
   }
 
+  try {
+    await handleEvent(event, req);
+  } catch (e) {
+    // One catch for every error path in handleEvent: a known
+    // StripeRefetchError (subscription refetch, dispute charge lookup) gets
+    // its specific message; anything else (e.g. an unanticipated Prisma
+    // error) gets a generic one. Either way: log with the event id/type for
+    // debugging, then 500 so Stripe retries via its own mechanism (up to 3
+    // days, exponential backoff) instead of the delivery being silently
+    // lost to whatever generic response Next.js would otherwise produce
+    // for an uncaught exception in a route handler.
+    console.error(`Error processing Stripe event ${event.id} (${event.type}):`, e);
+    const message = e instanceof StripeRefetchError ? e.message : "Interner Fehler bei der Verarbeitung";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+
+  return NextResponse.json({ received: true });
+}
+
+async function handleEvent(event: Stripe.Event, req: NextRequest): Promise<void> {
   switch (event.type) {
     case "checkout.session.completed": {
       const checkoutSession = event.data.object as Stripe.Checkout.Session;
@@ -170,13 +199,11 @@ export async function POST(req: NextRequest) {
         subscription = await stripe.subscriptions.retrieve(eventSubscription.id);
       } catch (e) {
         console.error(`Failed to refetch subscription ${eventSubscription.id}:`, e);
-        // 500 so Stripe retries this delivery on its own schedule — using
-        // Stripe's own retry mechanism as the safety net for a transient
-        // API hiccup here, rather than silently skipping the sync. This
-        // endpoint's broader top-level error handling is a separate,
-        // already-tracked fix (see eventwulf-security-notion.md) —
-        // deliberately not folded in here.
-        return NextResponse.json({ error: "Stripe-Abfrage fehlgeschlagen" }, { status: 500 });
+        // The outer catch in POST turns this into a 500, so Stripe retries
+        // this delivery on its own schedule — using Stripe's own retry
+        // mechanism as the safety net for a transient API hiccup here,
+        // rather than silently skipping the sync.
+        throw new StripeRefetchError("Stripe-Abfrage fehlgeschlagen");
       }
 
       // subscriptionSync (lib/stripe.ts) is the actual "who wins" mapping —
@@ -209,7 +236,7 @@ export async function POST(req: NextRequest) {
         charge = await stripe.charges.retrieve(dispute.charge);
       } catch (e) {
         console.error(`Failed to look up charge ${dispute.charge} for dispute ${dispute.id}:`, e);
-        return NextResponse.json({ error: "Stripe-Abfrage fehlgeschlagen" }, { status: 500 });
+        throw new StripeRefetchError("Stripe-Abfrage fehlgeschlagen");
       }
       if (typeof charge.customer !== "string") break;
 
@@ -235,7 +262,7 @@ export async function POST(req: NextRequest) {
         charge = await stripe.charges.retrieve(dispute.charge);
       } catch (e) {
         console.error(`Failed to look up charge ${dispute.charge} for dispute ${dispute.id}:`, e);
-        return NextResponse.json({ error: "Stripe-Abfrage fehlgeschlagen" }, { status: 500 });
+        throw new StripeRefetchError("Stripe-Abfrage fehlgeschlagen");
       }
       if (typeof charge.customer !== "string") break;
 
@@ -255,6 +282,4 @@ export async function POST(req: NextRequest) {
       break;
     }
   }
-
-  return NextResponse.json({ received: true });
 }
