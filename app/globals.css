@@ -703,19 +703,13 @@ button:active:not(:disabled) {
     animation-duration: 110ms;
   }
 
-  ::view-transition-old(ew-main) {
-    animation: 160ms ease-in both ew-vt-out;
+  /* Reines Opacity-Fade, keine Bewegung (kein translateY): eine Verschiebung
+     von echtem Text während der Animation kann je nach Display/GPU unruhig
+     ("zittrig") wirken, ein reiner Alpha-Übergang kann das grundsätzlich
+     nicht. */
+  ::view-transition-old(ew-main), ::view-transition-new(ew-main) {
+    animation-duration: 180ms;
   }
-  ::view-transition-new(ew-main) {
-    animation: 220ms ease-out both ew-vt-in;
-  }
-}
-
-@keyframes ew-vt-out {
-  to { opacity: 0; transform: translateY(-8px); }
-}
-@keyframes ew-vt-in {
-  from { opacity: 0; transform: translateY(8px); }
 }
 
 
