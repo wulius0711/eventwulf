@@ -112,9 +112,39 @@ export async function proxy(request: NextRequest) {
   // compression to the client as needed.
   responseHeaders.delete("content-encoding");
   responseHeaders.delete("content-length");
+  // Open-redirect allowlist: `location` comes straight from Framer's
+  // response, unvalidated. The previous version only rewrote it when it
+  // *contained* FRAMER_HOST as a substring, and left everything else
+  // (including any redirect to a completely unrelated third-party domain)
+  // to pass through to the client untouched — eventwulf.at would then
+  // issue a 30x to whatever URL Framer's response happened to carry, a
+  // classic open redirect. The substring check was also exploitable on its
+  // own terms: "https://eventwulf.framer.website.evil.com/..." contains
+  // FRAMER_HOST too, and a naive .replace() on that would only swap the
+  // prefix, still landing on evil.com. Resolving into a real URL and
+  // comparing actual hostnames (not substrings) closes both: FRAMER_HOST
+  // is rewritten to the real host (unchanged intent), an already-correct
+  // same-origin target is left as-is, and anything else is dropped
+  // entirely — fail-safe, no redirect rather than an unvalidated one.
+  // Deliberately only these two hosts, not a wider allowlist: if Framer
+  // ever legitimately needs to redirect somewhere else (its own CDN, say),
+  // that becomes visible as a broken redirect rather than a silently
+  // trusted new destination — see the maintainability backlog for the
+  // matching reasoning on the config-route and Rooms-gate fixes.
   const location = responseHeaders.get("location");
-  if (location?.includes(FRAMER_HOST)) {
-    responseHeaders.set("location", location.replace(FRAMER_HOST, host));
+  if (location) {
+    let resolved: URL | null = null;
+    try {
+      resolved = new URL(location, upstreamUrl);
+    } catch {
+      resolved = null;
+    }
+    if (resolved?.host === FRAMER_HOST) {
+      resolved.host = host;
+      responseHeaders.set("location", resolved.toString());
+    } else if (resolved?.host !== host) {
+      responseHeaders.delete("location");
+    }
   }
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     responseHeaders.set(key, value);
