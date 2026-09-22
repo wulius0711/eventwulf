@@ -17,7 +17,7 @@ export default async function ElementePage({ searchParams }: { searchParams: Pro
 
   const SUPERADMIN = process.env.SUPERADMIN_SLUG ?? "admin";
   const isSuperAdmin = session.clientSlug === SUPERADMIN;
-  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true } });
+  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true } });
   // effectivePlan(), not org.plan directly: this feeds FormularEditor's
   // "locked" gating for Pro+ form fields (e.g. the room picker), which is
   // the only thing preventing a Basis-effective org from using them today —

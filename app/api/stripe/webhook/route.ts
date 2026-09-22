@@ -6,6 +6,7 @@ import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
 import { stripe, subscriptionSync } from "@/lib/stripe";
+import { disputeClosedResult } from "@/lib/plan";
 import { welcomeEmailHtml } from "@/lib/emailTemplates";
 import { resolveBaseUrl } from "@/app/api/submit/route";
 
@@ -156,6 +157,64 @@ export async function POST(req: NextRequest) {
           subscriptionStatus,
           ...(plan ? { plan } : {}),
         },
+      });
+      break;
+    }
+
+    case "charge.dispute.created": {
+      const dispute = event.data.object as Stripe.Dispute;
+      if (typeof dispute.charge !== "string") break;
+
+      // The Dispute object has no direct customer reference — only a charge
+      // id — so resolving the org needs one extra lookup, same pattern (and
+      // same live-key testing caveat) as the subscription refetch above.
+      let charge: Stripe.Charge;
+      try {
+        charge = await stripe.charges.retrieve(dispute.charge);
+      } catch (e) {
+        console.error(`Failed to look up charge ${dispute.charge} for dispute ${dispute.id}:`, e);
+        return NextResponse.json({ error: "Stripe-Abfrage fehlgeschlagen" }, { status: 500 });
+      }
+      if (typeof charge.customer !== "string") break;
+
+      const org = await prisma.organization.findUnique({ where: { stripeCustomerId: charge.customer } });
+      if (!org) break;
+
+      // Admin-visibility marker only — deliberately no effect on
+      // effectivePlan()/access here (product decision: don't lock anyone out
+      // just because a dispute was opened, only once one is actually lost).
+      await prisma.organization.update({
+        where: { id: org.id },
+        data: { disputeOpenedAt: new Date(dispute.created * 1000) },
+      });
+      break;
+    }
+
+    case "charge.dispute.closed": {
+      const dispute = event.data.object as Stripe.Dispute;
+      if (typeof dispute.charge !== "string") break;
+
+      let charge: Stripe.Charge;
+      try {
+        charge = await stripe.charges.retrieve(dispute.charge);
+      } catch (e) {
+        console.error(`Failed to look up charge ${dispute.charge} for dispute ${dispute.id}:`, e);
+        return NextResponse.json({ error: "Stripe-Abfrage fehlgeschlagen" }, { status: 500 });
+      }
+      if (typeof charge.customer !== "string") break;
+
+      const org = await prisma.organization.findUnique({ where: { stripeCustomerId: charge.customer } });
+      if (!org) break;
+
+      // disputeClosedResult (lib/plan.ts) is the actual won/lost decision —
+      // pulled out as its own pure function for the same reason as
+      // subscriptionSync above.
+      const { lost } = disputeClosedResult(dispute.status);
+      await prisma.organization.update({
+        where: { id: org.id },
+        data: lost
+          ? { disputeOpenedAt: null, disputeLostAt: new Date() } // effectivePlan() now forces Basis until manually resolved
+          : { disputeOpenedAt: null }, // won (or an inquiry that never became a real dispute) — no effect on access
       });
       break;
     }

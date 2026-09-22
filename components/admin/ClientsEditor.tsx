@@ -8,6 +8,8 @@ interface OrgEntry {
   createdAt: string;
   plan: Plan;
   locationLimit: number | null;
+  disputeOpenedAt: string | null;
+  disputeLostAt: string | null;
   clients: { id: string; slug: string; createdAt: string; isActive: boolean }[];
   users: { email: string }[];
 }
@@ -53,6 +55,7 @@ export default function ClientsEditor({ superadminSlug }: Props) {
     if (res.ok) {
       setOrgs((prev) => [...prev, {
         id: data.id, name: slug, createdAt: new Date().toISOString(), plan: "basis", locationLimit: 1,
+        disputeOpenedAt: null, disputeLostAt: null,
         clients: [{ id: "", slug, createdAt: new Date().toISOString(), isActive: true }],
         users: [{ email }],
       }]);
@@ -230,6 +233,22 @@ export default function ClientsEditor({ superadminSlug }: Props) {
                 <div style={{ padding: "0.75rem 1rem", background: "var(--bg2)", display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>{org.name}</span>
                   <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{org.users[0]?.email}</span>
+                  {org.disputeLostAt && (
+                    <span
+                      style={{ fontSize: "0.72rem", padding: "0.15rem 0.5rem", borderRadius: "999px", background: "var(--error)", color: "#fff" }}
+                      title={`Zugriff gesperrt seit verlorenem Dispute am ${new Date(org.disputeLostAt).toLocaleDateString("de-AT")}`}
+                    >
+                      Dispute verloren — gesperrt
+                    </span>
+                  )}
+                  {!org.disputeLostAt && org.disputeOpenedAt && (
+                    <span
+                      style={{ fontSize: "0.72rem", padding: "0.15rem 0.5rem", borderRadius: "999px", background: "var(--surface)", border: "1px solid var(--primary)", color: "var(--text)" }}
+                      title={`Noch kein Effekt auf den Zugriff — erst bei verlorenem Dispute`}
+                    >
+                      Offener Dispute seit {new Date(org.disputeOpenedAt).toLocaleDateString("de-AT")}
+                    </span>
+                  )}
                   {!isSuperadminOrg && (
                     <>
                       <select

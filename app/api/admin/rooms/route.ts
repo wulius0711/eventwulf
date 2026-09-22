@@ -39,7 +39,7 @@ async function requireRoomsAccess(): Promise<
   const client = await prisma.client.findUnique({ where: { slug: session.clientSlug }, select: { id: true } });
   if (!client) return { ok: false, status: 404, error: "Client nicht gefunden" };
 
-  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true } });
+  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true } });
   const plan = effectivePlan(org);
   if (!hasFeature(plan, "rooms")) return { ok: false, status: 403, error: LOCKED_MESSAGE };
 

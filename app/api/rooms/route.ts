@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     where: { slug },
     select: {
       id: true,
-      organization: { select: { plan: true, subscriptionStatus: true } },
+      organization: { select: { plan: true, subscriptionStatus: true, disputeLostAt: true } },
       rooms: {
         where: { isActive: true },
         orderBy: [{ sortOrder: "asc" }, { name: "asc" }],

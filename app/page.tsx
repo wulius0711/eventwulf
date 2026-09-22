@@ -34,7 +34,7 @@ export default async function Home({ searchParams }: Props) {
     select: {
       id: true,
       isDemo: true,
-      organization: { select: { plan: true, subscriptionStatus: true } },
+      organization: { select: { plan: true, subscriptionStatus: true, disputeLostAt: true } },
       rooms: {
         where: { isActive: true },
         orderBy: [{ sortOrder: "asc" }, { name: "asc" }],

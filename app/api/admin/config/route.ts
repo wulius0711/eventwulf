@@ -36,7 +36,7 @@ export async function PUT(req: NextRequest) {
   // the only thing that would still protect a future formFields-gated
   // feature that isn't backed by its own independent data-level check.
   if (body.formFields) {
-    const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true } });
+    const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true } });
     // Only actually rewrite (and log) when the incoming value would have
     // been effectively "enabled" — Wizard/RoomPicker treat anything other
     // than a literal `false` as enabled, so this only fires when there's a

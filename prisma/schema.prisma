@@ -20,6 +20,17 @@ model Organization {
   stripeCustomerId     String? @unique
   stripeSubscriptionId String? @unique
   subscriptionStatus   String? // Stripe subscription status, e.g. "active" | "past_due" | "canceled" — null if never subscribed
+
+  // Chargeback tracking (see app/api/stripe/webhook/route.ts). Set on
+  // charge.dispute.created, cleared on charge.dispute.closed regardless of
+  // outcome — purely an admin-visibility marker ("offener Dispute"), no
+  // effect on effectivePlan()/access.
+  disputeOpenedAt DateTime?
+  // Set on charge.dispute.closed only when the dispute was lost (never
+  // cleared automatically — a lost chargeback has no natural "undo" in
+  // Stripe). effectivePlan() (lib/plan.ts) treats this like past_due/unpaid:
+  // an effective-but-not-persisted downgrade to Basis.
+  disputeLostAt   DateTime?
 }
 
 model Client {

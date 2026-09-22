@@ -89,8 +89,32 @@ const PAYMENT_FAILURE_STATUSES = new Set(["past_due", "unpaid", "incomplete", "i
 // should keep using `org.plan` plus a separate payment-failure notice
 // instead of this — silently showing "Basis" here reads as an unannounced
 // downgrade, not a payment problem to fix. See eventwulf-security-notion.md.
-export function effectivePlan(org: { plan?: string | null; subscriptionStatus?: string | null } | null | undefined): Plan {
+//
+// disputeLostAt (see app/api/stripe/webhook/route.ts's charge.dispute.closed
+// handling) is the same kind of effective-but-not-persisted downgrade,
+// triggered by a lost chargeback instead of a failed payment — deliberately
+// reusing this one mechanism rather than a second, separate access-revoking
+// path. Unlike the payment-failure statuses, it's never cleared
+// automatically: a lost dispute has no natural "undo" in Stripe.
+export function effectivePlan(
+  org: { plan?: string | null; subscriptionStatus?: string | null; disputeLostAt?: Date | string | null } | null | undefined
+): Plan {
   const plan = isPlan(org?.plan) ? org.plan : "basis";
+  if (org?.disputeLostAt) return "basis";
   if (org?.subscriptionStatus && PAYMENT_FAILURE_STATUSES.has(org.subscriptionStatus)) return "basis";
   return plan;
+}
+
+// Stripe's Dispute.status enum (verified against
+// https://docs.stripe.com/api/disputes/object): "lost" is the only value
+// meaning the dispute was resolved against us — "won", "warning_closed"
+// (an inquiry that never became a formal chargeback), and the (currently
+// undocumented-in-practice-here) "prevented" all mean no money was actually
+// lost, so they're treated the same as a win. Pulled out as its own pure
+// function — the interesting decision in the charge.dispute.closed handler,
+// unit-testable without a live Stripe API call (see the webhook's own
+// stripe.charges.retrieve() call, which isn't automated-test-covered for
+// the same live-key reason as stripe.subscriptions.retrieve() in Phase 5).
+export function disputeClosedResult(status: string): { lost: boolean } {
+  return { lost: status === "lost" };
 }

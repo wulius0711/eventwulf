@@ -22,7 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const existing = await prisma.client.findUnique({ where: { slug } });
   if (existing) return NextResponse.json({ error: "Slug bereits vergeben" }, { status: 400 });
 
-  const org = await prisma.organization.findUnique({ where: { id }, select: { plan: true, subscriptionStatus: true } });
+  const org = await prisma.organization.findUnique({ where: { id }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true } });
   const plan = effectivePlan(org);
   const limit = locationLimitFor(plan);
   const defaultConfig = loadConfig("default");
@@ -84,7 +84,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // as POST above — mirrors the identical guard in
   // app/api/admin/rooms/route.ts and app/api/admin/events/route.ts.
   const isReactivating = isActive === true && !existing.isActive;
-  const org = isReactivating ? await prisma.organization.findUnique({ where: { id }, select: { plan: true, subscriptionStatus: true } }) : null;
+  const org = isReactivating ? await prisma.organization.findUnique({ where: { id }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true } }) : null;
   const plan = org ? effectivePlan(org) : null;
   const limit = plan ? locationLimitFor(plan) : null;
 

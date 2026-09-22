@@ -48,7 +48,7 @@ async function getClientId(slug: string) {
 }
 
 async function getOrgPlan(organizationId: string) {
-  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { plan: true, subscriptionStatus: true } });
+  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true } });
   return effectivePlan(org);
 }
 
