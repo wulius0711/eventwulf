@@ -7,7 +7,8 @@ interface OrgEntry {
   name: string;
   createdAt: string;
   plan: Plan;
-  clients: { id: string; slug: string; createdAt: string }[];
+  locationLimit: number | null;
+  clients: { id: string; slug: string; createdAt: string; isActive: boolean }[];
   users: { email: string }[];
 }
 
@@ -51,8 +52,8 @@ export default function ClientsEditor({ superadminSlug }: Props) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       setOrgs((prev) => [...prev, {
-        id: data.id, name: slug, createdAt: new Date().toISOString(), plan: "basis",
-        clients: [{ id: "", slug, createdAt: new Date().toISOString() }],
+        id: data.id, name: slug, createdAt: new Date().toISOString(), plan: "basis", locationLimit: 1,
+        clients: [{ id: "", slug, createdAt: new Date().toISOString(), isActive: true }],
         users: [{ email }],
       }]);
       setSlug(""); setEmail(""); setPassword("");
@@ -73,7 +74,7 @@ export default function ClientsEditor({ superadminSlug }: Props) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       setOrgs((prev) => prev.map((o) => o.id === orgId
-        ? { ...o, clients: [...o.clients, { id: "", slug: newSlug, createdAt: new Date().toISOString() }] }
+        ? { ...o, clients: [...o.clients, { id: "", slug: newSlug, createdAt: new Date().toISOString(), isActive: true }] }
         : o
       ));
       setNewSlug(""); setAddSlugOrgId(null);
@@ -108,6 +109,25 @@ export default function ClientsEditor({ superadminSlug }: Props) {
       body: JSON.stringify({ id: orgId, plan }),
     });
     if (!res.ok) setOrgs(prev); // revert on failure
+  }
+
+  async function handleToggleActive(orgId: string, slug: string, isActive: boolean) {
+    setDeleteError("");
+    const prev = orgs;
+    setOrgs((p) => p.map((o) => o.id === orgId
+      ? { ...o, clients: o.clients.map((c) => c.slug === slug ? { ...c, isActive } : c) }
+      : o
+    ));
+    const res = await fetch(`/api/admin/orgs/${orgId}/clients`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug, isActive }),
+    });
+    if (!res.ok) {
+      setOrgs(prev); // revert on failure (e.g. reactivation blocked by the plan limit)
+      const data = await res.json().catch(() => ({}));
+      setDeleteError(data.error ?? "Fehler");
+    }
   }
 
   async function handleDeleteSlug(orgId: string, slug: string) {
@@ -227,16 +247,33 @@ export default function ClientsEditor({ superadminSlug }: Props) {
                     </>
                   )}
                 </div>
+                {!isSuperadminOrg && org.locationLimit !== null && (
+                  <div style={{ padding: "0.4rem 1rem 0", fontSize: "0.78rem", color: "var(--muted)" }}>
+                    {org.clients.filter((c) => c.isActive).length} von {org.locationLimit} Standort(en) aktiv ({PLAN_LABELS[org.plan]}-Paket)
+                    {org.clients.filter((c) => c.isActive).length > org.locationLimit && " — mehr als das gebuchte Paket erlaubt, z.B. nach einem Paket-Wechsel"}
+                  </div>
+                )}
                 <div style={{ padding: "0.5rem 1rem", display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
                   {org.clients.map((c) => (
-                    <div key={c.slug} style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "var(--bg2)", borderRadius: "999px", padding: "0.2rem 0.4rem 0.2rem 0.5rem" }}>
+                    <div key={c.slug} style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "var(--bg2)", borderRadius: "999px", padding: "0.2rem 0.4rem 0.2rem 0.5rem", opacity: c.isActive ? 1 : 0.55 }}>
                       <code style={{ fontSize: "0.82rem" }}>{c.slug}</code>
+                      {!c.isActive && <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>(inaktiv)</span>}
                       <a href={`/?kunde=${c.slug}`} target="_blank" style={{ fontSize: "0.72rem", color: "var(--primary)", textDecoration: "none" }}>↗</a>
+                      {c.slug !== superadminSlug && (
+                        <button
+                          type="button"
+                          style={{ border: "none", background: "none", color: "var(--muted)", cursor: "pointer", fontSize: "0.72rem", padding: "0 0.1rem" }}
+                          onClick={() => handleToggleActive(org.id, c.slug, !c.isActive)}
+                          title={c.isActive ? "Deaktivieren (reversibel, bringt Standort-Zähler ggf. wieder unters Paketlimit)" : "Reaktivieren (nur möglich, solange das Paketlimit nicht erreicht ist)"}
+                        >
+                          {c.isActive ? "Deaktivieren" : "Aktivieren"}
+                        </button>
+                      )}
                       {org.clients.length > 1 && c.slug !== superadminSlug && (
                         <button
                           style={{ border: "none", background: "none", color: "var(--error)", cursor: "pointer", fontSize: "0.85rem", lineHeight: 1, padding: "0 0.1rem" }}
                           onClick={() => { setDeleteSlugConfirm({ orgId: org.id, slug: c.slug }); setDeleteError(""); }}
-                          title="Slug löschen"
+                          title="Slug endgültig löschen (unwiderruflich — Deaktivieren ist die reversible Alternative)"
                         >×</button>
                       )}
                     </div>

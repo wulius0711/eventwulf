@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
 import { validateNewPassword } from "@/lib/passwordPolicy";
-import { isPlan } from "@/lib/plan";
+import { isPlan, effectivePlan, locationLimitFor } from "@/lib/plan";
 
 const SUPERADMIN = process.env.SUPERADMIN_SLUG ?? "admin";
 
@@ -16,13 +16,19 @@ export async function GET() {
 
   const orgs = await prisma.organization.findMany({
     include: {
-      clients: { select: { id: true, slug: true, createdAt: true }, orderBy: { createdAt: "asc" } },
+      clients: { select: { id: true, slug: true, createdAt: true, isActive: true }, orderBy: { createdAt: "asc" } },
       users: { select: { email: true } },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(orgs);
+  // locationLimit alongside each org so the UI can show a "X of Y" usage
+  // line and a heads-up when a downgrade left more active Standorte than
+  // the plan allows — mirrors the same pattern used for rooms/events (see
+  // app/api/admin/rooms/route.ts GET).
+  const withLimits = orgs.map((org) => ({ ...org, locationLimit: locationLimitFor(effectivePlan(org)) }));
+
+  return NextResponse.json(withLimits);
 }
 
 export async function PATCH(req: NextRequest) {

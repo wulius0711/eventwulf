@@ -98,6 +98,35 @@ export async function createTestClientWithAdmin(opts?: { slug?: string; notifyEm
   return { organization, client: organization.clients[0], user: organization.users[0], email, password: TEST_ADMIN_PASSWORD };
 }
 
+// The only way to get a superadmin session is a User whose login resolves
+// session.clientSlug === SUPERADMIN_SLUG — there's no separate role/flag
+// (see app/api/admin/orgs/[id]/clients/route.ts). That Client is real,
+// pre-existing seed data in the test DB (see
+// scripts/one-off/replace-test-superadmin-seed.mjs for the full story of
+// why), not something a test may create, claim, or delete. This adds one
+// disposable User row to that *existing* organization instead — login
+// resolves clientSlug from the org's first Client (app/api/admin/login),
+// so any user belonging to that org authenticates as the superadmin.
+export async function createSuperadminProbeUser() {
+  const slug = process.env.SUPERADMIN_SLUG ?? "admin";
+  const superadminClient = await prisma.client.findUnique({ where: { slug }, select: { organizationId: true } });
+  if (!superadminClient?.organizationId) {
+    throw new Error(`No existing Client with slug "${slug}" in the test DB — see scripts/one-off/replace-test-superadmin-seed.mjs.`);
+  }
+  const email = `superadmin-probe-${randomBytes(4).toString("hex")}@example.com`;
+  const password = TEST_ADMIN_PASSWORD;
+  const user = await prisma.user.create({
+    data: { email, password: hashSync(password, 12), organizationId: superadminClient.organizationId },
+  });
+  return { userId: user.id, email, password, organizationId: superadminClient.organizationId };
+}
+
+// Removes only the one disposable probe user — the real organization, its
+// Client, and its other user(s) are never touched.
+export async function deleteSuperadminProbeUser(userId: string) {
+  await prisma.user.delete({ where: { id: userId } });
+}
+
 export async function loginAsTestAdmin(request: APIRequestContext, email: string, password: string) {
   const res = await request.post("/api/admin/login", { data: { email, password } });
   if (!res.ok()) throw new Error(`Test admin login failed: ${res.status()} ${await res.text()}`);

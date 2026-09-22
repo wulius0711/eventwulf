@@ -35,7 +35,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       // the identical TOCTOU shape, so it gets the identical fix.
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${id})::bigint)`;
       if (limit !== null) {
-        const count = await tx.client.count({ where: { organizationId: id } });
+        // Active Standorte only — a client over the limit after a plan
+        // downgrade can bring themselves back into compliance by
+        // deactivating excess Standorte rather than being stuck
+        // indefinitely, mirroring Rooms/Events (Medium finding 6).
+        const count = await tx.client.count({ where: { organizationId: id, isActive: true } });
         if (count >= limit) throw new PlanLimitExceededError();
       }
       return tx.client.create({
@@ -45,6 +49,59 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ slug: client.slug });
   } catch (e) {
     if (e instanceof PlanLimitExceededError) {
+      return NextResponse.json({ error: `Maximal ${limit} Standort(e) im ${PLAN_LABELS[plan]}-Paket. Für weitere Standorte upgraden.` }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Speichern fehlgeschlagen" }, { status: 400 });
+  }
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getSession();
+  if (!session || session.clientSlug !== SUPERADMIN) {
+    return NextResponse.json({ error: "Kein Zugriff" }, { status: 403 });
+  }
+
+  const { id } = await params;
+  const { slug, isActive } = await req.json();
+  if (typeof isActive !== "boolean") {
+    return NextResponse.json({ error: "isActive fehlt" }, { status: 400 });
+  }
+
+  const existing = await prisma.client.findFirst({ where: { slug, organizationId: id } });
+  if (!existing) return NextResponse.json({ error: "Nicht gefunden" }, { status: 404 });
+
+  // The superadmin's own Standort is exempt — same reasoning as DELETE
+  // refusing to remove it (see below): deactivating it would leave the
+  // platform's own admin tooling in a broken, hard-to-recover state, for no
+  // real benefit (nothing currently gates on it being "active").
+  if (slug === SUPERADMIN && isActive === false) {
+    return NextResponse.json({ error: "Superadmin-Slug kann nicht deaktiviert werden" }, { status: 400 });
+  }
+
+  // Reactivating a deactivated Standort is the same effective action as
+  // creating one (it increases the active count), so it needs the same
+  // plan-limit check (and the same lock, for the same race-safety reason)
+  // as POST above — mirrors the identical guard in
+  // app/api/admin/rooms/route.ts and app/api/admin/events/route.ts.
+  const isReactivating = isActive === true && !existing.isActive;
+  const org = isReactivating ? await prisma.organization.findUnique({ where: { id }, select: { plan: true, subscriptionStatus: true } }) : null;
+  const plan = org ? effectivePlan(org) : null;
+  const limit = plan ? locationLimitFor(plan) : null;
+
+  try {
+    const updated = await prisma.$transaction(async (tx) => {
+      if (isReactivating) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${id})::bigint)`;
+        if (limit !== null) {
+          const count = await tx.client.count({ where: { organizationId: id, isActive: true } });
+          if (count >= limit) throw new PlanLimitExceededError();
+        }
+      }
+      return tx.client.update({ where: { id: existing.id }, data: { isActive } });
+    });
+    return NextResponse.json({ slug: updated.slug, isActive: updated.isActive });
+  } catch (e) {
+    if (e instanceof PlanLimitExceededError && plan) {
       return NextResponse.json({ error: `Maximal ${limit} Standort(e) im ${PLAN_LABELS[plan]}-Paket. Für weitere Standorte upgraden.` }, { status: 400 });
     }
     return NextResponse.json({ error: "Speichern fehlgeschlagen" }, { status: 400 });

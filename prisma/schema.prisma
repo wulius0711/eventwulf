@@ -27,6 +27,12 @@ model Client {
   slug           String        @unique
   config         String // JSON string (EventConfig)
   isDemo         Boolean       @default(false)
+  // Standort — mirrors Room/Event's isActive: a plan downgrade never deletes
+  // an over-limit Standort, it just blocks new creation/reactivation past
+  // the (active-only) count (see app/api/admin/orgs/[id]/clients/route.ts).
+  // Deactivating one is how a superadmin brings an org back under a lower
+  // location limit without destroying its data.
+  isActive       Boolean       @default(true)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
   blockedDates   BlockedDate[]
