@@ -10,6 +10,20 @@ import { effectivePlan, teamLimitFor, PLAN_LABELS, PlanLimitExceededError } from
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
+// Always answers the same way whether or not the email already belongs to
+// a User row anywhere on the platform (not just this org) — same technique
+// as GENERIC_OK in app/api/admin/forgot/route.ts, closing the cross-tenant
+// email-enumeration side channel at invite creation instead (Durchgang 3,
+// Fund 4: the previous "Diese E-Mail ist bereits registriert" 400 let any
+// org admin probe whether an address was registered to a DIFFERENT org).
+const GENERIC_INVITE_OK = { ok: true };
+// Approximates the org lookup + locked transaction + Resend call the real
+// invite path below does — not a measurement of that actual cost, just
+// enough padding to defeat casual timing analysis, same reasoning as
+// NO_SEND_DELAY_MS in app/api/admin/forgot/route.ts.
+const NO_INVITE_DELAY_MS = 300;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 function serialize(u: { id: string; email: string; createdAt: Date; inviteToken: string | null }, currentUserId: string) {
   return {
     id: u.id,
@@ -47,7 +61,10 @@ export async function POST(req: NextRequest) {
   // past this check still can't create a second User row (email is
   // @unique), it just surfaces as the P2002 catch below instead of a 500.
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return NextResponse.json({ error: "Diese E-Mail ist bereits registriert" }, { status: 400 });
+  if (existing) {
+    await delay(NO_INVITE_DELAY_MS);
+    return NextResponse.json(GENERIC_INVITE_OK);
+  }
 
   const org = await prisma.organization.findUnique({
     where: { id: session.organizationId },
@@ -84,10 +101,15 @@ export async function POST(req: NextRequest) {
     if (e instanceof PlanLimitExceededError) {
       return NextResponse.json({ error: `Maximal ${limit} Team-Mitglied(er) im ${PLAN_LABELS[plan]}-Paket. Für mehr Mitglieder upgraden.` }, { status: 400 });
     }
-    // Lost the race against a concurrent invite for the same email — clean
-    // 400 instead of an unhandled 500 (Durchgang 3, Info finding).
+    // Lost the race against a concurrent invite for the same email — same
+    // generic response as the pre-check above, for the same reason (was a
+    // clean 400 before Phase 4; a distinct status here would itself leak
+    // the "this email already exists" signal the generic response exists
+    // to hide — see Durchgang 3, Info finding for why a 500 was wrong here
+    // in the first place).
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      return NextResponse.json({ error: "Diese E-Mail ist bereits registriert" }, { status: 400 });
+      await delay(NO_INVITE_DELAY_MS);
+      return NextResponse.json(GENERIC_INVITE_OK);
     }
     throw e;
   }
@@ -114,7 +136,12 @@ export async function POST(req: NextRequest) {
     console.error(`Failed to send invite email to ${user.id}:`, e);
   }
 
-  return NextResponse.json(serialize(user, session.userId));
+  // Generic response even on the real success path — TeamEditor.tsx never
+  // reads the body on success, it just reloads the member list, so this
+  // costs nothing beyond the client no longer being able to distinguish
+  // "invited" from "already existed elsewhere" by response *shape* either,
+  // not just status code.
+  return NextResponse.json(GENERIC_INVITE_OK);
 }
 
 export async function DELETE(req: NextRequest) {

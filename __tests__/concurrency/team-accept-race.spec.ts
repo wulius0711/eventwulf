@@ -59,8 +59,13 @@ test.describe("Team invite races", () => {
   // (findUnique by email) and the create() were two separate steps, so two
   // concurrent invites for the same brand-new email could both pass the
   // pre-check and race on the create — the loser hit the unique-constraint
-  // violation unhandled, surfacing as a 500 instead of the same clean 400 a
-  // non-racing duplicate invite gets.
+  // violation unhandled, surfacing as a 500. Phase 4 later made the "email
+  // already exists" response generic across the board (see
+  // GENERIC_INVITE_OK in app/api/admin/team/route.ts) to close the
+  // cross-tenant enumeration channel (Durchgang 3, Fund 4), so the losing
+  // request here now gets the same 200 as any other "already exists" case
+  // instead of a distinct 400 — still never a 500, which is the thing this
+  // test actually guards.
   test.describe("Duplicate email invite", () => {
     let org: Awaited<ReturnType<typeof createTestClientWithAdmin>>;
 
@@ -75,15 +80,15 @@ test.describe("Team invite races", () => {
       await deleteTestOrganization(org.organization.id, org.client.id);
     });
 
-    test("a losing concurrent invite for the same brand-new email gets a clean 400, never a 500", async ({ request }) => {
+    test("a losing concurrent invite for the same brand-new email never surfaces as a 500", async ({ request }) => {
       await loginAsTestAdmin(request, org.email, org.password);
       const email = `race-dup-${org.client.slug}@example.com`;
 
       const responses = await Promise.all(Array.from({ length: 5 }, () => request.post("/api/admin/team", { data: { email } })));
       const statuses = responses.map((r) => r.status());
-      expect(statuses.every((s) => s === 200 || s === 400)).toBe(true);
-      expect(statuses.filter((s) => s === 200)).toHaveLength(1);
-      expect(statuses.filter((s) => s === 400)).toHaveLength(4);
+      // All 5 get the same generic 200 (Phase 4) — only one of them actually
+      // created the User row, verified below via the DB, not via status code.
+      expect(statuses.every((s) => s === 200)).toBe(true);
 
       const count = await prisma.user.count({ where: { email } });
       expect(count).toBe(1);
