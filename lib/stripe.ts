@@ -29,3 +29,25 @@ export function planForPriceId(priceId: string): BillablePlan | null {
   }
   return null;
 }
+
+// Structural subset of Stripe.Subscription — deliberately not importing the
+// real type here, so this stays trivially constructible in a test with a
+// plain object literal, no `as Stripe.Subscription` cast needed.
+interface SubscriptionLike {
+  status: string;
+  items: { data: { price: { id: string } }[] };
+}
+
+// Converts a subscription's CURRENT state (the caller is expected to have
+// already refetched it — see app/api/stripe/webhook/route.ts for why:
+// Stripe doesn't guarantee webhook delivery order) into what the DB should
+// hold. Pulled out as its own pure function so this mapping — the part that
+// actually decides "who wins" once you have the true current state — is
+// unit-testable without a DB or a live Stripe API call.
+export function subscriptionSync(subscription: SubscriptionLike): { subscriptionStatus: string; plan: BillablePlan | null } {
+  // A canceled subscription's current price is irrelevant — access is
+  // revoked regardless of what plan they were previously on.
+  const priceId = subscription.items.data[0]?.price.id;
+  const plan = subscription.status === "canceled" ? "basis" : priceId ? planForPriceId(priceId) : null;
+  return { subscriptionStatus: subscription.status, plan };
+}

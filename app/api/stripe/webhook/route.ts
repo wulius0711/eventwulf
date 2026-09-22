@@ -5,7 +5,7 @@ import { hashSync } from "bcryptjs";
 import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 import { loadConfig } from "@/lib/loadConfig";
-import { stripe, planForPriceId } from "@/lib/stripe";
+import { stripe, subscriptionSync } from "@/lib/stripe";
 import { sanitizeEmailHeader } from "@/lib/validate";
 import { resolveBaseUrl } from "@/app/api/submit/route";
 
@@ -112,37 +112,55 @@ export async function POST(req: NextRequest) {
     }
 
     case "customer.subscription.created":
-    case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
-      if (typeof subscription.customer !== "string") break;
+    case "customer.subscription.updated":
+    case "customer.subscription.deleted": {
+      const eventSubscription = event.data.object as Stripe.Subscription;
+      if (typeof eventSubscription.customer !== "string") break;
 
-      const org = await prisma.organization.findUnique({ where: { stripeCustomerId: subscription.customer } });
+      const org = await prisma.organization.findUnique({ where: { stripeCustomerId: eventSubscription.customer } });
       if (!org) break; // webhook arrived before checkout.session.completed created the org — a later update will sync it
 
-      const priceId = subscription.items.data[0]?.price.id;
-      const plan = priceId ? planForPriceId(priceId) : null;
+      // Stripe doesn't guarantee event delivery order and explicitly warns
+      // against using `created` to determine it (different events can share
+      // the same second-granularity timestamp) — see
+      // https://docs.stripe.com/webhooks#event-ordering. Instead of trusting
+      // the (possibly stale) subscription snapshot embedded in whichever
+      // event happened to arrive, refetch its actual current state. This
+      // makes all three event types converge to the same truth regardless
+      // of arrival order: a late "updated (active)" delivered after a
+      // "deleted" was already processed refetches and sees the subscription
+      // is actually canceled, and writes that — not "active". A canceled
+      // subscription stays retrievable at Stripe (never hard-deleted), so
+      // this covers the deleted case too, which is why all three event
+      // types now share this one branch instead of three separate ones.
+      let subscription: Stripe.Subscription;
+      try {
+        subscription = await stripe.subscriptions.retrieve(eventSubscription.id);
+      } catch (e) {
+        console.error(`Failed to refetch subscription ${eventSubscription.id}:`, e);
+        // 500 so Stripe retries this delivery on its own schedule — using
+        // Stripe's own retry mechanism as the safety net for a transient
+        // API hiccup here, rather than silently skipping the sync. This
+        // endpoint's broader top-level error handling is a separate,
+        // already-tracked fix (see eventwulf-security-notion.md) —
+        // deliberately not folded in here.
+        return NextResponse.json({ error: "Stripe-Abfrage fehlgeschlagen" }, { status: 500 });
+      }
+
+      // subscriptionSync (lib/stripe.ts) is the actual "who wins" mapping —
+      // pulled out as its own pure function so it's unit-testable without a
+      // DB or a live Stripe API call. See its own tests
+      // (__tests__/validation/stripe-subscription-sync.spec.ts) for the
+      // ordering-safety reasoning in concrete before/after terms.
+      const { subscriptionStatus, plan } = subscriptionSync(subscription);
 
       await prisma.organization.update({
         where: { id: org.id },
         data: {
           stripeSubscriptionId: subscription.id,
-          subscriptionStatus: subscription.status,
+          subscriptionStatus,
           ...(plan ? { plan } : {}),
         },
-      });
-      break;
-    }
-
-    case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
-      if (typeof subscription.customer !== "string") break;
-
-      const org = await prisma.organization.findUnique({ where: { stripeCustomerId: subscription.customer } });
-      if (!org) break;
-
-      await prisma.organization.update({
-        where: { id: org.id },
-        data: { subscriptionStatus: "canceled", plan: "basis" },
       });
       break;
     }
