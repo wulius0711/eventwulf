@@ -700,7 +700,7 @@ button:active:not(:disabled) {
   .ew-shell-main { view-transition-name: ew-main; }
 
   ::view-transition-old(ew-sidebar), ::view-transition-new(ew-sidebar) {
-    animation: 110ms ease-in-out both;
+    animation-duration: 110ms;
   }
 
   ::view-transition-old(ew-main) {
