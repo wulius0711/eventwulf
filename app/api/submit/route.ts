@@ -9,6 +9,7 @@ import { rateLimit, getIp } from "@/lib/ratelimit";
 import { validateSubmit, escapeHtml, sanitizeEmailHeader, findMissingRequiredField } from "@/lib/validate";
 import { reserveEventCapacity, HOLD_DURATION_MS, CapacityExceededError } from "@/lib/eventCapacity";
 import { assertRoomAvailable, RoomConflictError } from "@/lib/roomAvailability";
+import { hasFeature, effectivePlan } from "@/lib/plan";
 
 // Exported for direct testing — VERCEL_URL is only actually set on Vercel,
 // so this can't be exercised end-to-end against the local test server; the
@@ -89,7 +90,10 @@ export async function POST(req: NextRequest) {
   // Resolved once, up front, so eventId/roomId below are always looked up scoped to
   // this client — otherwise a submission to Client A's public form could reference
   // Client B's Event/Room by id (both are just public, enumerable cuids).
-  const client = await prisma.client.findUnique({ where: { slug } });
+  const client = await prisma.client.findUnique({
+    where: { slug },
+    include: { organization: { select: { plan: true, subscriptionStatus: true, disputeLostAt: true } } },
+  });
 
   // Demo clients are for the marketing-site widget preview — the frontend already
   // intercepts submit before calling this route, but reject here too in case
@@ -97,6 +101,44 @@ export async function POST(req: NextRequest) {
   if (client?.isDemo) {
     return NextResponse.json({ error: "Das ist nur eine Demo — hier wird nichts versendet." }, { status: 403 });
   }
+
+  // Rooms are a Pro+ feature — same gate as the public read path
+  // (app/api/rooms/route.ts), which already hides rooms from a downgraded
+  // org's picker. That's a read-side gate only, though: this write path
+  // never re-checked it, so a roomId submitted directly (bypassing the
+  // picker/UI entirely) was still silently accepted and booked regardless
+  // of the org's current plan. Clamped once, right here, before any of the
+  // four separate places below that use it (validation, the availability
+  // check, the Inquiry insert, and the hold-expiry flag) — rather than
+  // re-checking hasFeature() in each of them separately and risking one
+  // getting missed in a future change (see the getOrgPlan()/
+  // requireRoomsAccess() duplication finding for the same class of risk).
+  // When the feature is locked, this silently ignores a submitted roomId —
+  // exactly as if none had been sent — which is correct for the actual
+  // security case (a direct API call bypassing the UI, which needs no
+  // feedback), but is an imperfect experience for the rare edge case of a
+  // legitimate guest whose already-open page had a room selected right as
+  // the org's plan lapsed underneath them: their booking silently saves
+  // without the room, with nothing telling them their choice was dropped.
+  // Not fixed here — low-frequency, no security impact — but worth knowing
+  // if a "my room booking disappeared" report ever comes in.
+  // client?.organizationId guards this: a Client with no Organization at
+  // all has no plan/billing to gate against, so the check is skipped
+  // entirely rather than falling back to effectivePlan()'s "no org" ->
+  // basis default (which would lock rooms for a case this gate was never
+  // meant to cover). This relies on an invariant that holds today but is
+  // nowhere enforced by the schema (Client.organizationId is nullable):
+  // every real Client is created together with its Organization — the only
+  // Client-creation call site in the app is
+  // app/api/admin/orgs/[id]/clients/route.ts, always nested under an
+  // existing org. If a future Client-creation path is ever added without
+  // one, this gate would silently never apply to it — whoever adds that
+  // path needs to either give it an organizationId too, or revisit this
+  // check. See the maintainability backlog for the same class of
+  // undocumented-but-relied-on assumption (live-key env inheritance,
+  // test-only flags).
+  const roomsUnlocked = !client?.organizationId || hasFeature(effectivePlan(client.organization), "rooms");
+  const roomId = roomsUnlocked ? body.roomId : undefined;
 
 // Resolve event, validate participant count and reserve capacity if an eventId was submitted.
   let eventName = "";
@@ -121,8 +163,8 @@ export async function POST(req: NextRequest) {
 
   // Resolve the room (if selected) so the display name comes from the DB, not client input.
   let roomName = "";
-  if (body.roomId) {
-    const room = client ? await prisma.room.findFirst({ where: { id: body.roomId, clientId: client.id } }) : null;
+  if (roomId) {
+    const room = client ? await prisma.room.findFirst({ where: { id: roomId, clientId: client.id } }) : null;
     if (!room || !room.isActive) {
       return NextResponse.json({ error: "Dieser Raum ist nicht mehr verfügbar" }, { status: 400 });
     }
@@ -135,7 +177,7 @@ export async function POST(req: NextRequest) {
       );
     }
     roomName = room.name;
-  } else if (client && !body.eventId && config.formFields?.raum !== false) {
+  } else if (roomsUnlocked && client && !body.eventId && config.formFields?.raum !== false) {
     // Mirrors the RoomPicker's own visibility condition (rooms.length > 0) —
     // if the guest was shown a room picker, a room must actually be chosen,
     // otherwise the inquiry bypasses the double-booking protection entirely
@@ -143,6 +185,9 @@ export async function POST(req: NextRequest) {
     // Skipped for event bookings (body.eventId set): those come from the
     // separate EventsList flow, which has no room picker at all — a room
     // there, if any, is the event's own (Event.roomId), not the guest's pick.
+    // Also skipped when rooms aren't unlocked at all — same reasoning as
+    // roomId itself above: no feature means no picker was ever shown, so
+    // there's nothing to have required a choice from.
     const activeRoomCount = await prisma.room.count({ where: { clientId: client.id, isActive: true } });
     if (activeRoomCount > 0) {
       return NextResponse.json({ error: "Bitte einen Raum auswählen." }, { status: 400 });
@@ -243,8 +288,8 @@ export async function POST(req: NextRequest) {
           const reserved = await reserveEventCapacity(body.eventId, participantCount, tx);
           if (!reserved) throw new CapacityExceededError();
         }
-        if (body.roomId) {
-          await assertRoomAvailable(tx, body.roomId, body.datumVon, body.datumBis);
+        if (roomId) {
+          await assertRoomAvailable(tx, roomId, body.datumVon, body.datumBis);
         }
         return tx.inquiry.create({
           data: {
@@ -254,10 +299,10 @@ export async function POST(req: NextRequest) {
             participantCount,
             cancelToken,
             ...(body.eventId ? { eventId: body.eventId } : {}),
-            ...(body.roomId ? { roomId: body.roomId } : {}),
+            ...(roomId ? { roomId } : {}),
             // An unanswered booking hold expires 48h after submission — for either
             // an Event (capacity release) or a Room (see /api/cron/room-holds).
-            ...(body.eventId || body.roomId ? { holdExpiresAt: new Date(Date.now() + HOLD_DURATION_MS) } : {}),
+            ...(body.eventId || roomId ? { holdExpiresAt: new Date(Date.now() + HOLD_DURATION_MS) } : {}),
           },
         });
       });
