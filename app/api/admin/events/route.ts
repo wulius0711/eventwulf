@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
 import { validateMinParticipants } from "@/lib/validate";
-import { eventLimitFor, effectivePlan, PLAN_LABELS } from "@/lib/plan";
+import { eventLimitFor, effectivePlan, PLAN_LABELS, PlanLimitExceededError } from "@/lib/plan";
 
 function sanitizeDescription(html: string): string {
   return sanitizeHtml(html, {
@@ -133,36 +133,43 @@ export async function POST(req: NextRequest) {
 
   const plan = await getOrgPlan(session.organizationId);
   const limit = eventLimitFor(plan);
-  if (limit !== null) {
-    const count = await prisma.event.count({ where: { clientId, isActive: true } });
-    if (count >= limit) {
-      return NextResponse.json({ error: `Maximal ${limit} aktive Events im ${PLAN_LABELS[plan]}-Paket. Für mehr Events upgraden.` }, { status: 400 });
-    }
-  }
 
   try {
-    const ev = await prisma.event.create({
-      data: {
-        clientId,
-        name: name.trim(),
-        description: description ? sanitizeDescription(description) : "",
-        image: image ?? "",
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        color: color ?? "",
-        intern: intern === true,
-        pricePerPerson: Number(pricePerPerson) || 0,
-        minParticipants: min,
-        maxParticipants: max,
-        showCapacity: showCapacity !== false,
-        isActive: isActive !== false,
-        sortOrder: Number(sortOrder) || 0,
-        roomId: resolvedRoomId,
-      },
-      include: { room: { select: { name: true } } },
+    const ev = await prisma.$transaction(async (tx) => {
+      // Serializes concurrent creates/reactivations for this client — same
+      // pg_advisory_xact_lock pattern as rooms (app/api/admin/rooms/route.ts)
+      // and assertRoomAvailable (lib/roomAvailability.ts).
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${clientId})::bigint)`;
+      if (limit !== null) {
+        const count = await tx.event.count({ where: { clientId, isActive: true } });
+        if (count >= limit) throw new PlanLimitExceededError();
+      }
+      return tx.event.create({
+        data: {
+          clientId,
+          name: name.trim(),
+          description: description ? sanitizeDescription(description) : "",
+          image: image ?? "",
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          color: color ?? "",
+          intern: intern === true,
+          pricePerPerson: Number(pricePerPerson) || 0,
+          minParticipants: min,
+          maxParticipants: max,
+          showCapacity: showCapacity !== false,
+          isActive: isActive !== false,
+          sortOrder: Number(sortOrder) || 0,
+          roomId: resolvedRoomId,
+        },
+        include: { room: { select: { name: true } } },
+      });
     });
     return NextResponse.json(serialize(ev));
-  } catch {
+  } catch (e) {
+    if (e instanceof PlanLimitExceededError) {
+      return NextResponse.json({ error: `Maximal ${limit} aktive Events im ${PLAN_LABELS[plan]}-Paket. Für mehr Events upgraden.` }, { status: 400 });
+    }
     return NextResponse.json({ error: "Speichern fehlgeschlagen" }, { status: 400 });
   }
 }
@@ -215,46 +222,51 @@ export async function PATCH(req: NextRequest) {
 
   // Reactivating a deactivated event is the same effective action as creating
   // one (it increases the active count), so it needs the same plan-limit
-  // check as POST — mirrors the identical guard in app/api/admin/rooms/route.ts.
-  if (isActive === true && !existing.isActive) {
-    const plan = await getOrgPlan(session.organizationId);
-    const limit = eventLimitFor(plan);
-    if (limit !== null) {
-      const count = await prisma.event.count({ where: { clientId, isActive: true } });
-      if (count >= limit) {
-        return NextResponse.json({ error: `Maximal ${limit} aktive Events im ${PLAN_LABELS[plan]}-Paket. Für mehr Events upgraden.` }, { status: 400 });
-      }
-    }
-  }
-
+  // check (and the same lock) as POST — mirrors the identical guard in
+  // app/api/admin/rooms/route.ts.
+  const isReactivating = isActive === true && !existing.isActive;
+  const plan = isReactivating ? await getOrgPlan(session.organizationId) : null;
+  const limit = plan ? eventLimitFor(plan) : null;
   const newImage = image ?? existing.image;
 
   try {
-    const updated = await prisma.event.update({
-      where: { id },
-      data: {
-        name: name?.trim() ?? existing.name,
-        description: description !== undefined ? sanitizeDescription(description) : existing.description,
-        image: newImage,
-        startDate: newStartDate,
-        endDate: newEndDate,
-        color: color ?? existing.color,
-        intern: intern !== undefined ? Boolean(intern) : existing.intern,
-        pricePerPerson: pricePerPerson !== undefined ? Number(pricePerPerson) : existing.pricePerPerson,
-        minParticipants: min,
-        maxParticipants: max,
-        showCapacity: showCapacity !== undefined ? Boolean(showCapacity) : existing.showCapacity,
-        isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
-        sortOrder: sortOrder !== undefined ? Number(sortOrder) : existing.sortOrder,
-        roomId: newRoomId,
-      },
-      include: { room: { select: { name: true } } },
+    const updated = await prisma.$transaction(async (tx) => {
+      if (isReactivating) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${clientId})::bigint)`;
+        if (limit !== null) {
+          const count = await tx.event.count({ where: { clientId, isActive: true } });
+          if (count >= limit) throw new PlanLimitExceededError();
+        }
+      }
+      return tx.event.update({
+        where: { id },
+        data: {
+          name: name?.trim() ?? existing.name,
+          description: description !== undefined ? sanitizeDescription(description) : existing.description,
+          image: newImage,
+          startDate: newStartDate,
+          endDate: newEndDate,
+          color: color ?? existing.color,
+          intern: intern !== undefined ? Boolean(intern) : existing.intern,
+          pricePerPerson: pricePerPerson !== undefined ? Number(pricePerPerson) : existing.pricePerPerson,
+          minParticipants: min,
+          maxParticipants: max,
+          showCapacity: showCapacity !== undefined ? Boolean(showCapacity) : existing.showCapacity,
+          isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
+          sortOrder: sortOrder !== undefined ? Number(sortOrder) : existing.sortOrder,
+          roomId: newRoomId,
+        },
+        include: { room: { select: { name: true } } },
+      });
     });
     if (existing.image && existing.image !== newImage) {
       await releaseEventImage(existing.image, clientId, id);
     }
     return NextResponse.json(serialize(updated));
-  } catch {
+  } catch (e) {
+    if (e instanceof PlanLimitExceededError && plan) {
+      return NextResponse.json({ error: `Maximal ${limit} aktive Events im ${PLAN_LABELS[plan]}-Paket. Für mehr Events upgraden.` }, { status: 400 });
+    }
     return NextResponse.json({ error: "Speichern fehlgeschlagen" }, { status: 400 });
   }
 }

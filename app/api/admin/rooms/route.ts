@@ -3,7 +3,7 @@ import sanitizeHtml from "sanitize-html";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseRoomImage } from "@/lib/bunny";
-import { hasFeature, effectivePlan, minPlanFor, roomLimitFor, PLAN_LABELS, type Plan } from "@/lib/plan";
+import { hasFeature, effectivePlan, minPlanFor, roomLimitFor, PLAN_LABELS, PlanLimitExceededError, type Plan } from "@/lib/plan";
 
 function sanitizeDescription(html: string): string {
   return sanitizeHtml(html, {
@@ -78,32 +78,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Kapazität ungültig" }, { status: 400 });
   }
 
+  // Active rooms only (Medium finding 6) — a client over the limit after a
+  // plan downgrade can bring themselves back into compliance by
+  // deactivating excess rooms rather than being stuck indefinitely, since a
+  // downgrade itself never deactivates anything automatically.
   const limit = roomLimitFor(access.plan);
-  if (limit !== null) {
-    // Active rooms only (Medium finding 6) — a client over the limit after a
-    // plan downgrade can bring themselves back into compliance by
-    // deactivating excess rooms rather than being stuck indefinitely, since
-    // a downgrade itself never deactivates anything automatically.
-    const count = await prisma.room.count({ where: { clientId: access.clientId, isActive: true } });
-    if (count >= limit) {
-      return NextResponse.json({ error: `Maximal ${limit} Räume im ${PLAN_LABELS[access.plan]}-Paket. Für mehr Räume upgraden.` }, { status: 400 });
-    }
-  }
 
   try {
-    const room = await prisma.room.create({
-      data: {
-        clientId: access.clientId,
-        name: name.trim(),
-        description: description ? sanitizeDescription(description) : "",
-        image: image ?? "",
-        capacity: cap,
-        isActive: isActive !== false,
-        sortOrder: Number(sortOrder) || 0,
-      },
+    const room = await prisma.$transaction(async (tx) => {
+      // Serializes concurrent creates/reactivations for this client so the
+      // count+create below can't race with another one — same
+      // pg_advisory_xact_lock pattern as assertRoomAvailable
+      // (lib/roomAvailability.ts): a second concurrent call blocks until the
+      // first transaction commits, so its new row is already visible by the
+      // time the second one re-counts.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${access.clientId})::bigint)`;
+      if (limit !== null) {
+        const count = await tx.room.count({ where: { clientId: access.clientId, isActive: true } });
+        if (count >= limit) throw new PlanLimitExceededError();
+      }
+      return tx.room.create({
+        data: {
+          clientId: access.clientId,
+          name: name.trim(),
+          description: description ? sanitizeDescription(description) : "",
+          image: image ?? "",
+          capacity: cap,
+          isActive: isActive !== false,
+          sortOrder: Number(sortOrder) || 0,
+        },
+      });
     });
     return NextResponse.json(serialize(room));
-  } catch {
+  } catch (e) {
+    if (e instanceof PlanLimitExceededError) {
+      return NextResponse.json({ error: `Maximal ${limit} Räume im ${PLAN_LABELS[access.plan]}-Paket. Für mehr Räume upgraden.` }, { status: 400 });
+    }
     return NextResponse.json({ error: "Speichern fehlgeschlagen" }, { status: 400 });
   }
 }
@@ -125,38 +135,43 @@ export async function PATCH(req: NextRequest) {
 
   // Reactivating a deactivated room is the same effective action as creating
   // one (it increases the active count), so it needs the same plan-limit
-  // check as POST — otherwise a client could bring themselves back under
-  // the limit by deactivating rooms, then bypass the creation gate entirely
-  // by reactivating others instead of actually creating a new one.
-  if (isActive === true && !existing.isActive) {
-    const limit = roomLimitFor(access.plan);
-    if (limit !== null) {
-      const count = await prisma.room.count({ where: { clientId: access.clientId, isActive: true } });
-      if (count >= limit) {
-        return NextResponse.json({ error: `Maximal ${limit} Räume im ${PLAN_LABELS[access.plan]}-Paket. Für mehr Räume upgraden.` }, { status: 400 });
-      }
-    }
-  }
-
+  // check (and the same lock, for the same race-safety reason) as POST —
+  // otherwise a client could bring themselves back under the limit by
+  // deactivating rooms, then bypass the creation gate entirely by
+  // reactivating others instead of actually creating a new one.
+  const isReactivating = isActive === true && !existing.isActive;
+  const limit = roomLimitFor(access.plan);
   const newImage = image ?? existing.image;
 
   try {
-    const updated = await prisma.room.update({
-      where: { id },
-      data: {
-        name: name?.trim() ?? existing.name,
-        description: description !== undefined ? sanitizeDescription(description) : existing.description,
-        image: newImage,
-        capacity: cap,
-        isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
-        sortOrder: sortOrder !== undefined ? Number(sortOrder) : existing.sortOrder,
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      if (isReactivating) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${access.clientId})::bigint)`;
+        if (limit !== null) {
+          const count = await tx.room.count({ where: { clientId: access.clientId, isActive: true } });
+          if (count >= limit) throw new PlanLimitExceededError();
+        }
+      }
+      return tx.room.update({
+        where: { id },
+        data: {
+          name: name?.trim() ?? existing.name,
+          description: description !== undefined ? sanitizeDescription(description) : existing.description,
+          image: newImage,
+          capacity: cap,
+          isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
+          sortOrder: sortOrder !== undefined ? Number(sortOrder) : existing.sortOrder,
+        },
+      });
     });
     if (existing.image && existing.image !== newImage) {
       await releaseRoomImage(existing.image, access.clientId, id);
     }
     return NextResponse.json(serialize(updated));
-  } catch {
+  } catch (e) {
+    if (e instanceof PlanLimitExceededError) {
+      return NextResponse.json({ error: `Maximal ${limit} Räume im ${PLAN_LABELS[access.plan]}-Paket. Für mehr Räume upgraden.` }, { status: 400 });
+    }
     return NextResponse.json({ error: "Speichern fehlgeschlagen" }, { status: 400 });
   }
 }

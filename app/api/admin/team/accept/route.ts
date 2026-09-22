@@ -36,9 +36,17 @@ export async function POST(req: NextRequest) {
   const clientSlug = org?.clients[0]?.slug;
   if (!clientSlug) return NextResponse.json({ error: "Organisation nicht vollständig eingerichtet" }, { status: 500 });
 
+  // Atomic conditional update — same pattern as reserveEventCapacity
+  // (lib/eventCapacity.ts): the WHERE clause re-checks inviteToken itself
+  // (not just id), so if a concurrent request already consumed this token
+  // between findValidInvite() above and here, this update matches zero rows
+  // instead of silently re-consuming it. Without this, two people racing on
+  // the same link (or one person opening it twice) could both pass the
+  // findValidInvite() check before either write lands, and both walk away
+  // with a valid session for the same account.
   const passwordChangedAt = new Date();
-  await prisma.user.update({
-    where: { id: user.id },
+  const { count } = await prisma.user.updateMany({
+    where: { id: user.id, inviteToken: token },
     data: {
       password: hashSync(password, 12),
       passwordChangedAt,
@@ -46,6 +54,7 @@ export async function POST(req: NextRequest) {
       inviteTokenExpiresAt: null,
     },
   });
+  if (count !== 1) return NextResponse.json({ error: "Einladung ungültig oder abgelaufen" }, { status: 400 });
 
   const sessionToken = await signToken({
     userId: user.id,

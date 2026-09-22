@@ -55,6 +55,15 @@ export function isPlan(val: unknown): val is Plan {
   return typeof val === "string" && (PLAN_ORDER as string[]).includes(val);
 }
 
+// Thrown inside a `pg_advisory_xact_lock`-guarded transaction (see
+// lib/roomAvailability.ts for the same locking pattern applied to room
+// availability) when a count()-then-create()/update() limit check fails.
+// Shared across the four plan-limit enforcement points (rooms, events, team,
+// locations) so each can catch it and render its own message — the lock
+// itself is what makes the count+write atomic, this class just carries the
+// "over limit" outcome out of the transaction callback.
+export class PlanLimitExceededError extends Error {}
+
 // Statuses where Stripe has stopped collecting on an existing subscription
 // but hasn't canceled it yet (see
 // https://docs.stripe.com/billing/subscriptions/overview#subscription-statuses):
