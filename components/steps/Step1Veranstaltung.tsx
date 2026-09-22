@@ -74,7 +74,7 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
   return (
     <div>
       <label style={{ marginBottom: "0.5rem", display: "block" }}>Raum wählen *</label>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(180px, 100%), 1fr))", gap: "0.75rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(180px, 100%), 1fr))", gap: "0.75rem", alignItems: "start" }}>
         {rooms.map((room) => {
           const selected = form.roomId === room.id;
           const unavailable = room.available === false;
