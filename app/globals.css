@@ -677,40 +677,6 @@ button:active:not(:disabled) {
 .ew-toast-icon { display: flex; flex-shrink: 0; }
 .ew-toast-msg { flex: 1; }
 
-/* ─── Sanfte Seitenübergänge – React 19s <ViewTransition> ────────────────
-   Die Admin-Navigation läuft client-seitig über next/link; Next-Navi-
-   gationen sind automatisch React-Transitions, und der Hauptbereich ist
-   in <ViewTransition name="ew-main"> gewrappt (AdminShell.tsx) – React
-   ruft die Browser-API selbst zum richtigen Zeitpunkt auf, nachdem der
-   neue Seiteninhalt tatsächlich gerendert ist. Kein manuelles
-   document.startViewTransition() mehr (führte zu einem Wettlauf: altes
-   und neues Bild wurden erfasst, bevor React fertig war = keine
-   sichtbare Animation).
-
-   Die Sidebar bekommt ihren view-transition-name weiterhin per CSS (kein
-   <ViewTransition>, sie ist ja kein wechselnder Seiteninhalt), damit sie
-   nicht mit dem Hauptbereich in einem Bild überblendet wird. Trotzdem
-   NICHT animation:none: der aktive Nav-Punkt wechselt ja von Link zu
-   Link – ohne jede Überblendung wäre das ein harter Sprung. Eine sehr
-   kurze Eigen-Überblendung macht diesen Wechsel weich. */
-@media (prefers-reduced-motion: no-preference) {
-  .ew-sidebar { view-transition-name: ew-sidebar; }
-
-  ::view-transition-old(ew-sidebar), ::view-transition-new(ew-sidebar) {
-    animation-duration: 110ms;
-  }
-
-  /* Reines Opacity-Fade, keine Bewegung (kein translateY): eine Verschiebung
-     von echtem Text während der Animation kann je nach Display/GPU unruhig
-     ("zittrig") wirken, ein reiner Alpha-Übergang kann das grundsätzlich
-     nicht. */
-  ::view-transition-old(ew-main), ::view-transition-new(ew-main) {
-    animation-duration: 180ms;
-  }
-}
-
-
-
 .ew-logout-btn {
   width: fit-content;
   padding: 0.5rem 0.875rem;

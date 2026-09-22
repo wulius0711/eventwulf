@@ -5,7 +5,6 @@ import { loadConfigFromDB } from "@/lib/loadConfig";
 import { isPlan } from "@/lib/plan";
 import { hasActiveSubscription } from "@/lib/stripe";
 import ConfigEditor from "@/components/admin/ConfigEditor";
-import PageTransition from "@/components/admin/PageTransition";
 
 interface Props {
   searchParams: Promise<{ tab?: string }>;
@@ -33,20 +32,18 @@ export default async function ConfigPage({ searchParams }: Props) {
   const initialTab = tab === "abrechnung" || tab === "team" || tab === "passwort" ? tab : "firma";
 
   return (
-    <PageTransition>
-      <div>
-        <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
-          Einstellungen
-        </h1>
-        <ConfigEditor
-          initialConfig={config}
-          plan={plan}
-          paymentIssue={paymentIssue}
-          initialTab={initialTab}
-          hasStripeCustomer={!!org?.stripeCustomerId}
-          hasActiveSubscription={hasActiveSubscription(org ?? {})}
-        />
-      </div>
-    </PageTransition>
+    <div>
+      <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
+        Einstellungen
+      </h1>
+      <ConfigEditor
+        initialConfig={config}
+        plan={plan}
+        paymentIssue={paymentIssue}
+        initialTab={initialTab}
+        hasStripeCustomer={!!org?.stripeCustomerId}
+        hasActiveSubscription={hasActiveSubscription(org ?? {})}
+      />
+    </div>
   );
 }

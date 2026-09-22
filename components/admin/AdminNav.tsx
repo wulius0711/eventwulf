@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { NavIcons } from "./icons";
 
@@ -45,7 +44,7 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCo
       {links.map(({ href, label, icon }) => {
         const badge = badgeCounts[href] ?? 0;
         return (
-          <Link key={href} href={href} className={`ew-nav-link${pathname.startsWith(href) ? " active" : ""}`} onClick={onNavigate}>
+          <a key={href} href={href} className={`ew-nav-link${pathname.startsWith(href) ? " active" : ""}`} onClick={onNavigate}>
             <span className="ew-nav-icon">{NavIcons[icon]}</span>
             {label}
             {badge > 0 && (
@@ -59,15 +58,15 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCo
                 {badge}
               </span>
             )}
-          </Link>
+          </a>
         );
       })}
 
       {isSuperAdmin && (
-        <Link href="/admin/clients" className={`ew-nav-link${pathname.startsWith("/admin/clients") ? " active" : ""}`} onClick={onNavigate}>
+        <a href="/admin/clients" className={`ew-nav-link${pathname.startsWith("/admin/clients") ? " active" : ""}`} onClick={onNavigate}>
           <span className="ew-nav-icon">{NavIcons.clients}</span>
           Kunden
-        </Link>
+        </a>
       )}
 
       {slugs.length > 1 && (

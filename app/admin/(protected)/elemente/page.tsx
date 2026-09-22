@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import { effectivePlan } from "@/lib/plan";
 import ElementeTabs from "@/components/admin/ElementeTabs";
-import PageTransition from "@/components/admin/PageTransition";
 
 export default async function ElementePage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const { tab } = await searchParams;
@@ -26,13 +25,11 @@ export default async function ElementePage({ searchParams }: { searchParams: Pro
   const plan = isSuperAdmin ? null : effectivePlan(org);
 
   return (
-    <PageTransition>
-      <div>
-        <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
-          Elemente
-        </h1>
-        <ElementeTabs initialConfig={config} plan={plan} initialTab={typeof tab === "string" ? tab : undefined} />
-      </div>
-    </PageTransition>
+    <div>
+      <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
+        Elemente
+      </h1>
+      <ElementeTabs initialConfig={config} plan={plan} initialTab={typeof tab === "string" ? tab : undefined} />
+    </div>
   );
 }

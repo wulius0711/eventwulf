@@ -65,12 +65,6 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
         </div>
       </aside>
 
-      {/* Kein <ViewTransition> hier: AdminShell wird vom (protected)-Layout
-          gerendert, Layouts bleiben über Navigationen hinweg bestehen und
-          werden nie neu gemountet – enter/exit feuern laut Next-Doku dort
-          nie. Der Wrapper sitzt stattdessen in jeder einzelnen page.tsx
-          (components/admin/PageTransition.tsx), wo React die Seite bei
-          jeder Navigation tatsächlich neu montiert. */}
       <main className="ew-shell-main">
         {children}
       </main>
