@@ -55,13 +55,7 @@ export default function AdminNav({ isSuperAdmin, slugs, activeSlug, newInquiryCo
       return;
     }
     document.startViewTransition(() => {
-      // refresh() erzwingt frische Server-Daten für das geteilte Layout
-      // (Badge-Zahlen) – ohne das bliebe der Client-Cache stehen, anders
-      // als beim bisherigen vollen Seitenwechsel, der das immer neu holt.
-      startTransition(() => {
-        router.refresh();
-        router.push(href);
-      });
+      startTransition(() => router.push(href));
     });
   }
 
