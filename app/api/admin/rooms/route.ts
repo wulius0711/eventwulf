@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseRoomImage } from "@/lib/bunny";
 import { hasFeature, effectivePlan, minPlanFor, roomLimitFor, PLAN_LABELS, PlanLimitExceededError, type Plan } from "@/lib/plan";
+import { hasActiveSubscription } from "@/lib/stripe";
 
 function sanitizeDescription(html: string): string {
   return sanitizeHtml(html, {
@@ -31,7 +32,7 @@ function serialize(r: {
 const LOCKED_MESSAGE = `Räume sind ab dem ${PLAN_LABELS[minPlanFor("rooms")]}-Paket verfügbar.`;
 
 async function requireRoomsAccess(): Promise<
-  { ok: true; clientId: string; plan: Plan } | { ok: false; status: number; error: string }
+  { ok: true; clientId: string; plan: Plan; hasActiveSubscription: boolean } | { ok: false; status: number; error: string }
 > {
   const session = await getSession();
   if (!session) return { ok: false, status: 401, error: "Nicht eingeloggt" };
@@ -39,11 +40,11 @@ async function requireRoomsAccess(): Promise<
   const client = await prisma.client.findUnique({ where: { slug: session.clientSlug }, select: { id: true } });
   if (!client) return { ok: false, status: 404, error: "Client nicht gefunden" };
 
-  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true } });
+  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true, stripeSubscriptionId: true } });
   const plan = effectivePlan(org);
   if (!hasFeature(plan, "rooms")) return { ok: false, status: 403, error: LOCKED_MESSAGE };
 
-  return { ok: true, clientId: client.id, plan };
+  return { ok: true, clientId: client.id, plan, hasActiveSubscription: hasActiveSubscription(org ?? {}) };
 }
 
 export async function GET() {
@@ -59,8 +60,16 @@ export async function GET() {
   // downgrade left more active rooms than the current plan allows (Medium
   // finding 6) — existing rooms are never touched by a downgrade, only new
   // creation is gated (see POST below), so this is purely informational.
-  // plan is included too so the UI can show a "X of Y (<Plan>)" usage line.
-  return NextResponse.json({ rooms: rooms.map(serialize), limit: roomLimitFor(access.plan), plan: access.plan });
+  // plan is included too so the UI can show a "X of Y (<Plan>)" usage line,
+  // and hasActiveSubscription so UpgradeButton (rendered here at the room
+  // limit) knows whether to route to checkout or the billing portal — see
+  // hasActiveSubscription() in lib/stripe.ts.
+  return NextResponse.json({
+    rooms: rooms.map(serialize),
+    limit: roomLimitFor(access.plan),
+    plan: access.plan,
+    hasActiveSubscription: access.hasActiveSubscription,
+  });
 }
 
 export async function POST(req: NextRequest) {

@@ -51,3 +51,18 @@ export function subscriptionSync(subscription: SubscriptionLike): { subscription
   const plan = subscription.status === "canceled" ? "basis" : priceId ? planForPriceId(priceId) : null;
   return { subscriptionStatus: subscription.status, plan };
 }
+
+// Whether this org already has a subscription that a second Checkout Session
+// would duplicate rather than replace (Durchgang 3/4 finding: UpgradeButton
+// unconditionally called /api/stripe/checkout, and Stripe happily creates a
+// second, parallel subscription on the same customer — see
+// app/api/stripe/checkout/route.ts and components/admin/UpgradeButton.tsx
+// for where this is used). "canceled" and "incomplete_expired" both mean
+// there's nothing left to protect against duplicating — the former is the
+// normal end state after a cancellation, the latter only applies to a
+// subscription's first payment, which this app always collects during
+// Checkout itself (see PAYMENT_FAILURE_STATUSES in lib/plan.ts), so it
+// shouldn't occur here in practice but is excluded defensively anyway.
+export function hasActiveSubscription(org: { stripeSubscriptionId?: string | null; subscriptionStatus?: string | null }): boolean {
+  return !!org.stripeSubscriptionId && org.subscriptionStatus !== "canceled" && org.subscriptionStatus !== "incomplete_expired";
+}

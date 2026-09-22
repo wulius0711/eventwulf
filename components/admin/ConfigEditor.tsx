@@ -13,6 +13,7 @@ interface Props {
   paymentIssue: boolean;
   initialTab?: Tab;
   hasStripeCustomer: boolean;
+  hasActiveSubscription: boolean;
 }
 
 type Tab = "firma" | "team" | "passwort" | "abrechnung";
@@ -43,7 +44,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export default function ConfigEditor({ initialConfig, plan, paymentIssue, initialTab, hasStripeCustomer }: Props) {
+export default function ConfigEditor({ initialConfig, plan, paymentIssue, initialTab, hasStripeCustomer, hasActiveSubscription }: Props) {
   const router = useRouter();
   const [config, setConfig] = useState<EventConfig>(initialConfig);
   const [tab, setTab] = useState<Tab>(initialTab ?? "firma");
@@ -190,7 +191,7 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
           )}
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
             <span style={{ fontSize: "0.9rem" }}>Aktueller Plan: <strong>{PLAN_LABELS[plan]}</strong></span>
-            <UpgradeButton currentPlan={plan} />
+            <UpgradeButton currentPlan={plan} hasActiveSubscription={hasActiveSubscription} />
             <ManageBillingButton hasStripeCustomer={hasStripeCustomer} />
           </div>
         </Section>
@@ -207,7 +208,7 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
         </Section>
       )}
 
-      {tab === "team" && <TeamEditor plan={plan} />}
+      {tab === "team" && <TeamEditor plan={plan} hasActiveSubscription={hasActiveSubscription} />}
 
       {tab === "passwort" && (
         <Section title="Passwort ändern">

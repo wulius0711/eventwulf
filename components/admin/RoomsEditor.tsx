@@ -15,6 +15,7 @@ export default function RoomsEditor() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [roomLimit, setRoomLimit] = useState<number | null>(null);
   const [roomPlan, setRoomPlan] = useState<Plan | null>(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [locked, setLocked] = useState(false);
   const [lockedMessage, setLockedMessage] = useState("");
   const [loaded, setLoaded] = useState(false);
@@ -40,6 +41,7 @@ export default function RoomsEditor() {
         setRooms(data.rooms);
         setRoomLimit(data.limit);
         setRoomPlan(isPlan(data.plan) ? data.plan : null);
+        setHasActiveSubscription(!!data.hasActiveSubscription);
       })
       .catch(() => {})
       .finally(() => setLoaded(true));
@@ -186,7 +188,7 @@ export default function RoomsEditor() {
       {roomLimit !== null && roomPlan && (
         <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", flexWrap: "wrap", fontSize: "0.85rem", color: "var(--muted)" }}>
           <span>{activeRoomCount} von {roomLimit} aktiven Räumen ({PLAN_LABELS[roomPlan]}-Paket)</span>
-          {activeRoomCount >= roomLimit && <UpgradeButton currentPlan={roomPlan} />}
+          {activeRoomCount >= roomLimit && <UpgradeButton currentPlan={roomPlan} hasActiveSubscription={hasActiveSubscription} />}
         </div>
       )}
 

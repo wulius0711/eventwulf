@@ -11,7 +11,7 @@ interface Member {
   self: boolean;
 }
 
-export default function TeamEditor({ plan }: { plan: Plan }) {
+export default function TeamEditor({ plan, hasActiveSubscription }: { plan: Plan; hasActiveSubscription: boolean }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [limit, setLimit] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -93,7 +93,7 @@ export default function TeamEditor({ plan }: { plan: Plan }) {
       {limit !== null && (
         <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", flexWrap: "wrap", fontSize: "0.85rem", color: "var(--muted)", marginBottom: "1.25rem" }}>
           <span>{members.length} von {limit} Mitgliedern ({PLAN_LABELS[plan]}-Paket)</span>
-          {atLimit && <UpgradeButton currentPlan={plan} />}
+          {atLimit && <UpgradeButton currentPlan={plan} hasActiveSubscription={hasActiveSubscription} />}
         </div>
       )}
 

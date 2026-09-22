@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { loadConfigFromDB } from "@/lib/loadConfig";
 import { isPlan } from "@/lib/plan";
+import { hasActiveSubscription } from "@/lib/stripe";
 import ConfigEditor from "@/components/admin/ConfigEditor";
 
 interface Props {
@@ -17,7 +18,7 @@ export default async function ConfigPage({ searchParams }: Props) {
   if (!client) redirect("/admin/login"); // client was deleted while this session's cookie was still valid
 
   const config = await loadConfigFromDB(client.slug);
-  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true, stripeCustomerId: true } });
+  const org = await prisma.organization.findUnique({ where: { id: session.organizationId }, select: { plan: true, subscriptionStatus: true, stripeCustomerId: true, stripeSubscriptionId: true } });
   // Deliberately org.plan here, not effectivePlan() — this drives the
   // "Aktueller Plan" label and the upgrade button. Showing the
   // payment-failure-downgraded plan here would look like an unannounced
@@ -35,7 +36,14 @@ export default async function ConfigPage({ searchParams }: Props) {
       <h1 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "1.5rem" }}>
         Einstellungen
       </h1>
-      <ConfigEditor initialConfig={config} plan={plan} paymentIssue={paymentIssue} initialTab={initialTab} hasStripeCustomer={!!org?.stripeCustomerId} />
+      <ConfigEditor
+        initialConfig={config}
+        plan={plan}
+        paymentIssue={paymentIssue}
+        initialTab={initialTab}
+        hasStripeCustomer={!!org?.stripeCustomerId}
+        hasActiveSubscription={hasActiveSubscription(org ?? {})}
+      />
     </div>
   );
 }

@@ -39,6 +39,12 @@ export default defineConfig({
       CRON_SECRET: "test-cron-secret",
       // Same reasoning as CRON_SECRET, for /api/provision.
       PROVISIONING_SECRET: "test-provisioning-secret",
+      // See app/api/stripe/checkout/route.ts — STRIPE_SECRET_KEY here is a
+      // live-mode key, so this route must never make a real Stripe API call
+      // under test. Swaps in a fake client whose create() throws instead,
+      // so the active-subscription guard is verifiable over real HTTP
+      // without ever reaching the network.
+      STRIPE_CHECKOUT_FAKE_FOR_TESTS: "true",
     },
   },
 });

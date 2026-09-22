@@ -58,6 +58,7 @@ export default function EventsEditor() {
   const [events, setEvents] = useState<EventEntry[]>([]);
   const [eventLimit, setEventLimit] = useState<number | null>(null);
   const [eventPlan, setEventPlan] = useState<Plan | null>(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -75,6 +76,7 @@ export default function EventsEditor() {
       setEvents(data.events);
       setEventLimit(data.limit);
       setEventPlan(isPlan(data.plan) ? data.plan : null);
+      setHasActiveSubscription(!!data.hasActiveSubscription);
     }).catch(() => {});
     fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
     // 403 if rooms aren't unlocked for this plan — fine, just means no room picker.
@@ -281,7 +283,7 @@ export default function EventsEditor() {
       {eventLimit !== null && eventPlan && (
         <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", flexWrap: "wrap", fontSize: "0.85rem", color: "var(--muted)" }}>
           <span>{activeEventCount} von {eventLimit} aktiven Events ({PLAN_LABELS[eventPlan]}-Paket)</span>
-          {activeEventCount >= eventLimit && <UpgradeButton currentPlan={eventPlan} />}
+          {activeEventCount >= eventLimit && <UpgradeButton currentPlan={eventPlan} hasActiveSubscription={hasActiveSubscription} />}
         </div>
       )}
 

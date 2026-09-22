@@ -4,7 +4,8 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
 import { validateMinParticipants } from "@/lib/validate";
-import { eventLimitFor, effectivePlan, PLAN_LABELS, PlanLimitExceededError } from "@/lib/plan";
+import { eventLimitFor, effectivePlan, PLAN_LABELS, PlanLimitExceededError, type Plan } from "@/lib/plan";
+import { hasActiveSubscription } from "@/lib/stripe";
 
 function sanitizeDescription(html: string): string {
   return sanitizeHtml(html, {
@@ -47,9 +48,9 @@ async function getClientId(slug: string) {
   return client?.id ?? null;
 }
 
-async function getOrgPlan(organizationId: string) {
-  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true } });
-  return effectivePlan(org);
+async function getOrgPlan(organizationId: string): Promise<{ plan: Plan; hasActiveSubscription: boolean }> {
+  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { plan: true, subscriptionStatus: true, disputeLostAt: true, stripeSubscriptionId: true } });
+  return { plan: effectivePlan(org), hasActiveSubscription: hasActiveSubscription(org ?? {}) };
 }
 
 // Validates a submitted roomId belongs to this client. `null`/"" clears the room.
@@ -89,8 +90,8 @@ export async function GET() {
   // limit alongside the list so the admin UI can show a heads-up when a plan
   // downgrade left more active events than the current plan allows — mirrors
   // the same pattern used for rooms (see app/api/admin/rooms/route.ts GET).
-  const plan = await getOrgPlan(session.organizationId);
-  return NextResponse.json({ events: events.map(serialize), limit: eventLimitFor(plan), plan });
+  const { plan, hasActiveSubscription } = await getOrgPlan(session.organizationId);
+  return NextResponse.json({ events: events.map(serialize), limit: eventLimitFor(plan), plan, hasActiveSubscription });
 }
 
 export async function POST(req: NextRequest) {
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Raum ungültig" }, { status: 400 });
   }
 
-  const plan = await getOrgPlan(session.organizationId);
+  const { plan } = await getOrgPlan(session.organizationId);
   const limit = eventLimitFor(plan);
 
   try {
@@ -225,7 +226,7 @@ export async function PATCH(req: NextRequest) {
   // check (and the same lock) as POST — mirrors the identical guard in
   // app/api/admin/rooms/route.ts.
   const isReactivating = isActive === true && !existing.isActive;
-  const plan = isReactivating ? await getOrgPlan(session.organizationId) : null;
+  const plan = isReactivating ? (await getOrgPlan(session.organizationId)).plan : null;
   const limit = plan ? eventLimitFor(plan) : null;
   const newImage = image ?? existing.image;
 
