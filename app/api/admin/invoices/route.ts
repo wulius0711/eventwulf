@@ -34,19 +34,35 @@ async function getClientId(slug: string) {
   return client?.id ?? null;
 }
 
-export async function GET() {
+const INVOICE_STATUSES = ["offen", "storniert"];
+const MAX_TAKE = 200;
+
+export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Nicht eingeloggt" }, { status: 401 });
 
   const clientId = await getClientId(session.clientSlug);
   if (!clientId) return NextResponse.json({ error: "Client nicht gefunden" }, { status: 404 });
 
-  const invoices = await prisma.invoice.findMany({
-    where: { clientId },
-    orderBy: { createdAt: "desc" },
-  });
+  const params = req.nextUrl.searchParams;
+  const statusesParam = params.get("statuses");
+  const statuses = statusesParam ? statusesParam.split(",").filter((s) => INVOICE_STATUSES.includes(s)) : undefined;
+  // No `take` = the caller wants everything (InvoicePanel filters by
+  // inquiryId client-side, EventsEditor-style consumers need the full set) —
+  // only InvoiceArchive's own list view paginates.
+  const takeParam = params.get("take");
+  const take = takeParam ? Math.min(Math.max(parseInt(takeParam, 10) || 0, 1), MAX_TAKE) : undefined;
+  const skip = Math.max(parseInt(params.get("skip") ?? "0", 10) || 0, 0);
 
-  return NextResponse.json(invoices.map(serialize));
+  const where = { clientId, ...(statuses ? { status: { in: statuses } } : {}) };
+
+  const [invoices, total] = await Promise.all([
+    prisma.invoice.findMany({ where, orderBy: { createdAt: "desc" }, ...(take ? { take, skip } : {}) }),
+    prisma.invoice.count({ where }),
+  ]);
+
+  if (!take) return NextResponse.json(invoices.map(serialize));
+  return NextResponse.json({ invoices: invoices.map(serialize), total });
 }
 
 export async function POST(req: NextRequest) {
