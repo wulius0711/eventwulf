@@ -307,12 +307,13 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
           const events = weekEvents(week, blocked);
           const selRange = weekSelectedRange(week, selStart, selEnd, hover);
           return (
-            <div key={wi} style={{ borderBottom: "1px solid var(--border)" }}>
-              <div className="ew-cal-week-row" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
-                {/* Weekend columns (SA/SO) are always the last two of a Monday-start week.
-                    Placed via grid-column (not calc/%) so it shares the exact same column
-                    boundaries as the day cells below — no rounding drift between the two. */}
-                <div style={{ gridColumn: "6 / 8", gridRow: 1, background: "rgba(0,0,0,0.05)" }} />
+            <div key={wi} style={{ position: "relative", borderBottom: "1px solid var(--border)" }}>
+              {/* Weekend columns (SA/SO) are always the last two of a Monday-start week.
+                  Spans the whole row height — including the blocked/event banner strip
+                  below the day numbers — not just the day-number grid, so the tint
+                  doesn't visibly cut off above a "nicht verfügbar"/event banner. */}
+              <div style={{ position: "absolute", top: 0, bottom: 0, left: "calc(5 * (100% / 7))", width: "calc(2 * (100% / 7))", background: "rgba(0,0,0,0.05)" }} />
+              <div className="ew-cal-week-row" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", position: "relative" }}>
                 {selRange && (
                   <div style={{
                     gridColumn: `${selRange.startCol + 1} / ${selRange.endCol + 2}`,
@@ -379,7 +380,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
 
               {/* Blocked / event banners */}
               {(blockedRange || events.length > 0) && (
-                <div style={{ padding: "0 0 0.35rem", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                <div style={{ position: "relative", padding: "0 0 0.35rem", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
                   {blockedRange && (
                     <div style={{ position: "relative", height: "1.2rem" }}>
                       <div
