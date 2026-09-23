@@ -56,6 +56,7 @@ export default async function Home({ searchParams }: Props) {
   const initialRooms = roomsFeatureEnabled ? (client?.rooms ?? []) : [];
   const hasRooms = initialRooms.length > 0;
   const isDemo = client?.isDemo ?? false;
+  const showBranding = !hasFeature(orgPlan, "removeBranding");
 
   const themeVars = buildThemeVars(config.company.primaryColor ?? DEFAULT_PRIMARY_COLOR);
 
@@ -101,7 +102,7 @@ export default async function Home({ searchParams }: Props) {
             {config.formTitle}
           </h2>
         )}
-        <Wizard config={config} slug={slug} hasRooms={hasRooms} isDemo={isDemo} initialRooms={initialRooms} roomIds={roomIds} />
+        <Wizard config={config} slug={slug} hasRooms={hasRooms} isDemo={isDemo} initialRooms={initialRooms} roomIds={roomIds} showBranding={showBranding} />
       </div>
     </div>
   );

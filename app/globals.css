@@ -276,6 +276,22 @@ button:active:not(:disabled) {
 }
 .ew-step-counter { font-size: 0.8rem; color: var(--muted); }
 
+.ew-powered-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  color: #6b7280;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.ew-powered-badge:hover { background: rgba(0, 0, 0, 0.09); }
+.ew-powered-badge strong { color: #374151; font-weight: 600; }
+
 .ew-btn-primary {
   padding: 0.65rem 1.5rem;
   background: var(--primary);

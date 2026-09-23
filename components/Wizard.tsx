@@ -9,6 +9,7 @@ import Step2Gruppe from "@/components/steps/Step2Gruppe";
 import Step3Ausstattung from "@/components/steps/Step3Ausstattung";
 import Step4Verpflegung from "@/components/steps/Step4Verpflegung";
 import Step5Abschluss from "@/components/steps/Step5Abschluss";
+import PoweredByBadge from "@/components/PoweredByBadge";
 
 const STEP_LABELS = ["Veranstaltung", "Gruppe", "Ausstattung", "Verpflegung", "Abschluss"];
 
@@ -19,6 +20,7 @@ interface Props {
   isDemo?: boolean;
   initialRooms?: RoomEntry[];
   roomIds?: string[];
+  showBranding?: boolean;
 }
 
 type SubmitState = "idle" | "loading" | "success" | "error" | "demo";
@@ -55,7 +57,7 @@ function validate(step: number, form: import("@/lib/types").InquiryFormData, con
   return "";
 }
 
-export default function Wizard({ config, slug, hasRooms, isDemo, initialRooms, roomIds }: Props) {
+export default function Wizard({ config, slug, hasRooms, isDemo, initialRooms, roomIds, showBranding }: Props) {
   const { form, step, maxStep, nextStep, prevStep, goToStep, reset } = useFormStore();
   const [error, setError] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
@@ -139,6 +141,7 @@ export default function Wizard({ config, slug, hasRooms, isDemo, initialRooms, r
         <button onClick={() => { setSubmitState("idle"); reset(); }} className="ew-btn-primary">
           Nochmal ausprobieren
         </button>
+        {showBranding && <PoweredByBadge />}
       </div>
     );
   }
@@ -152,6 +155,7 @@ export default function Wizard({ config, slug, hasRooms, isDemo, initialRooms, r
         <button onClick={() => setSubmitState("idle")} className="ew-btn-primary">
           Neue Anfrage
         </button>
+        {showBranding && <PoweredByBadge />}
       </div>
     );
   }
@@ -219,6 +223,7 @@ export default function Wizard({ config, slug, hasRooms, isDemo, initialRooms, r
           </button>
         )}
       </div>
+      {showBranding && <PoweredByBadge />}
     </div>
   );
 }

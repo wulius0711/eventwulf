@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { sendResizeMessage } from "@/lib/iframeResize";
+import PoweredByBadge from "@/components/PoweredByBadge";
 
 interface EventItem {
   id: string;
@@ -19,6 +20,7 @@ interface EventItem {
 interface Props {
   slug: string;
   isDemo?: boolean;
+  showBranding?: boolean;
 }
 
 function fmtDate(iso: string) {
@@ -195,7 +197,7 @@ function EventCard({ event, slug, expanded, onToggle, isDemo }: { event: EventIt
   );
 }
 
-export default function EventsList({ slug, isDemo }: Props) {
+export default function EventsList({ slug, isDemo, showBranding }: Props) {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -210,21 +212,29 @@ export default function EventsList({ slug, isDemo }: Props) {
   if (loading) return null;
 
   if (events.length === 0) {
-    return <p style={{ textAlign: "center", color: "var(--muted)", fontSize: "0.9rem" }}>Aktuell sind keine Events geplant.</p>;
+    return (
+      <>
+        <p style={{ textAlign: "center", color: "var(--muted)", fontSize: "0.9rem" }}>Aktuell sind keine Events geplant.</p>
+        {showBranding && <PoweredByBadge />}
+      </>
+    );
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: "1.25rem", alignItems: "start" }}>
-      {events.map((ev) => (
-        <EventCard
-          key={ev.id}
-          event={ev}
-          slug={slug}
-          expanded={expandedId === ev.id}
-          onToggle={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
-          isDemo={isDemo}
-        />
-      ))}
-    </div>
+    <>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: "1.25rem", alignItems: "start" }}>
+        {events.map((ev) => (
+          <EventCard
+            key={ev.id}
+            event={ev}
+            slug={slug}
+            expanded={expandedId === ev.id}
+            onToggle={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
+            isDemo={isDemo}
+          />
+        ))}
+      </div>
+      {showBranding && <PoweredByBadge />}
+    </>
   );
 }

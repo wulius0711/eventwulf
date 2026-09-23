@@ -5,6 +5,9 @@ const PLAN_ORDER: Plan[] = ["basis", "pro", "premium"];
 // Which plan first unlocks a given feature. Add new features here as they're gated.
 const FEATURE_MIN_PLAN = {
   rooms: "pro",
+  // "removeBranding" gates hiding the "Powered by eventwulf" badge shown on
+  // the public widgets — Basis/Pro keep it, Premium can drop it.
+  removeBranding: "premium",
 } as const satisfies Record<string, Plan>;
 
 export type Feature = keyof typeof FEATURE_MIN_PLAN;

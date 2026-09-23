@@ -50,7 +50,7 @@ function fmtPrice(n: number) {
 function emptyForm() {
   return {
     name: "", description: "", image: "", startDate: "", endDate: "",
-    color: EVENT_COLORS[0].value, intern: false, pricePerPerson: "0",
+    color: EVENT_COLORS[0].value, intern: true, pricePerPerson: "0",
     minParticipants: "1", maxParticipants: "", showCapacity: true, isActive: true, roomId: "",
   };
 }
@@ -444,7 +444,7 @@ export default function EventsEditor() {
           <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer", fontSize: "0.88rem" }}>
             <Toggle checked={form.intern} onChange={(v) => set("intern", v)} />
             <span>
-              <strong>Intern</strong>
+              <strong>Intern – blockiert Kalender</strong>
               <InfoTip text="Sperrt den Zeitraum im allgemeinen Kalender für andere Anfragen." />
             </span>
           </label>
