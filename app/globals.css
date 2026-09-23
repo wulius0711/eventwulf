@@ -335,7 +335,12 @@ button:active:not(:disabled) {
 .cal-slide-prev { animation: cal-slide-prev 0.25s ease; }
 
 .ew-cal-nav-btn {
-  padding: 0.3rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
   border: none;
   background: var(--primary-tint);
   cursor: pointer;
