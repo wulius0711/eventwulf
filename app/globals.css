@@ -302,7 +302,7 @@ button:active:not(:disabled) {
 .ew-checkbox-option {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   border: 1.5px solid var(--border-strong, var(--border));
@@ -397,8 +397,6 @@ button:active:not(:disabled) {
   .ew-inq-filterbar input { width: 100% !important; }
 
   .ew-grid-2 { grid-template-columns: 1fr !important; }
-
-  .ew-checkbox-option { justify-content: flex-start !important; }
 
   /* Widget wrapper */
   .ew-widget-wrap { padding: 1.25rem 1rem !important; }
