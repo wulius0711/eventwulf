@@ -55,8 +55,6 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
   const { showToast } = useToast();
   const [config, setConfig] = useState<EventConfig>(initialConfig);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [saveError, setSaveError] = useState("");
 
   function set<K extends keyof EventConfig>(key: K, value: EventConfig[K]) {
     setConfig((c) => ({ ...c, [key]: value }));
@@ -96,8 +94,6 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
 
   async function handleSave() {
     setSaving(true);
-    setSaved(false);
-    setSaveError("");
 
     const res = await fetch("/api/admin/config", {
       method: "PUT",
@@ -107,11 +103,8 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
 
     setSaving(false);
     if (res.ok) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
       showToast("success", "Formular gespeichert");
     } else {
-      setSaveError("Fehler beim Speichern");
       showToast("error", "Fehler beim Speichern");
     }
   }
@@ -338,8 +331,6 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
       </Section>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
-        {saved && <span style={{ color: "#16a34a", fontSize: "0.85rem" }}>Gespeichert ✓</span>}
-        {saveError && <span style={{ color: "var(--error)", fontSize: "0.85rem" }}>{saveError}</span>}
         <button
           onClick={handleSave}
           disabled={saving}

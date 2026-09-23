@@ -50,8 +50,6 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
   const [config, setConfig] = useState<EventConfig>(initialConfig);
   const [tab, setTab] = useState<Tab>(initialTab ?? "firma");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [saveError, setSaveError] = useState("");
   const { showToast } = useToast();
 
   // Password change state
@@ -69,8 +67,6 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
 
   async function handleSave() {
     setSaving(true);
-    setSaved(false);
-    setSaveError("");
 
     const res = await fetch("/api/admin/config", {
       method: "PUT",
@@ -87,11 +83,8 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
       // the DB until the next full reload.
       const data = await res.json().catch(() => ({}));
       if (data.config) setConfig(data.config);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
       showToast("success", "Einstellungen gespeichert");
     } else {
-      setSaveError("Fehler beim Speichern");
       showToast("error", "Fehler beim Speichern");
     }
   }
@@ -234,8 +227,6 @@ export default function ConfigEditor({ initialConfig, plan, paymentIssue, initia
       {/* Save bar (only for firma/abrechnung tabs — team and passwort save inline) */}
       {tab !== "passwort" && tab !== "team" && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
-          {saved && <span style={{ color: "#16a34a", fontSize: "0.85rem" }}>Gespeichert ✓</span>}
-          {saveError && <span style={{ color: "var(--error)", fontSize: "0.85rem" }}>{saveError}</span>}
           <button
             onClick={handleSave}
             disabled={saving}
