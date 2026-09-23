@@ -111,6 +111,8 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
   }
 
   function removeCustomField(id: string) {
+    const field = config.customFields?.find((f) => f.id === id);
+    if (!window.confirm(`Feld „${field?.label || "Unbenannt"}" wirklich entfernen? Bereits erhaltene Antworten auf dieses Feld sind danach in den Anfragen nicht mehr sichtbar.`)) return;
     setConfig((c) => ({ ...c, customFields: (c.customFields ?? []).filter((f) => f.id !== id) }));
   }
 
