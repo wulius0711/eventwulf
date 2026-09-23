@@ -74,9 +74,14 @@ function EmbedSnippet({ title, description, src, origin, iframeId, extra }: { ti
   );
 }
 
-function FramerSnippet({ origin, slug }: { origin: string; slug: string }) {
+function FramerSnippet({ origin, slug, rooms }: { origin: string; slug: string; rooms: RoomOption[] }) {
   const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
+  // Baked in as real options (like slug's defaultValue below) rather than a
+  // free-text id field — Framer property controls can't fetch this client's
+  // rooms live, so the actual current room list is embedded at code-copy time.
+  const roomIdOptions = rooms.map((r) => JSON.stringify(r.id)).join(", ");
+  const roomIdOptionTitles = rooms.map((r) => JSON.stringify(r.name)).join(", ");
   const code = `import { useEffect, useRef, useState } from "react"
 import { addPropertyControls, ControlType } from "framer"
 
@@ -87,12 +92,13 @@ const BASE_URL = "${origin}"
  * @framerSupportedLayoutHeight auto
  */
 export default function EventwulfWidget(props) {
-    const { slug, widget } = props
+    const { slug, widget, roomIds } = props
     const iframeRef = useRef(null)
     const [height, setHeight] = useState(400)
 
     const path = widget === "events" ? "/events" : "/"
-    const src = \`\${BASE_URL}\${path}?kunde=\${encodeURIComponent(slug || "default")}\`
+    const roomParam = widget === "form" && roomIds?.length ? \`&raeume=\${roomIds.join(",")}\` : ""
+    const src = \`\${BASE_URL}\${path}?kunde=\${encodeURIComponent(slug || "default")}\${roomParam}\`
 
     useEffect(() => {
         function handleMessage(e) {
@@ -129,6 +135,15 @@ addPropertyControls(EventwulfWidget, {
         optionTitles: ["Anfrageformular", "Events"],
         defaultValue: "form",
     },
+    roomIds: {
+        type: ControlType.Array,
+        title: "Nur diese Räume",
+        control: {
+            type: ControlType.Enum,
+            options: [${roomIdOptions}],
+            optionTitles: [${roomIdOptionTitles}],
+        },
+    },
 })`;
 
   function copyCode() {
@@ -142,7 +157,7 @@ addPropertyControls(EventwulfWidget, {
   return (
     <EmbedCard title="Einbetten in Framer">
       <p style={{ margin: "0 0 0.75rem", fontSize: "0.85rem", color: "var(--muted)" }}>
-        Framer verpackt den HTML-Code oben in ein eigenes iFrame, wodurch die automatische Höhenanpassung dort nicht funktioniert. Lege stattdessen eine <strong>Code Component</strong> an (Assets → Code → + → New Code File), füge diesen Code ein und ziehe die Component danach aus dem Insert-Panel auf deine Seite. Die Component musst du nur <strong>einmal</strong> anlegen — willst du Formular und Events auf derselben oder auf getrennten Seiten zeigen, ziehst du sie einfach zweimal auf die Seite(n) und stellst bei der zweiten Instanz die Property „Widget" auf „Events":
+        Framer verpackt den HTML-Code oben in ein eigenes iFrame, wodurch die automatische Höhenanpassung dort nicht funktioniert. Lege stattdessen eine <strong>Code Component</strong> an (Assets → Code → + → New Code File), füge diesen Code ein und ziehe die Component danach aus dem Insert-Panel auf deine Seite. Die Component musst du nur <strong>einmal</strong> anlegen — willst du Formular und Events auf derselben oder auf getrennten Seiten zeigen, ziehst du sie einfach zweimal auf die Seite(n) und stellst bei der zweiten Instanz die Property „Widget" auf „Events". Über die Property „Nur diese Räume" (Mehrfachauswahl) kannst du pro Instanz auch nur einen Teil deiner Räume anbieten — z.B. eine Instanz für eine „Hochzeiten"-Seite, eine zweite für „Seminare":
       </p>
       <textarea
         readOnly
@@ -246,7 +261,7 @@ export default function EmbedEditor({ slug }: Props) {
         origin={origin}
         iframeId="eventwulf-events-widget"
       />
-      <FramerSnippet origin={origin} slug={slug} />
+      <FramerSnippet origin={origin} slug={slug} rooms={rooms} />
     </div>
   );
 }
