@@ -96,14 +96,31 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
               }}
               title={unavailable ? "Für den gewählten Zeitraum nicht verfügbar" : undefined}
               style={{
+                position: "relative", boxSizing: "border-box",
                 textAlign: "left", padding: 0, overflow: "hidden",
                 cursor: unavailable ? "not-allowed" : "pointer",
-                borderRadius: "var(--radius-sm)", border: `1px solid ${selected ? "var(--primary)" : "var(--border-strong, var(--border))"}`,
+                borderRadius: "var(--radius-sm)",
+                border: `${selected ? 2 : 1}px solid ${selected ? "var(--primary)" : "var(--border-strong, var(--border))"}`,
                 boxShadow: selected ? "0 0 0 3px var(--primary-tint)" : "none",
                 background: "var(--surface)", display: "flex", flexDirection: "column",
                 opacity: unavailable ? 0.45 : 1,
               }}
             >
+              {selected && (
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute", top: "0.4rem", right: "0.4rem", zIndex: 1,
+                    width: "1.35rem", height: "1.35rem", borderRadius: "50%",
+                    background: "var(--primary)", color: "var(--btn-text, #fff)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "0.8rem", fontWeight: 700, lineHeight: 1,
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                  }}
+                >
+                  ✓
+                </div>
+              )}
               {room.image ? (
                 <img src={room.image} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", filter: unavailable ? "grayscale(1)" : undefined }} />
               ) : (
