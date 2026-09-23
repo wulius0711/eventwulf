@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import type { EventConfig, InquiryFormData } from "@/lib/types";
 import InvoicePanel from "@/components/admin/InvoicePanel";
 import { useToast } from "@/components/admin/Toast";
-import { InboxEmptyIcon, FilterEmptyIcon } from "@/components/admin/icons";
+import { InboxEmptyIcon, FilterEmptyIcon, ArchiveIcon } from "@/components/admin/icons";
 
 interface Inquiry {
   id: string;
@@ -14,6 +14,7 @@ interface Inquiry {
   participantCount: number;
   eventId: string | null;
   holdExpiresAt: string | null;
+  archivedAt: string | null;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -46,6 +47,9 @@ const STATUS_GROUPS: { key: string; label: string; statuses: string[] | null }[]
   { key: "bestaetigt",         label: "Bestätigt",         statuses: ["bestaetigt"] },
   { key: "erledigt",           label: "Erledigt",          statuses: ["abgelehnt", "storniert", "abgelaufen"] },
 ];
+
+const PAGE_SIZES = [20, 50, 100];
+const PAGE_SIZE_KEY = "ew-admin-inquiries-pagesize";
 
 function fmt(iso: string) {
   const d = new Date(iso);
@@ -84,17 +88,92 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 export default function InquiryInbox({ config }: { config: EventConfig }) {
   const { showToast } = useToast();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [total, setTotal] = useState(0);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [statusFilter, setStatusFilter] = useState("alle");
+  const [view, setView] = useState<"inbox" | "archiv">("inbox");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [pageSize, setPageSize] = useState(() => {
+    try {
+      const stored = Number(localStorage.getItem(PAGE_SIZE_KEY));
+      return PAGE_SIZES.includes(stored) ? stored : 20;
+    } catch { return 20; }
+  });
+
+  // Debounced so typing doesn't fire a request per keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
   useEffect(() => {
-    fetch("/api/admin/inquiries")
+    try { localStorage.setItem(PAGE_SIZE_KEY, String(pageSize)); } catch {}
+  }, [pageSize]);
+
+  function buildParams(skip: number) {
+    const params = new URLSearchParams();
+    params.set("archived", view === "archiv" ? "true" : "false");
+    const activeGroup = STATUS_GROUPS.find((g) => g.key === statusFilter);
+    if (activeGroup?.statuses) params.set("statuses", activeGroup.statuses.join(","));
+    // A search spans the full matching history, not just one loaded page —
+    // `data` is opaque JSON text (no server-side text search), so this
+    // fetches everything for the current status/archiv filter and searches
+    // client-side below, instead of paginating while a search is active.
+    if (!search.trim()) {
+      params.set("take", String(pageSize));
+      params.set("skip", String(skip));
+    }
+    return params;
+  }
+
+  // Reset to the first page whenever the filter itself changes.
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/admin/inquiries?${buildParams(0)}`)
       .then((r) => r.json())
-      .then((data) => { setInquiries(data); setLoading(false); })
+      .then((res: { inquiries: Inquiry[]; total: number }) => {
+        setInquiries(res.inquiries);
+        setTotal(res.total);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
-  }, []);
+    setExpanded(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, statusFilter, pageSize, debouncedSearch]);
+
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/admin/inquiries?${buildParams(inquiries.length)}`);
+      const data = await res.json() as { inquiries: Inquiry[]; total: number };
+      setInquiries((prev) => [...prev, ...data.inquiries]);
+      setTotal(data.total);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  // After a status/archive change, an inquiry that no longer matches the
+  // current view (e.g. archived while viewing the inbox) is dropped from the
+  // list instead of lingering until the next full reload.
+  function applyUpdate(id: string, patch: Partial<Inquiry>) {
+    setInquiries((prev) => {
+      const idx = prev.findIndex((i) => i.id === id);
+      if (idx === -1) return prev;
+      const merged = { ...prev[idx], ...patch };
+      const archivedOk = view === "archiv" ? merged.archivedAt !== null : merged.archivedAt === null;
+      const activeGroup = STATUS_GROUPS.find((g) => g.key === statusFilter);
+      const statusOk = !activeGroup?.statuses || activeGroup.statuses.includes(merged.status);
+      if (!archivedOk || !statusOk) {
+        setTotal((t) => Math.max(0, t - 1));
+        return prev.filter((i) => i.id !== id);
+      }
+      return prev.map((i) => (i.id === id ? merged : i));
+    });
+  }
 
   async function setStatus(id: string, status: string) {
     const current = inquiries.find((i) => i.id === id);
@@ -106,14 +185,26 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
     });
     if (res.ok) {
       const updated = await res.json() as Inquiry;
-      setInquiries((prev) => prev.map((i) => i.id === id ? { ...i, status: updated.status, updatedAt: updated.updatedAt } : i));
+      applyUpdate(id, { status: updated.status, updatedAt: updated.updatedAt });
       showToast("success", "Status aktualisiert");
     } else {
       const d = await res.json().catch(() => ({})) as { error?: string };
       showToast("error", d.error ?? "Fehler beim Ändern des Status");
-      if (res.status === 409) {
-        fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
-      }
+    }
+  }
+
+  async function setArchived(id: string, archived: boolean) {
+    const res = await fetch("/api/admin/inquiries", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, archived }),
+    });
+    if (res.ok) {
+      const updated = await res.json() as Inquiry;
+      applyUpdate(id, { archivedAt: updated.archivedAt });
+      showToast("success", archived ? "Anfrage archiviert" : "Aus Archiv geholt");
+    } else {
+      showToast("error", "Fehler beim Archivieren");
     }
   }
 
@@ -124,12 +215,19 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    if (res.ok) { setInquiries((prev) => prev.filter((i) => i.id !== id)); showToast("success", "Anfrage gelöscht"); }
-    else showToast("error", "Fehler beim Löschen");
+    if (res.ok) {
+      setInquiries((prev) => prev.filter((i) => i.id !== id));
+      setTotal((t) => Math.max(0, t - 1));
+      showToast("success", "Anfrage gelöscht");
+    } else {
+      showToast("error", "Fehler beim Löschen");
+    }
   }
 
   if (loading) return <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>Lade Anfragen…</p>;
-  if (inquiries.length === 0) {
+
+  const isUnfiltered = view === "inbox" && statusFilter === "alle" && !search.trim();
+  if (inquiries.length === 0 && isUnfiltered) {
     return (
       <div className="ew-empty-state">
         <span className="ew-empty-state-icon">{InboxEmptyIcon}</span>
@@ -139,21 +237,19 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
     );
   }
 
-  const activeGroup = STATUS_GROUPS.find((g) => g.key === statusFilter) ?? STATUS_GROUPS[0];
   const parsed = inquiries.map((inq) => ({ inq, d: JSON.parse(inq.data) as InquiryFormData }));
-  const filtered = parsed.filter(({ inq, d }) => {
-    if (activeGroup.statuses && !activeGroup.statuses.includes(inq.status)) return false;
-    if (search.trim()) {
-      const haystack = `${d.artTitel ?? ""} ${d.nameGruppenleitung ?? ""} ${d.email ?? ""}`.toLowerCase();
-      if (!haystack.includes(search.trim().toLowerCase())) return false;
-    }
-    return true;
-  });
+  const filtered = search.trim()
+    ? parsed.filter(({ d }) => {
+        const haystack = `${d.artTitel ?? ""} ${d.nameGruppenleitung ?? ""} ${d.email ?? ""}`.toLowerCase();
+        return haystack.includes(search.trim().toLowerCase());
+      })
+    : parsed;
+  const canLoadMore = !search.trim() && inquiries.length < total;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <div className="ew-inq-filterbar" style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.5rem" }}>
           {STATUS_GROUPS.map((g) => (
             <button
               key={g.key}
@@ -170,22 +266,45 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
               {g.label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setView(view === "archiv" ? "inbox" : "archiv")}
+            title="Archivierte Anfragen anzeigen"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "0.35rem",
+              padding: "0.35rem 0.85rem", borderRadius: "999px", fontSize: "0.8rem", fontWeight: 600,
+              marginLeft: "0.5rem",
+              border: `1px solid ${view === "archiv" ? "var(--primary)" : "var(--border)"}`,
+              background: view === "archiv" ? "var(--primary-tint)" : "none",
+              color: view === "archiv" ? "var(--primary-text)" : "var(--muted)",
+              cursor: "pointer",
+            }}
+          >
+            {ArchiveIcon} Archiv
+          </button>
         </div>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Nach Titel, Name oder E-Mail filtern…"
-          style={{ width: "auto", minWidth: "300px" }}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Nach Titel, Name oder E-Mail filtern…"
+            style={{ width: "auto", minWidth: "300px" }}
+          />
+          <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ width: "auto" }} title="Anzahl pro Seite">
+            {PAGE_SIZES.map((n) => <option key={n} value={n}>{n} pro Seite</option>)}
+          </select>
+        </div>
       </div>
 
       {filtered.length === 0 && (
         <div className="ew-empty-state">
           <span className="ew-empty-state-icon">{FilterEmptyIcon}</span>
           <div className="ew-empty-state-title">Keine Treffer</div>
-          <p className="ew-empty-state-body">Für „{STATUS_GROUPS.find((g) => g.key === statusFilter)?.label}"{search.trim() ? ` und „${search}"` : ""} wurde nichts gefunden.</p>
-          <button type="button" className="ew-admin-btn ew-admin-btn-outline ew-empty-state-action" onClick={() => { setStatusFilter("alle"); setSearch(""); }}>
+          <p className="ew-empty-state-body">
+            Für „{view === "archiv" ? "Archiv" : STATUS_GROUPS.find((g) => g.key === statusFilter)?.label}"{search.trim() ? ` und „${search}"` : ""} wurde nichts gefunden.
+          </p>
+          <button type="button" className="ew-admin-btn ew-admin-btn-outline ew-empty-state-action" onClick={() => { setStatusFilter("alle"); setView("inbox"); setSearch(""); }}>
             Filter zurücksetzen
           </button>
         </div>
@@ -195,6 +314,7 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
       {filtered.map(({ inq, d }) => {
         const sc = STATUS_COLORS[inq.status] ?? STATUS_COLORS.neu;
         const isOpen = expanded === inq.id;
+        const isArchived = inq.archivedAt !== null;
 
         return (
           <div key={inq.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
@@ -230,6 +350,18 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
                 <span className="ew-inq-created" style={{ fontSize: "0.75rem", color: "var(--muted)", flexShrink: 0 }}>
                   {fmt(inq.createdAt)}
                 </span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setArchived(inq.id, !isArchived); }}
+                  title={isArchived ? "Aus Archiv holen" : "Archivieren"}
+                  style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: "1.6rem", height: "1.6rem", padding: 0, border: "none", borderRadius: "var(--radius-sm)",
+                    background: "none", color: isArchived ? "var(--primary-text)" : "var(--muted)", cursor: "pointer", flexShrink: 0,
+                  }}
+                >
+                  {ArchiveIcon}
+                </button>
                 <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{isOpen ? "▲" : "▼"}</span>
               </div>
             </div>
@@ -264,18 +396,19 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
                       value={`${fmtHoldRemaining(inq.holdExpiresAt)} (${new Date(inq.holdExpiresAt).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })} Uhr)`}
                     />
                   )}
+                  {isArchived && inq.archivedAt && (
+                    <DetailRow label="Archiviert" value={new Date(inq.archivedAt).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" })} />
+                  )}
                 </div>
 
                 <InvoicePanel
                   inquiryId={inq.id}
                   inquiryUpdatedAt={inq.updatedAt}
                   participantCount={inq.participantCount}
-                  onStatusChange={(newStatus, newUpdatedAt) =>
-                    setInquiries((prev) => prev.map((i) => i.id === inq.id ? { ...i, status: newStatus, updatedAt: newUpdatedAt } : i))
-                  }
+                  onStatusChange={(newStatus, newUpdatedAt) => applyUpdate(inq.id, { status: newStatus, updatedAt: newUpdatedAt })}
                 />
 
-                {/* Status + delete controls */}
+                {/* Status + archive + delete controls */}
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", borderTop: "1px solid var(--border)", paddingTop: "0.9rem" }}>
                   <span style={{ fontSize: "0.82rem", color: "var(--muted)", marginRight: "0.25rem" }}>Status:</span>
                   {Object.entries(STATUS_LABELS).filter(([key]) => key !== "abgelaufen").map(([key, label]) => (
@@ -294,13 +427,22 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
                       {label}
                     </button>
                   ))}
-                  <button
-                    onClick={() => deleteInquiry(inq.id, `${d.artTitel || "Retreat"} — ${d.nameGruppenleitung}`)}
-                    className="ew-admin-btn ew-admin-btn-outline-danger"
-                    style={{ marginLeft: "auto", fontSize: "0.78rem" }}
-                  >
-                    Löschen
-                  </button>
+                  <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
+                    <button
+                      onClick={() => setArchived(inq.id, !isArchived)}
+                      className="ew-admin-btn ew-admin-btn-outline"
+                      style={{ fontSize: "0.78rem" }}
+                    >
+                      {isArchived ? "Aus Archiv holen" : "Archivieren"}
+                    </button>
+                    <button
+                      onClick={() => deleteInquiry(inq.id, `${d.artTitel || "Retreat"} — ${d.nameGruppenleitung}`)}
+                      className="ew-admin-btn ew-admin-btn-outline-danger"
+                      style={{ fontSize: "0.78rem" }}
+                    >
+                      Löschen
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -308,6 +450,18 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
         );
       })}
       </div>
+
+      {canLoadMore && (
+        <button
+          type="button"
+          onClick={loadMore}
+          disabled={loadingMore}
+          className="ew-admin-btn ew-admin-btn-outline"
+          style={{ alignSelf: "center", fontSize: "0.85rem" }}
+        >
+          {loadingMore ? "Lädt…" : `Weitere laden (${inquiries.length} von ${total})`}
+        </button>
+      )}
     </div>
   );
 }

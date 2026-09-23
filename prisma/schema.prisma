@@ -95,6 +95,7 @@ model Inquiry {
   room             Room?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
   participantCount Int       @default(0)
   holdExpiresAt    DateTime? // capacity hold on an Event inquiry expires if left unanswered
+  archivedAt       DateTime? // manually archived by the admin — hidden from the default inbox list, kept for record-keeping
   invoices         Invoice[]
   reminderSentAt   DateTime?
   cancelToken      String?   @unique

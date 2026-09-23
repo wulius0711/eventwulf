@@ -80,7 +80,8 @@ export default function EventsEditor() {
       setEventPlan(isPlan(data.plan) ? data.plan : null);
       setHasActiveSubscription(!!data.hasActiveSubscription);
     }).catch(() => {});
-    fetch("/api/admin/inquiries").then((r) => r.json()).then(setInquiries).catch(() => {});
+    // No `archived` param — participant counts must include archived registrations too.
+    fetch("/api/admin/inquiries").then((r) => r.json()).then((data) => setInquiries(data.inquiries)).catch(() => {});
     // 403 if rooms aren't unlocked for this plan — fine, just means no room picker.
     fetch("/api/admin/rooms").then((r) => r.ok ? r.json() : { rooms: [] }).then((data) => setRooms(data.rooms)).catch(() => {});
   }, []);

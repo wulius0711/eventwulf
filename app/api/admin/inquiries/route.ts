@@ -4,6 +4,9 @@ import { prisma } from "@/lib/db";
 import { isHeld, reserveEventCapacity, releaseEventCapacity, CapacityExceededError } from "@/lib/eventCapacity";
 import { ConflictError, NotFoundError } from "@/lib/concurrency";
 
+const ALL_STATUSES = ["neu", "in_pruefung", "angebot_versendet", "bestaetigt", "abgelehnt", "storniert", "abgelaufen"];
+const MAX_TAKE = 200;
+
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -11,21 +14,59 @@ export async function GET(req: NextRequest) {
   const client = await prisma.client.findUnique({ where: { slug: session.clientSlug } });
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
-  const inquiries = await prisma.inquiry.findMany({
-    where: { clientId: client.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const params = req.nextUrl.searchParams;
+  // Absent = no archived filter at all (used by EventsEditor's participant-count
+  // lookup, which needs every Inquiry regardless of archive state); InquiryInbox
+  // always passes an explicit "true"/"false" for its current view.
+  const archivedParam = params.get("archived");
+  const statusesParam = params.get("statuses");
+  const statuses = statusesParam ? statusesParam.split(",").filter((s) => ALL_STATUSES.includes(s)) : undefined;
+  // No `take` param = the caller is doing a full-history text search (see
+  // InquiryInbox), which can't run server-side against `data` (opaque JSON
+  // text, not indexed columns) — it fetches everything matching
+  // status/archived and filters client-side instead of paginating.
+  const takeParam = params.get("take");
+  const take = takeParam ? Math.min(Math.max(parseInt(takeParam, 10) || 0, 1), MAX_TAKE) : undefined;
+  const skip = Math.max(parseInt(params.get("skip") ?? "0", 10) || 0, 0);
 
-  return NextResponse.json(inquiries);
+  const where = {
+    clientId: client.id,
+    ...(archivedParam === "true" ? { archivedAt: { not: null } } : archivedParam === "false" ? { archivedAt: null } : {}),
+    ...(statuses ? { status: { in: statuses } } : {}),
+  };
+
+  const [inquiries, total] = await Promise.all([
+    prisma.inquiry.findMany({ where, orderBy: { createdAt: "desc" }, ...(take ? { take, skip } : {}) }),
+    prisma.inquiry.count({ where }),
+  ]);
+
+  return NextResponse.json({ inquiries, total });
 }
 
 export async function PATCH(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id, status, updatedAt } = await req.json() as { id: string; status: string; updatedAt?: string };
-  const allowed = ["neu", "in_pruefung", "angebot_versendet", "bestaetigt", "abgelehnt", "storniert", "abgelaufen"];
-  if (!allowed.includes(status)) {
+  const body = await req.json() as { id: string; status?: string; updatedAt?: string; archived?: boolean };
+  const { id } = body;
+
+  // Archiving is just a visibility flag — unlike a status change, it doesn't
+  // touch event capacity or holds, so it skips that whole locked-transaction
+  // path below and is safe as a plain, unconditioned update.
+  if (typeof body.archived === "boolean" && body.status === undefined) {
+    const client = await prisma.client.findUnique({ where: { slug: session.clientSlug } });
+    if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    const result = await prisma.inquiry.updateMany({
+      where: { id, clientId: client.id },
+      data: { archivedAt: body.archived ? new Date() : null },
+    });
+    if (result.count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const updated = await prisma.inquiry.findUniqueOrThrow({ where: { id } });
+    return NextResponse.json(updated);
+  }
+
+  const { status, updatedAt } = body as { status: string; updatedAt?: string };
+  if (!ALL_STATUSES.includes(status)) {
     return NextResponse.json({ error: "Ungültiger Status" }, { status: 400 });
   }
   if (!updatedAt) {
