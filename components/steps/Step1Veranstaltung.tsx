@@ -216,7 +216,7 @@ export default function Step1Veranstaltung({ slug, config, initialRooms, roomIds
         <label style={{ marginBottom: "0.5rem", display: "block" }}>Zeitraum wählen</label>
         <Calendar
           slug={slug} selectedStart={selectedStart} selectedEnd={selectedEnd} onRangeChange={handleRangeChange}
-          roomId={form.roomId}
+          roomId={form.roomId} roomIds={roomIds}
           onInvalidSelectionCleared={() => setDateConflict(true)}
         />
         {dateConflict && (

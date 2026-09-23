@@ -14,6 +14,11 @@ interface Props {
   selectedEnd?: Date | null;
   onRangeChange?: (start: Date | null, end: Date | null) => void;
   roomId?: string;
+  // Narrows down which rooms' events show up before a specific room is
+  // picked (roomId still wins once set) — mirrors the room picker's own
+  // `raeume` filter so a filtered embed's calendar doesn't leak events from
+  // rooms it isn't even offering. See app/api/availability/route.ts.
+  roomIds?: string[];
   onInvalidSelectionCleared?: () => void;
 }
 
@@ -166,7 +171,7 @@ function weekEvents(week: CalendarDay[], entries: BlockedDateEntry[]) {
   });
 }
 
-export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChange, roomId, onInvalidSelectionCleared }: Props) {
+export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChange, roomId, roomIds, onInvalidSelectionCleared }: Props) {
   const [today, setToday] = useState<Date | null>(null);
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth());
@@ -197,7 +202,8 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
 
   useEffect(() => {
     const roomParam = roomId ? `&roomId=${encodeURIComponent(roomId)}` : "";
-    fetch(`/api/availability?slug=${encodeURIComponent(slug)}${roomParam}`)
+    const roomsFilterParam = roomIds?.length ? `&raeume=${encodeURIComponent(roomIds.join(","))}` : "";
+    fetch(`/api/availability?slug=${encodeURIComponent(slug)}${roomParam}${roomsFilterParam}`)
       .then((r) => r.json())
       .then((data: BlockedDateEntry[]) => {
         setBlocked(data);
@@ -214,7 +220,7 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
     // that moment, not tracked as their own trigger (handleDayClick already guards
     // new picks against the current `blocked` state).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, roomId]);
+  }, [slug, roomId, roomIds]);
 
   function navigate(dir: "prev" | "next") {
     gridKey.current += 1;

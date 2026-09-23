@@ -8,6 +8,12 @@ export async function GET(req: NextRequest) {
   }
   const slug = req.nextUrl.searchParams.get("slug") ?? "default";
   const roomId = req.nextUrl.searchParams.get("roomId");
+  // Mirrors the room picker's own `raeume` filter (see app/page.tsx /
+  // app/api/rooms/route.ts) — before a specific room is picked, narrows the
+  // event list to just the rooms a filtered embed actually offers, instead
+  // of leaking every room's events into a widget that doesn't even list them.
+  const raeume = req.nextUrl.searchParams.get("raeume");
+  const roomIds = raeume ? raeume.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
 
   try {
     const { prisma } = await import("@/lib/db");
@@ -97,7 +103,13 @@ export async function GET(req: NextRequest) {
     // Once a specific room is selected, an Event assigned to a DIFFERENT room is
     // irrelevant to it — it shouldn't show up there at all, not even informationally.
     // Room-less events (unknown which space) still show everywhere, same as before.
-    const relevantEvents = roomId ? events.filter((e) => !e.roomId || e.roomId === roomId) : events;
+    // Before a room is picked, a `raeume` filter (filtered embed) narrows this the
+    // same way — only wider (any offered room), not down to one exact room yet.
+    const relevantEvents = roomId
+      ? events.filter((e) => !e.roomId || e.roomId === roomId)
+      : roomIds
+        ? events.filter((e) => !e.roomId || roomIds.includes(e.roomId))
+        : events;
 
     const eventEntries = relevantEvents.map((e) => ({
       id: e.id,

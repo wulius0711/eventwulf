@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/admin/Toast";
 
 interface Props {
   slug: string;
@@ -31,7 +30,6 @@ function EmbedCard({ title, children }: { title: string; children: React.ReactNo
 }
 
 function EmbedSnippet({ title, description, src, origin, iframeId, extra }: { title: string; description: string; src: string; origin: string; iframeId: string; extra?: React.ReactNode }) {
-  const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
   const snippet = `<iframe id="${iframeId}" src="${src}" width="100%" frameborder="0" style="border:none;display:block" scrolling="no"></iframe>
 <script src="${origin}/embed.js"><\/script>`;
@@ -40,7 +38,6 @@ function EmbedSnippet({ title, description, src, origin, iframeId, extra }: { ti
     navigator.clipboard.writeText(snippet).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-      showToast("success", "In die Zwischenablage kopiert");
     });
   }
 
@@ -75,7 +72,6 @@ function EmbedSnippet({ title, description, src, origin, iframeId, extra }: { ti
 }
 
 function FramerSnippet({ origin, slug, rooms }: { origin: string; slug: string; rooms: RoomOption[] }) {
-  const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
   // Baked in as real options (like slug's defaultValue below) rather than a
   // free-text id field — Framer property controls can't fetch this client's
@@ -150,15 +146,21 @@ addPropertyControls(EventwulfWidget, {
     navigator.clipboard.writeText(code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-      showToast("success", "In die Zwischenablage kopiert");
     });
   }
 
   return (
     <EmbedCard title="Einbetten in Framer">
-      <p style={{ margin: "0 0 0.75rem", fontSize: "0.85rem", color: "var(--muted)" }}>
-        Framer verpackt den HTML-Code oben in ein eigenes iFrame, wodurch die automatische Höhenanpassung dort nicht funktioniert. Lege stattdessen eine <strong>Code Component</strong> an (Assets → Code → + → New Code File), füge diesen Code ein und ziehe die Component danach aus dem Insert-Panel auf deine Seite. Die Component musst du nur <strong>einmal</strong> anlegen — willst du Formular und Events auf derselben oder auf getrennten Seiten zeigen, ziehst du sie einfach zweimal auf die Seite(n) und stellst bei der zweiten Instanz die Property „Widget" auf „Events". Über die Property „Nur diese Räume" (Mehrfachauswahl) kannst du pro Instanz auch nur einen Teil deiner Räume anbieten — z.B. eine Instanz für eine „Hochzeiten"-Seite, eine zweite für „Seminare":
+      <p style={{ margin: "0 0 0.6rem", fontSize: "0.85rem", color: "var(--muted)" }}>
+        Framer packt den HTML-Code oben in ein eigenes iFrame, wodurch die automatische Höhenanpassung nicht funktioniert — nutze stattdessen eine <strong>Code Component</strong>:
       </p>
+      <ul style={{ margin: "0 0 0.75rem", paddingLeft: "1.25rem", fontSize: "0.85rem", color: "var(--muted)", listStyle: "disc" }}>
+        <li style={{ marginBottom: "0.4rem" }}>Assets → Code → + → New Code File, diesen Code einfügen</li>
+        <li style={{ marginBottom: "0.4rem" }}>Component aus dem Insert-Panel auf deine Seite ziehen</li>
+        <li style={{ marginBottom: "0.4rem" }}>Nur <strong>einmal</strong> anlegen — für Formular + Events zweimal ziehen, bei der zweiten Instanz „Widget" auf „Events" stellen</li>
+        <li style={{ marginBottom: "0.4rem" }}>„Nur diese Räume" (Mehrfachauswahl): pro Instanz nur einen Teil der Räume anbieten — z.B. getrennt für „Hochzeiten" und „Seminare"</li>
+        <li>Bei neuen/umbenannten Räumen: Code neu kopieren und in der <strong>bestehenden</strong> Framer-Datei ersetzen (nicht neu anlegen) und speichern. Alle Instanzen aktualisieren sich automatisch.</li>
+      </ul>
       <textarea
         readOnly
         value={code}
@@ -196,11 +198,12 @@ interface RoomOption { id: string; name: string; isActive: boolean }
 function RoomFilterPicker({ rooms, selected, onToggle }: { rooms: RoomOption[]; selected: Set<string>; onToggle: (id: string) => void }) {
   return (
     <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "var(--bg2)", borderRadius: "var(--radius-sm)" }}>
-      <p style={{ margin: "0 0 0.5rem", fontSize: "0.82rem", fontWeight: 600, color: "var(--text)" }}>
+      <p style={{ margin: "0 0 0.6rem", fontSize: "0.82rem", fontWeight: 600, color: "var(--text)" }}>
         Nur bestimmte Räume in diesem Code anbieten (optional)
+        <span className="ew-infotip" data-tip={`Praktisch, wenn du z.B. für „Hochzeiten“ und „Seminare“ eigene Seiten mit jeweils passenden Räumen hast.`}>i</span>
       </p>
       <p style={{ margin: "0 0 0.6rem", fontSize: "0.78rem", color: "var(--muted)" }}>
-        Nichts ausgewählt = alle Räume. Praktisch, wenn du z.B. für „Hochzeiten“ und „Seminare“ eigene Seiten mit jeweils passenden Räumen hast.
+        Nichts ausgewählt = alle Räume.
       </p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
         {rooms.map((r) => (
