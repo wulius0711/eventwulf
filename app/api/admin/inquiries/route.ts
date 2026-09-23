@@ -15,6 +15,16 @@ export async function GET(req: NextRequest) {
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
   const params = req.nextUrl.searchParams;
+
+  // Direct-link lookup (e.g. the dashboard's "Neueste Anfragen" list) —
+  // bypasses every other filter/pagination param, since the target inquiry
+  // might not be on the default filter's first page.
+  const idParam = params.get("id");
+  if (idParam) {
+    const inquiry = await prisma.inquiry.findFirst({ where: { id: idParam, clientId: client.id } });
+    return NextResponse.json({ inquiries: inquiry ? [inquiry] : [], total: inquiry ? 1 : 0 });
+  }
+
   // Absent = no archived filter at all (used by EventsEditor's participant-count
   // lookup, which needs every Inquiry regardless of archive state); InquiryInbox
   // always passes an explicit "true"/"false" for its current view.

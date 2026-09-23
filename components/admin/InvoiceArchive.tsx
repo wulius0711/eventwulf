@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { InvoiceEntry } from "@/lib/types";
 import { useToast } from "@/components/admin/Toast";
 import { InboxEmptyIcon, FilterEmptyIcon } from "@/components/admin/icons";
@@ -19,11 +20,17 @@ function fmtDate(iso: string) {
 
 export default function InvoiceArchive() {
   const { showToast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [invoices, setInvoices] = useState<InvoiceEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [filter, setFilter] = useState<"all" | "offen" | "storniert">("all");
+  // Deep-linked from the dashboard's "Offene Angebote" card, e.g. ?status=offen.
+  const [filter, setFilter] = useState<"all" | "offen" | "storniert">(() => {
+    const s = searchParams.get("status");
+    return s === "offen" || s === "storniert" ? s : "all";
+  });
   const [pageSize, setPageSize] = useState(() => {
     try {
       const stored = Number(localStorage.getItem(PAGE_SIZE_KEY));
@@ -44,6 +51,7 @@ export default function InvoiceArchive() {
   }
 
   useEffect(() => {
+    const hadStatusParam = !!searchParams.get("status");
     setLoading(true);
     fetch(`/api/admin/invoices?${buildParams(0)}`)
       .then((r) => r.json())
@@ -51,6 +59,9 @@ export default function InvoiceArchive() {
         setInvoices(res.invoices);
         setTotal(res.total);
         setLoading(false);
+        // ?status=offen was consumed into filter's initial state above —
+        // drop it from the URL now that it's applied.
+        if (hadStatusParam) router.replace("/admin/invoices");
       })
       .catch(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps

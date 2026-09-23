@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { EventConfig, InquiryFormData } from "@/lib/types";
 import InvoicePanel from "@/components/admin/InvoicePanel";
 import { useToast } from "@/components/admin/Toast";
@@ -87,12 +88,21 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export default function InquiryInbox({ config }: { config: EventConfig }) {
   const { showToast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const deepLinkId = searchParams.get("id");
+  const hadUrlParams = !!(searchParams.get("id") || searchParams.get("status"));
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [total, setTotal] = useState(0);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("alle");
+  // Deep-linked from the dashboard's "Offene Anfragen" card, e.g.
+  // ?status=neu — read once on mount, same as deepLinkId below.
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const s = searchParams.get("status");
+    return s && STATUS_GROUPS.some((g) => g.key === s) ? s : "alle";
+  });
   const [view, setView] = useState<"inbox" | "archiv">("inbox");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -134,13 +144,37 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
     setLoading(true);
     fetch(`/api/admin/inquiries?${buildParams(0)}`)
       .then((r) => r.json())
-      .then((res: { inquiries: Inquiry[]; total: number }) => {
-        setInquiries(res.inquiries);
-        setTotal(res.total);
+      .then(async (res: { inquiries: Inquiry[]; total: number }) => {
+        let list = res.inquiries;
+        let listTotal = res.total;
+        // Deep-link from e.g. the dashboard's "Neueste Anfragen" list — the
+        // target might not be on this filter's first page (or even this
+        // filter at all), so fetch it directly and splice it in rather than
+        // trusting it showed up in the normal load.
+        if (deepLinkId && !list.some((i) => i.id === deepLinkId)) {
+          const single = await fetch(`/api/admin/inquiries?id=${encodeURIComponent(deepLinkId)}`).then((r) => r.json()).catch(() => null);
+          if (single?.inquiries?.[0]) {
+            list = [single.inquiries[0], ...list];
+            listTotal += 1;
+          }
+        }
+        setInquiries(list);
+        setTotal(listTotal);
         setLoading(false);
+        if (deepLinkId && list.some((i) => i.id === deepLinkId)) {
+          setExpanded(deepLinkId);
+          router.replace("/admin/inquiries");
+          requestAnimationFrame(() => {
+            document.getElementById(`inquiry-row-${deepLinkId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+          });
+        } else {
+          setExpanded(null);
+          // ?status=neu (no matching id) was consumed into statusFilter's
+          // initial state above — drop it from the URL now that it's applied.
+          if (hadUrlParams) router.replace("/admin/inquiries");
+        }
       })
       .catch(() => setLoading(false));
-    setExpanded(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, statusFilter, pageSize, debouncedSearch]);
 
@@ -317,7 +351,7 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
         const isArchived = inq.archivedAt !== null;
 
         return (
-          <div key={inq.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
+          <div key={inq.id} id={`inquiry-row-${inq.id}`} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
             {/* Row summary */}
             <div
               onClick={() => setExpanded(isOpen ? null : inq.id)}

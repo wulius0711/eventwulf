@@ -56,9 +56,9 @@ export default async function DashboardPage() {
       </div>
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-        <StatCard href="/admin/inquiries" label="Offene Anfragen" value={openInquiryCount} icon="inquiries" />
+        <StatCard href="/admin/inquiries?status=neu" label="Offene Anfragen" value={openInquiryCount} icon="inquiries" />
         <StatCard href="/admin/elemente?tab=events" label="Anstehende Events" value={upcomingEventCount} icon="elemente" />
-        <StatCard href="/admin/invoices" label="Offene Angebote" value={openInvoiceCount} icon="invoices" />
+        <StatCard href="/admin/invoices?status=offen" label="Offene Angebote" value={openInvoiceCount} icon="invoices" />
       </div>
 
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem 1.5rem" }}>
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
               return (
                 <a
                   key={inq.id}
-                  href="/admin/inquiries"
+                  href={`/admin/inquiries?id=${inq.id}`}
                   style={{
                     display: "flex", justifyContent: "space-between", gap: "1rem", fontSize: "0.85rem",
                     padding: "0.5rem 0", borderBottom: "1px solid var(--border)", textDecoration: "none", color: "inherit",
