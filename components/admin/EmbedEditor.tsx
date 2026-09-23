@@ -88,14 +88,15 @@ const BASE_URL = "${origin}"
  * @framerSupportedLayoutHeight auto
  */
 export default function EventwulfWidget(props) {
-    const { slug, widget, roomIds, align } = props
+    const { slug, widget, roomIds, align, showBranding } = props
     const iframeRef = useRef(null)
     const [height, setHeight] = useState(400)
 
     const path = widget === "events" ? "/events" : "/"
     const roomParam = widget === "form" && roomIds?.length ? \`&raeume=\${roomIds.join(",")}\` : ""
     const alignParam = widget === "events" && align && align !== "left" ? \`&ausrichtung=\${align}\` : ""
-    const src = \`\${BASE_URL}\${path}?kunde=\${encodeURIComponent(slug || "default")}\${roomParam}\${alignParam}\`
+    const brandingParam = widget === "events" && showBranding ? \`&branding=1\` : ""
+    const src = \`\${BASE_URL}\${path}?kunde=\${encodeURIComponent(slug || "default")}\${roomParam}\${alignParam}\${brandingParam}\`
 
     useEffect(() => {
         function handleMessage(e) {
@@ -147,6 +148,12 @@ addPropertyControls(EventwulfWidget, {
         options: ["left", "center", "right"],
         optionTitles: ["Links", "Mitte", "Rechts"],
         defaultValue: "left",
+        hidden: (props) => props.widget !== "events",
+    },
+    showBranding: {
+        type: ControlType.Boolean,
+        title: "eventwulf-Branding",
+        defaultValue: false,
         hidden: (props) => props.widget !== "events",
     },
 })`;
@@ -251,11 +258,25 @@ function AlignmentPicker({ align, onChange }: { align: "left" | "center" | "righ
   );
 }
 
+// Unlike the Anfrageformular's badge (always shown on Basis/Pro), the Events
+// widget has no badge by default — the admin opts it in per embed instance.
+function BrandingPicker({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "var(--bg2)", borderRadius: "var(--radius-sm)" }}>
+      <label className="ew-checkbox-option" data-checked={checked ? "" : undefined} style={{ fontSize: "0.82rem" }}>
+        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ accentColor: "var(--primary)" }} />
+        <span className="ew-checkbox-option-label">„powered by eventwulf“ in diesem Widget anzeigen</span>
+      </label>
+    </div>
+  );
+}
+
 export default function EmbedEditor({ slug }: Props) {
   const [origin, setOrigin] = useState("");
   const [rooms, setRooms] = useState<RoomOption[]>([]);
   const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
   const [eventsAlign, setEventsAlign] = useState<"left" | "center" | "right">("left");
+  const [eventsBranding, setEventsBranding] = useState(false);
   // Prefer the fixed production domain over window.location.origin — an
   // admin who happens to be logged in via the *.vercel.app alias instead of
   // app.eventwulf.at would otherwise generate embed snippets pointing
@@ -295,10 +316,15 @@ export default function EmbedEditor({ slug }: Props) {
       <EmbedSnippet
         title="Events"
         description="Zeigt deine terminierten Events zum direkten Anfragen (siehe Admin-Bereich „Events“). Getrennt vom Anfrageformular, kann auf einer eigenen Seite eingebettet werden:"
-        src={`${origin}/events?kunde=${slug}${eventsAlign !== "left" ? `&ausrichtung=${eventsAlign}` : ""}`}
+        src={`${origin}/events?kunde=${slug}${eventsAlign !== "left" ? `&ausrichtung=${eventsAlign}` : ""}${eventsBranding ? "&branding=1" : ""}`}
         origin={origin}
         iframeId="eventwulf-events-widget"
-        extra={<AlignmentPicker align={eventsAlign} onChange={setEventsAlign} />}
+        extra={
+          <>
+            <AlignmentPicker align={eventsAlign} onChange={setEventsAlign} />
+            <BrandingPicker checked={eventsBranding} onChange={setEventsBranding} />
+          </>
+        }
       />
       <FramerSnippet origin={origin} slug={slug} rooms={rooms} />
     </div>

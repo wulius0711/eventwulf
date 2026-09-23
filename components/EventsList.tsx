@@ -20,8 +20,8 @@ interface EventItem {
 interface Props {
   slug: string;
   isDemo?: boolean;
-  showBranding?: boolean;
   align?: "left" | "center" | "right";
+  showBranding?: boolean;
 }
 
 const JUSTIFY_CONTENT: Record<"left" | "center" | "right", string> = {
@@ -204,7 +204,7 @@ function EventCard({ event, slug, expanded, onToggle, isDemo }: { event: EventIt
   );
 }
 
-export default function EventsList({ slug, isDemo, showBranding, align = "left" }: Props) {
+export default function EventsList({ slug, isDemo, align = "left", showBranding }: Props) {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
