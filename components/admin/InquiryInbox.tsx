@@ -254,7 +254,7 @@ export default function InquiryInbox({ config }: { config: EventConfig }) {
             <button
               key={g.key}
               type="button"
-              onClick={() => setStatusFilter(g.key)}
+              onClick={() => { setStatusFilter(g.key); setView("inbox"); }}
               style={{
                 padding: "0.35rem 0.85rem", borderRadius: "999px", fontSize: "0.8rem", fontWeight: 600,
                 border: `1px solid ${statusFilter === g.key ? "var(--primary)" : "var(--border)"}`,
