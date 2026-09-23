@@ -19,14 +19,18 @@ const GOOGLE_FONTS: Record<string, string> = {
   "Nunito":             "Nunito:wght@400;600",
 };
 
+const ALIGN_VALUES = ["left", "center", "right"] as const;
+type Align = (typeof ALIGN_VALUES)[number];
+
 interface Props {
-  searchParams: Promise<{ kunde?: string }>;
+  searchParams: Promise<{ kunde?: string; ausrichtung?: string }>;
 }
 
 export default async function EventsPage({ searchParams }: Props) {
-  const { kunde } = await searchParams;
+  const { kunde, ausrichtung } = await searchParams;
   if (!kunde) redirect("/signup");
   const slug = kunde;
+  const align: Align = (ALIGN_VALUES as readonly string[]).includes(ausrichtung ?? "") ? (ausrichtung as Align) : "left";
   const config = await loadConfigFromDB(slug);
   const client = await prisma.client.findUnique({
     where: { slug },
@@ -55,7 +59,7 @@ export default async function EventsPage({ searchParams }: Props) {
       <IframeResizer />
       {googleFontUrl && <link rel="stylesheet" href={googleFontUrl} />}
       <div className="ew-widget-wrap" style={{ padding: "1.5rem", background: pageBg, fontFamily: bodyFontFamily }}>
-        <EventsList slug={slug} isDemo={isDemo} showBranding={showBranding} />
+        <EventsList slug={slug} isDemo={isDemo} showBranding={showBranding} align={align} />
       </div>
     </div>
   );

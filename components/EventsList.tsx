@@ -21,7 +21,14 @@ interface Props {
   slug: string;
   isDemo?: boolean;
   showBranding?: boolean;
+  align?: "left" | "center" | "right";
 }
+
+const JUSTIFY_CONTENT: Record<"left" | "center" | "right", string> = {
+  left: "start",
+  center: "center",
+  right: "end",
+};
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -197,7 +204,7 @@ function EventCard({ event, slug, expanded, onToggle, isDemo }: { event: EventIt
   );
 }
 
-export default function EventsList({ slug, isDemo, showBranding }: Props) {
+export default function EventsList({ slug, isDemo, showBranding, align = "left" }: Props) {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -222,7 +229,15 @@ export default function EventsList({ slug, isDemo, showBranding }: Props) {
 
   return (
     <>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: "1.25rem", alignItems: "start" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 340px))",
+          justifyContent: JUSTIFY_CONTENT[align],
+          gap: "1.25rem",
+          alignItems: "start",
+        }}
+      >
         {events.map((ev) => (
           <EventCard
             key={ev.id}

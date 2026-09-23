@@ -88,13 +88,14 @@ const BASE_URL = "${origin}"
  * @framerSupportedLayoutHeight auto
  */
 export default function EventwulfWidget(props) {
-    const { slug, widget, roomIds } = props
+    const { slug, widget, roomIds, align } = props
     const iframeRef = useRef(null)
     const [height, setHeight] = useState(400)
 
     const path = widget === "events" ? "/events" : "/"
     const roomParam = widget === "form" && roomIds?.length ? \`&raeume=\${roomIds.join(",")}\` : ""
-    const src = \`\${BASE_URL}\${path}?kunde=\${encodeURIComponent(slug || "default")}\${roomParam}\`
+    const alignParam = widget === "events" && align && align !== "left" ? \`&ausrichtung=\${align}\` : ""
+    const src = \`\${BASE_URL}\${path}?kunde=\${encodeURIComponent(slug || "default")}\${roomParam}\${alignParam}\`
 
     useEffect(() => {
         function handleMessage(e) {
@@ -139,6 +140,14 @@ addPropertyControls(EventwulfWidget, {
             options: [${roomIdOptions}],
             optionTitles: [${roomIdOptionTitles}],
         },
+    },
+    align: {
+        type: ControlType.Enum,
+        title: "Ausrichtung",
+        options: ["left", "center", "right"],
+        optionTitles: ["Links", "Mitte", "Rechts"],
+        defaultValue: "left",
+        hidden: (props) => props.widget !== "events",
     },
 })`;
 
@@ -217,10 +226,36 @@ function RoomFilterPicker({ rooms, selected, onToggle }: { rooms: RoomOption[]; 
   );
 }
 
+const ALIGN_OPTIONS: { value: "left" | "center" | "right"; label: string }[] = [
+  { value: "left", label: "Links" },
+  { value: "center", label: "Mitte" },
+  { value: "right", label: "Rechts" },
+];
+
+// Only relevant for the Events widget — event cards use a fixed max width
+// (340px) per card, so with few events there's leftover space in the row
+// that this positions instead of always sitting flush left.
+function AlignmentPicker({ align, onChange }: { align: "left" | "center" | "right"; onChange: (v: "left" | "center" | "right") => void }) {
+  return (
+    <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "var(--bg2)", borderRadius: "var(--radius-sm)" }}>
+      <p style={{ margin: "0 0 0.6rem", fontSize: "0.82rem", fontWeight: 600, color: "var(--text)" }}>Ausrichtung der Event-Karten</p>
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        {ALIGN_OPTIONS.map((o) => (
+          <label key={o.value} className="ew-checkbox-option" data-checked={align === o.value ? "" : undefined} style={{ fontSize: "0.82rem" }}>
+            <input type="radio" name="align" checked={align === o.value} onChange={() => onChange(o.value)} style={{ accentColor: "var(--primary)" }} />
+            <span className="ew-checkbox-option-label">{o.label}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function EmbedEditor({ slug }: Props) {
   const [origin, setOrigin] = useState("");
   const [rooms, setRooms] = useState<RoomOption[]>([]);
   const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
+  const [eventsAlign, setEventsAlign] = useState<"left" | "center" | "right">("left");
   // Prefer the fixed production domain over window.location.origin — an
   // admin who happens to be logged in via the *.vercel.app alias instead of
   // app.eventwulf.at would otherwise generate embed snippets pointing
@@ -260,9 +295,10 @@ export default function EmbedEditor({ slug }: Props) {
       <EmbedSnippet
         title="Events"
         description="Zeigt deine terminierten Events zum direkten Anfragen (siehe Admin-Bereich „Events“). Getrennt vom Anfrageformular, kann auf einer eigenen Seite eingebettet werden:"
-        src={`${origin}/events?kunde=${slug}`}
+        src={`${origin}/events?kunde=${slug}${eventsAlign !== "left" ? `&ausrichtung=${eventsAlign}` : ""}`}
         origin={origin}
         iframeId="eventwulf-events-widget"
+        extra={<AlignmentPicker align={eventsAlign} onChange={setEventsAlign} />}
       />
       <FramerSnippet origin={origin} slug={slug} rooms={rooms} />
     </div>
