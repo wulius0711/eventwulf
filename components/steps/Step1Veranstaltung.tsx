@@ -9,6 +9,7 @@ interface Props {
   slug: string;
   config: EventConfig;
   initialRooms?: RoomEntry[];
+  roomIds?: string[];
 }
 
 const HOURS = Array.from({ length: 19 }, (_, i) => {
@@ -16,7 +17,7 @@ const HOURS = Array.from({ length: 19 }, (_, i) => {
   return `${String(h).padStart(2, "0")}:00`;
 });
 
-function RoomPicker({ slug, config, initialRooms }: { slug: string; config: EventConfig; initialRooms?: RoomEntry[] }) {
+function RoomPicker({ slug, config, initialRooms, roomIds }: { slug: string; config: EventConfig; initialRooms?: RoomEntry[]; roomIds?: string[] }) {
   const { form, setField } = useFormStore();
   const [rooms, setRooms] = useState<RoomEntry[]>(initialRooms ?? []);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -37,9 +38,10 @@ function RoomPicker({ slug, config, initialRooms }: { slug: string; config: Even
     const dateParams = form.datumVon && form.datumBis
       ? `&datumVon=${encodeURIComponent(form.datumVon)}&datumBis=${encodeURIComponent(form.datumBis)}`
       : "";
-    fetch(`/api/rooms?slug=${encodeURIComponent(slug)}${dateParams}`)
+    const roomParams = roomIds?.length ? `&raeume=${encodeURIComponent(roomIds.join(","))}` : "";
+    fetch(`/api/rooms?slug=${encodeURIComponent(slug)}${dateParams}${roomParams}`)
       .then((r) => r.json()).then(setRooms).catch(() => {});
-  }, [slug, form.datumVon, form.datumBis]);
+  }, [slug, form.datumVon, form.datumBis, roomIds]);
 
   // Detect which descriptions actually overflow their 2-line clamp, so the
   // "Mehr anzeigen" toggle only shows up where it does something. Skip the
@@ -180,7 +182,7 @@ function fmtDate(iso: string) {
   return `${d}.${m}.${y}`;
 }
 
-export default function Step1Veranstaltung({ slug, config, initialRooms }: Props) {
+export default function Step1Veranstaltung({ slug, config, initialRooms, roomIds }: Props) {
   const { form, setField } = useFormStore();
   const [dateConflict, setDateConflict] = useState(false);
 
@@ -224,7 +226,7 @@ export default function Step1Veranstaltung({ slug, config, initialRooms }: Props
         )}
       </div>
 
-      <RoomPicker slug={slug} config={config} initialRooms={initialRooms} />
+      <RoomPicker slug={slug} config={config} initialRooms={initialRooms} roomIds={roomIds} />
 
       <div className="ew-date-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", background: hasRange ? "var(--primary-tint)" : "var(--bg2)", border: `1px solid ${hasRange ? "var(--primary-dim)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", padding: "0.85rem 1rem", transition: "all 0.2s" }}>
         <div>

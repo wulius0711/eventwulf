@@ -8,6 +8,12 @@ export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug");
   if (!slug) return NextResponse.json([], { status: 200 });
 
+  // Lets one client embed several widgets that each only offer a subset of
+  // rooms (see app/page.tsx for the matching filter on the initial
+  // server-rendered list) via an optional `raeume=id1,id2` query param.
+  const raeume = req.nextUrl.searchParams.get("raeume");
+  const roomIds = raeume ? raeume.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
+
   // Client lookup and its rooms combined into one round trip (nested select)
   // instead of two sequential queries — this endpoint is on the critical path
   // for the room picker's initial render.
@@ -17,7 +23,7 @@ export async function GET(req: NextRequest) {
       id: true,
       organization: { select: { plan: true, subscriptionStatus: true, disputeLostAt: true } },
       rooms: {
-        where: { isActive: true },
+        where: { isActive: true, ...(roomIds && { id: { in: roomIds } }) },
         orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
         select: {
           id: true,

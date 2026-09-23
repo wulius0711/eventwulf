@@ -20,14 +20,20 @@ const GOOGLE_FONTS: Record<string, string> = {
 };
 
 interface Props {
-  searchParams: Promise<{ kunde?: string }>;
+  searchParams: Promise<{ kunde?: string; raeume?: string }>;
 }
 
 export default async function Home({ searchParams }: Props) {
-  const { kunde } = await searchParams;
+  const { kunde, raeume } = await searchParams;
   if (!kunde) redirect("/signup");
   const slug = kunde;
   const config = await loadConfigFromDB(slug);
+
+  // Lets one client embed several widgets (e.g. one per landing page) that
+  // each only offer a subset of rooms — same config/rooms, just a narrower
+  // room list per embed, via an optional `raeume=id1,id2` query param on the
+  // embed URL instead of a whole separate config/variant per page.
+  const roomIds = raeume ? raeume.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
 
   const client = await prisma.client.findUnique({
     where: { slug },
@@ -36,7 +42,7 @@ export default async function Home({ searchParams }: Props) {
       isDemo: true,
       organization: { select: { plan: true, subscriptionStatus: true, disputeLostAt: true } },
       rooms: {
-        where: { isActive: true },
+        where: { isActive: true, ...(roomIds && { id: { in: roomIds } }) },
         orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
         select: { id: true, name: true, description: true, image: true, capacity: true, isActive: true, sortOrder: true },
       },
@@ -95,7 +101,7 @@ export default async function Home({ searchParams }: Props) {
             {config.formTitle}
           </h2>
         )}
-        <Wizard config={config} slug={slug} hasRooms={hasRooms} isDemo={isDemo} initialRooms={initialRooms} />
+        <Wizard config={config} slug={slug} hasRooms={hasRooms} isDemo={isDemo} initialRooms={initialRooms} roomIds={roomIds} />
       </div>
     </div>
   );
