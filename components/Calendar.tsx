@@ -274,8 +274,16 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
           onClick={() => { if (today) { const dir = (today.getFullYear() * 12 + today.getMonth()) < (year * 12 + month) ? "prev" : "next"; navigate(dir); setMonth(today.getMonth()); setYear(today.getFullYear()); } }}>
           Heute
         </button>
-        <button className="ew-cal-nav-btn" onClick={() => navigate("prev")}>‹</button>
-        <button className="ew-cal-nav-btn" onClick={() => navigate("next")}>›</button>
+        <button className="ew-cal-nav-btn" onClick={() => navigate("prev")} aria-label="Vorheriger Monat">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ display: "block" }}>
+            <path d="M10 3L5.5 8L10 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <button className="ew-cal-nav-btn" onClick={() => navigate("next")} aria-label="Nächster Monat">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ display: "block" }}>
+            <path d="M6 3L10.5 8L6 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
         <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{MONTHS[month]} {year}</span>
         {selStart && (
           <span style={{ marginLeft: "auto", fontSize: "0.78rem", color: "var(--primary-text)", fontWeight: 500 }}>
