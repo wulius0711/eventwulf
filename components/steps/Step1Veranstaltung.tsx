@@ -2,6 +2,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useFormStore } from "@/store/form";
 import Calendar from "@/components/Calendar";
+import CustomFieldsSection from "@/components/CustomFieldsSection";
 import type { EventConfig, RoomEntry } from "@/lib/types";
 
 interface Props {
@@ -254,6 +255,7 @@ export default function Step1Veranstaltung({ slug, config, initialRooms }: Props
           </div>
         </div>
       )}
+      <CustomFieldsSection config={config} step={1} />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { loadConfigFromDB } from "@/lib/loadConfig";
 import { prisma } from "@/lib/db";
 import type { InquiryFormData } from "@/lib/types";
 import { rateLimit, getIp } from "@/lib/ratelimit";
-import { validateSubmit, escapeHtml, sanitizeEmailHeader, findMissingRequiredField } from "@/lib/validate";
+import { validateSubmit, escapeHtml, sanitizeEmailHeader, findMissingRequiredField, findMissingCustomField } from "@/lib/validate";
 import { reserveEventCapacity, HOLD_DURATION_MS, CapacityExceededError } from "@/lib/eventCapacity";
 import { assertRoomAvailable, RoomConflictError } from "@/lib/roomAvailability";
 import { hasFeature, effectivePlan } from "@/lib/plan";
@@ -84,6 +84,10 @@ export async function POST(req: NextRequest) {
     const missingRequired = findMissingRequiredField(config, body);
     if (missingRequired) {
       return NextResponse.json({ error: `Bitte „${missingRequired.label}" ausfüllen.` }, { status: 400 });
+    }
+    const missingCustom = findMissingCustomField(config, body.customFields);
+    if (missingCustom) {
+      return NextResponse.json({ error: `Bitte „${missingCustom.label}" ausfüllen.` }, { status: 400 });
     }
   }
 

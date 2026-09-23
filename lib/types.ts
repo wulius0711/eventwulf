@@ -34,6 +34,25 @@ export interface FormFields {
   quelle?: FieldState;
 }
 
+export type CustomFieldType = "text" | "textarea" | "select" | "checkboxGroup" | "number";
+
+// A client-defined form field beyond the fixed FormFields set above (e.g. a
+// "Kulinarischer Fokus" checkbox group) — purely informational, no business
+// logic attached (unlike e.g. raum/personenAnzahl), stored in
+// InquiryFormData.customFields keyed by `id`. `step` places it at the end
+// of the matching wizard step (see CustomFieldsSection); `groupLabel` visually
+// groups consecutive fields under one shared heading, mirroring how a plain
+// HTML form often has a heading followed by a few related checkboxes.
+export interface CustomField {
+  id: string;
+  step: 1 | 2 | 3 | 4 | 5;
+  groupLabel?: string;
+  label: string;
+  type: CustomFieldType;
+  required: boolean;
+  options?: string[]; // only used by "select" and "checkboxGroup"
+}
+
 export interface EventConfig {
   company: {
     name: string;
@@ -57,6 +76,7 @@ export interface EventConfig {
   zahlungOptions: string[];
   budgetOptions: string[];
   quelleOptions: string[];
+  customFields?: CustomField[];
   notifyEmail: string;
   formFields?: FormFields;
   billing?: {
@@ -162,4 +182,5 @@ export interface InquiryFormData {
   barrierefreiheit: string;
   budget: string;
   quelle: string;
+  customFields: Record<string, string | string[]>;
 }

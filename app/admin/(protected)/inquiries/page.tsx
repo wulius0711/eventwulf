@@ -1,6 +1,14 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { loadConfigFromDB } from "@/lib/loadConfig";
 import InquiryInbox from "@/components/admin/InquiryInbox";
 
-export default function InquiriesPage() {
+export default async function InquiriesPage() {
+  const session = await getSession();
+  if (!session) redirect("/admin/login");
+
+  const config = await loadConfigFromDB(session.clientSlug);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       <div>
@@ -9,7 +17,7 @@ export default function InquiriesPage() {
           Alle eingegangenen Buchungsanfragen.
         </p>
       </div>
-      <InquiryInbox />
+      <InquiryInbox config={config} />
     </div>
   );
 }

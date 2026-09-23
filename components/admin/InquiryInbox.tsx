@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import type { InquiryFormData } from "@/lib/types";
+import type { EventConfig, InquiryFormData } from "@/lib/types";
 import InvoicePanel from "@/components/admin/InvoicePanel";
 import { useToast } from "@/components/admin/Toast";
 import { InboxEmptyIcon, FilterEmptyIcon } from "@/components/admin/icons";
@@ -81,7 +81,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function InquiryInbox() {
+export default function InquiryInbox({ config }: { config: EventConfig }) {
   const { showToast } = useToast();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -253,6 +253,11 @@ export default function InquiryInbox() {
                   <DetailRow label="Zimmerwunsch" value={d.zimmerwunsch} />
                   <DetailRow label="Rahmenprogramm" value={d.wuenscheRahmenprogramm} />
                   <DetailRow label="Abrechnung" value={d.abrechnung} />
+                  {(config.customFields ?? []).map((field) => {
+                    const val = d.customFields?.[field.id];
+                    const display = Array.isArray(val) ? val.join(", ") : val ?? "";
+                    return <DetailRow key={field.id} label={field.label} value={display} />;
+                  })}
                   {inq.holdExpiresAt && (
                     <DetailRow
                       label="Frist"

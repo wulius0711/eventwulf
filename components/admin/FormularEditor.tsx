@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import type { EventConfig } from "@/lib/types";
+import type { CustomField, CustomFieldType, EventConfig } from "@/lib/types";
 import type { Plan } from "@/lib/plan";
 import Toggle from "@/components/admin/Toggle";
 import { useToast } from "@/components/admin/Toast";
@@ -90,6 +90,48 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
 
   function removeListItem(field: OptionsField, idx: number) {
     setConfig((c) => ({ ...c, [field]: c[field].filter((_, i) => i !== idx) }));
+  }
+
+  function addCustomField() {
+    const field: CustomField = {
+      id: crypto.randomUUID(),
+      step: 1,
+      label: "",
+      type: "text",
+      required: false,
+    };
+    setConfig((c) => ({ ...c, customFields: [...(c.customFields ?? []), field] }));
+  }
+
+  function updateCustomField(id: string, patch: Partial<CustomField>) {
+    setConfig((c) => ({
+      ...c,
+      customFields: (c.customFields ?? []).map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    }));
+  }
+
+  function removeCustomField(id: string) {
+    setConfig((c) => ({ ...c, customFields: (c.customFields ?? []).filter((f) => f.id !== id) }));
+  }
+
+  function addCustomFieldOption(id: string) {
+    const field = config.customFields?.find((f) => f.id === id);
+    if (!field) return;
+    updateCustomField(id, { options: [...(field.options ?? []), ""] });
+  }
+
+  function updateCustomFieldOption(id: string, idx: number, value: string) {
+    const field = config.customFields?.find((f) => f.id === id);
+    if (!field) return;
+    const options = [...(field.options ?? [])];
+    options[idx] = value;
+    updateCustomField(id, { options });
+  }
+
+  function removeCustomFieldOption(id: string, idx: number) {
+    const field = config.customFields?.find((f) => f.id === id);
+    if (!field) return;
+    updateCustomField(id, { options: (field.options ?? []).filter((_, i) => i !== idx) });
   }
 
   async function handleSave() {
@@ -328,6 +370,99 @@ export default function FormularEditor({ initialConfig, plan }: Props) {
             <OptionsEditor field="quelleOptions"       label="Wie habt ihr uns gefunden?" />
           </div>
         </div>
+      </Section>
+
+      <Section title="Eigene Felder" description="Zusätzliche Fragen, die es sonst nirgends gibt — je einem Schritt des Formulars zugeordnet.">
+        {(config.customFields ?? []).length === 0 && (
+          <p style={{ fontSize: "0.85rem", color: "var(--muted)", marginTop: 0 }}>Noch keine eigenen Felder angelegt.</p>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          {(config.customFields ?? []).map((field) => {
+            const needsOptions = field.type === "select" || field.type === "checkboxGroup";
+            return (
+              <div key={field.id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "1rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(180px, 100%), 1fr))", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                  <Field label="Frage / Label">
+                    <input type="text" value={field.label} onChange={(e) => updateCustomField(field.id, { label: e.target.value })} placeholder="z.B. Lieblingsgericht" />
+                  </Field>
+                  <Field label="Schritt">
+                    <select value={field.step} onChange={(e) => updateCustomField(field.id, { step: Number(e.target.value) as CustomField["step"] })}>
+                      <option value={1}>Schritt 1 – Veranstaltung</option>
+                      <option value={2}>Schritt 2 – Gruppe</option>
+                      <option value={3}>Schritt 3 – Ausstattung</option>
+                      <option value={4}>Schritt 4 – Unterkunft</option>
+                      <option value={5}>Schritt 5 – Abschluss</option>
+                    </select>
+                  </Field>
+                  <Field label="Typ">
+                    <select value={field.type} onChange={(e) => updateCustomField(field.id, { type: e.target.value as CustomFieldType })}>
+                      <option value="text">Text (einzeilig)</option>
+                      <option value="textarea">Text (mehrzeilig)</option>
+                      <option value="select">Auswahl (Dropdown)</option>
+                      <option value="checkboxGroup">Checkbox-Gruppe</option>
+                      <option value="number">Zahl</option>
+                    </select>
+                  </Field>
+                  <Field label="Gruppen-Überschrift (optional)">
+                    <input
+                      type="text"
+                      value={field.groupLabel ?? ""}
+                      onChange={(e) => updateCustomField(field.id, { groupLabel: e.target.value || undefined })}
+                      placeholder="fasst mehrere Felder unter einer Überschrift zusammen"
+                    />
+                  </Field>
+                </div>
+
+                {needsOptions && (
+                  <div style={{ marginBottom: "0.75rem" }}>
+                    <label style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+                      {field.type === "checkboxGroup" ? "Checkbox-Optionen" : "Auswahloptionen"}
+                    </label>
+                    {(field.options ?? []).map((opt, i) => (
+                      <div key={i} style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem" }}>
+                        <input type="text" value={opt} onChange={(e) => updateCustomFieldOption(field.id, i, e.target.value)} style={{ flex: 1 }} />
+                        <button
+                          type="button"
+                          onClick={() => removeCustomFieldOption(field.id, i)}
+                          className="ew-admin-btn ew-admin-btn-ghost-danger"
+                          style={{ padding: "0 0.5rem", fontSize: "1.2em" }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addCustomFieldOption(field.id)}
+                      className="ew-admin-btn ew-admin-btn-outline"
+                      style={{ borderStyle: "dashed", color: "var(--muted)", fontSize: "0.82rem", marginTop: "0.5rem" }}
+                    >
+                      + Option hinzufügen
+                    </button>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", cursor: "pointer" }}>
+                    <input type="checkbox" checked={field.required} onChange={(e) => updateCustomField(field.id, { required: e.target.checked })} />
+                    Pflichtfeld
+                  </label>
+                  <button type="button" onClick={() => removeCustomField(field.id)} className="ew-admin-btn ew-admin-btn-ghost-danger" style={{ fontSize: "0.82rem" }}>
+                    Feld entfernen
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={addCustomField}
+          className="ew-admin-btn ew-admin-btn-outline"
+          style={{ borderStyle: "dashed", color: "var(--muted)", fontSize: "0.82rem", marginTop: "1.25rem" }}
+        >
+          + Feld hinzufügen
+        </button>
       </Section>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>

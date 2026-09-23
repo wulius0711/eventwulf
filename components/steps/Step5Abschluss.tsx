@@ -1,5 +1,6 @@
 "use client";
 import { useFormStore } from "@/store/form";
+import CustomFieldsSection from "@/components/CustomFieldsSection";
 import type { EventConfig } from "@/lib/types";
 
 interface Props { config: EventConfig }
@@ -80,6 +81,7 @@ export default function Step5Abschluss({ config }: Props) {
           </div>
         )}
       </div>
+      <CustomFieldsSection config={config} step={5} />
     </div>
   );
 }

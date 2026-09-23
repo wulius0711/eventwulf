@@ -1,4 +1,4 @@
-import type { EventConfig, FormFields, InquiryFormData } from "@/lib/types";
+import type { CustomField, EventConfig, FormFields, InquiryFormData } from "@/lib/types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -106,6 +106,31 @@ export function isStringArray(val: unknown): val is string[] {
   return Array.isArray(val) && val.every((v) => typeof v === "string" && v.length <= 200);
 }
 
+const CUSTOM_FIELD_TYPES = new Set(["text", "textarea", "select", "checkboxGroup", "number"]);
+const MAX_CUSTOM_FIELDS = 30;
+
+function validateCustomFieldDefs(val: unknown): string | null {
+  if (!Array.isArray(val)) return "customFields muss ein Array sein";
+  if (val.length > MAX_CUSTOM_FIELDS) return `customFields: maximal ${MAX_CUSTOM_FIELDS} Felder`;
+  const seenIds = new Set<string>();
+  for (const item of val) {
+    if (!item || typeof item !== "object") return "customFields: Eintrag ungültig";
+    const f = item as Record<string, unknown>;
+    if (typeof f.id !== "string" || !f.id || f.id.length > 100) return "customFields: id ungültig";
+    if (seenIds.has(f.id)) return "customFields: doppelte id";
+    seenIds.add(f.id);
+    if (![1, 2, 3, 4, 5].includes(f.step as number)) return "customFields: step muss 1–5 sein";
+    if (!str(f.label, 200)) return "customFields: label ungültig oder zu lang";
+    if (typeof f.type !== "string" || !CUSTOM_FIELD_TYPES.has(f.type)) return "customFields: type ungültig";
+    if (typeof f.required !== "boolean") return "customFields: required muss boolean sein";
+    if (f.groupLabel !== undefined && str(f.groupLabel, 200) === null) return "customFields: groupLabel zu lang";
+    if ((f.type === "select" || f.type === "checkboxGroup") && !isStringArray(f.options)) {
+      return "customFields: options muss ein String-Array sein";
+    }
+  }
+  return null;
+}
+
 export function validateConfig(body: unknown): string | null {
   if (!body || typeof body !== "object" || Array.isArray(body)) return "Ungültiges Format";
   const b = body as Record<string, unknown>;
@@ -122,6 +147,10 @@ export function validateConfig(body: unknown): string | null {
   if (!isValidEmail(b.notifyEmail)) return "notifyEmail ungültig oder fehlt";
   for (const key of ["verpflegungOptions", "zimmerwunschOptions", "abrechnungOptions", "ausstattungOptions", "anreiseOptions", "zahlungOptions", "budgetOptions", "quelleOptions"] as const) {
     if (b[key] !== undefined && !isStringArray(b[key])) return `${key} muss ein String-Array sein`;
+  }
+  if (b.customFields !== undefined) {
+    const err = validateCustomFieldDefs(b.customFields);
+    if (err) return err;
   }
   return null;
 }
@@ -152,6 +181,18 @@ export function validateSubmit(body: unknown): string | null {
   ];
   for (const [field, max] of textFields) {
     if (b[field] !== undefined && str(b[field], max) === null) return `${field} zu lang`;
+  }
+  if (b.customFields !== undefined) {
+    if (!b.customFields || typeof b.customFields !== "object" || Array.isArray(b.customFields)) {
+      return "customFields ungültig";
+    }
+    for (const val of Object.values(b.customFields as Record<string, unknown>)) {
+      if (Array.isArray(val)) {
+        if (!isStringArray(val) || val.length > 50) return "customFields: Wert ungültig";
+      } else if (str(val, 500) === null) {
+        return "customFields: Wert ungültig";
+      }
+    }
   }
   return null;
 }
@@ -200,6 +241,27 @@ export function findMissingRequiredField(
     if (!field.isShown(config)) continue;
     const val = data[field.dataKey];
     if (typeof val !== "string" || !val.trim()) return field;
+  }
+  return null;
+}
+
+// Same idea as findMissingRequiredField, for the open-ended customFields
+// set instead of the fixed REQUIRABLE_FIELDS list — a required checkboxGroup
+// counts as filled once at least one option is checked.
+export function findMissingCustomField(
+  config: EventConfig,
+  customData: Record<string, unknown> | undefined,
+  step?: number
+): CustomField | null {
+  for (const field of config.customFields ?? []) {
+    if (!field.required) continue;
+    if (step !== undefined && field.step !== step) continue;
+    const val = customData?.[field.id];
+    if (field.type === "checkboxGroup") {
+      if (!Array.isArray(val) || val.length === 0) return field;
+    } else if (typeof val !== "string" || !val.trim()) {
+      return field;
+    }
   }
   return null;
 }
