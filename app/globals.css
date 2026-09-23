@@ -344,20 +344,20 @@ button:active:not(:disabled) {
   border: none;
   background: var(--primary-tint);
   cursor: pointer;
-  color: var(--primary-dark, var(--primary-text));
+  color: var(--primary-text);
   font-size: 1.1rem;
   border-radius: var(--radius-sm);
   line-height: 1;
   transition: background 0.15s, color 0.15s;
 }
-.ew-cal-nav-btn:hover { background: var(--primary-dim); color: var(--primary-dark, var(--primary-text)); }
+.ew-cal-nav-btn:hover { background: var(--primary-dim); color: var(--primary-text); }
 
 .ew-cal-today-btn {
   padding: 0.3rem 0.9rem;
   border: none;
   border-radius: var(--radius-sm);
   background: var(--primary-tint);
-  color: var(--primary-dark, var(--primary-text));
+  color: var(--primary-text);
   cursor: pointer;
   font-size: 0.82rem;
   font-weight: 600;
