@@ -27,6 +27,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validate(step: number, form: import("@/lib/types").InquiryFormData, config: EventConfig, hasRooms: boolean): string {
   if (step === 1 && !form.artTitel.trim()) return "Bitte Veranstaltungstitel eingeben.";
+  // The server already rejects a submit without both dates (validateSubmit) —
+  // this just surfaces that on step 1 instead of letting a guest click all
+  // the way to the end first.
+  if (step === 1 && (!form.datumVon || !form.datumBis)) return "Bitte einen Zeitraum wählen.";
   // Mirrors the RoomPicker's own visibility condition — if it was shown, a
   // choice is required, otherwise the inquiry skips the double-booking
   // protection server-side (assertRoomAvailable only runs when roomId is set).
@@ -72,6 +76,14 @@ export default function Wizard({ config, slug, hasRooms, isDemo, initialRooms, r
       window.parent.postMessage({ type: "eventwulf-resize", height: h, scrollTop: true }, "*");
     });
   }, [step]);
+
+  // A validation error ("Bitte einen Raum auswählen.", "Bitte Titel
+  // eingeben.", …) is only ever set on a failed "Weiter" click — clear it as
+  // soon as the guest changes anything, instead of leaving it displayed
+  // (already fixed) until the next click.
+  useEffect(() => {
+    setError("");
+  }, [form]);
 
   function handleStepClick(n: number) {
     if (n === step || n > maxStep) return;
