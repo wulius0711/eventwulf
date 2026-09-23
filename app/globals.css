@@ -346,7 +346,7 @@ button:active:not(:disabled) {
   cursor: pointer;
   color: var(--primary-dark, var(--primary-text));
   font-size: 1.1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   line-height: 1;
   transition: background 0.15s, color 0.15s;
 }
@@ -355,7 +355,7 @@ button:active:not(:disabled) {
 .ew-cal-today-btn {
   padding: 0.3rem 0.9rem;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--primary-tint);
   color: var(--primary-dark, var(--primary-text));
   cursor: pointer;
