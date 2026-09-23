@@ -337,28 +337,28 @@ button:active:not(:disabled) {
 .ew-cal-nav-btn {
   padding: 0.3rem 0.6rem;
   border: none;
-  background: none;
+  background: var(--primary-tint);
   cursor: pointer;
-  color: var(--muted);
+  color: var(--primary-dark, var(--primary-text));
   font-size: 1.1rem;
-  border-radius: 50%;
+  border-radius: 999px;
   line-height: 1;
   transition: background 0.15s, color 0.15s;
 }
-.ew-cal-nav-btn:hover { background: var(--bg2); color: var(--text); }
+.ew-cal-nav-btn:hover { background: var(--primary-dim); color: var(--primary-dark, var(--primary-text)); }
 
 .ew-cal-today-btn {
-  padding: 0.3rem 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text);
+  padding: 0.3rem 0.9rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--primary-tint);
+  color: var(--primary-dark, var(--primary-text));
   cursor: pointer;
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: background 0.15s;
 }
-.ew-cal-today-btn:hover { background: var(--bg2); }
+.ew-cal-today-btn:hover { background: var(--primary-dim); }
 
 .ew-cal-day:hover {
   background-color: var(--bg2) !important;
@@ -368,7 +368,7 @@ button:active:not(:disabled) {
 }
 .ew-cal-weekday-header > div:nth-child(6),
 .ew-cal-weekday-header > div:nth-child(7) {
-  color: var(--primary-text);
+  color: rgba(255,255,255,0.75);
 }
 
 .ew-grid-2 {

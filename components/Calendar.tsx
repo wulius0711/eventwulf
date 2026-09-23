@@ -286,9 +286,9 @@ export default function Calendar({ slug, selectedStart, selectedEnd, onRangeChan
       </div>
 
       {/* Weekday headers */}
-      <div className="ew-cal-weekday-header" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: "1px solid var(--border)" }}>
+      <div className="ew-cal-weekday-header" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", background: "var(--primary)" }}>
         {DAYS.map(d => (
-          <div key={d} style={{ padding: "0.4rem 0", textAlign: "center", fontSize: "0.72rem", fontWeight: 600, color: "var(--muted)", letterSpacing: "0.05em" }}>{d}</div>
+          <div key={d} style={{ padding: "0.5rem 0", textAlign: "center", fontSize: "0.72rem", fontWeight: 600, color: "var(--btn-text)", letterSpacing: "0.05em" }}>{d}</div>
         ))}
       </div>
 
