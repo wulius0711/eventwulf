@@ -21,7 +21,7 @@ export const NavIcons: Record<string, React.ReactNode> = {
 // damit es exakt der Schriftfarbe (var(--primary)) folgt, auch im Dark
 // Mode; em-Größe statt fixer Pixel, damit es mit dem Wortmarken-Text mitskaliert.
 export const BrandMark = (
-  <svg width="1em" height="1em" viewBox="0 0 44 44" fill="none" aria-hidden="true" style={{ color: "var(--primary)" }}>
+  <svg className="ew-brand-icon" width="1em" height="1em" viewBox="0 0 44 44" fill="none" aria-hidden="true" style={{ color: "var(--primary)" }}>
     <rect x="1.75" y="1.75" width="40.5" height="40.5" rx="10" stroke="currentColor" strokeWidth="3.5" />
     <path d="M10 16.5H34" stroke="currentColor" strokeWidth="3.5" />
     <rect x="26" y="26" width="6.5" height="6.5" rx="1.5" fill="currentColor" />

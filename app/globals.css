@@ -506,6 +506,15 @@ button:active:not(:disabled) {
   color-scheme: dark;
 }
 
+/* Logo (icon + wordmark) reads white in dark mode instead of the accent
+   green — var(--primary) there is a low-contrast mint that doesn't read as
+   a wordmark against the dark sidebar/topbar the way it does on white. */
+.admin-shell[data-theme="dark"] .ew-brand-icon,
+.admin-shell[data-theme="dark"] .ew-brand-wordmark,
+.admin-shell[data-theme="dark"] .ew-topbar-brand {
+  color: #fff !important;
+}
+
 .admin-shell input,
 .admin-shell textarea,
 .admin-shell select {

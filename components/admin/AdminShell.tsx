@@ -38,7 +38,7 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
       <aside className={`ew-sidebar${open ? " ew-sidebar--open" : ""}`}>
         <div className="ew-sidebar-brand">
           {BrandMark}
-          <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--primary)", letterSpacing: "-0.03em" }}>eventwulf</span>
+          <span className="ew-brand-wordmark" style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--primary)", letterSpacing: "-0.03em" }}>eventwulf</span>
         </div>
 
         <nav className="ew-sidebar-nav">
