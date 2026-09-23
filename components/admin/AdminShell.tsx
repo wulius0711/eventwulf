@@ -28,6 +28,7 @@ export default function AdminShell({ bookingAppUrl, isSuperAdmin, slugs, activeS
         <button className="ew-hamburger" onClick={() => setOpen(!open)} aria-label="Menü">
           {open ? CloseIcon : MenuIcon}
         </button>
+        {BrandMark}
         <span className="ew-topbar-brand">eventwulf</span>
       </div>
 
