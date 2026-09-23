@@ -72,7 +72,7 @@ export default async function DashboardPage() {
               return (
                 <a
                   key={inq.id}
-                  href={`/admin/inquiries?id=${inq.id}`}
+                  href={`/admin/inquiries?id=${inq.id}&status=neu`}
                   style={{
                     display: "flex", justifyContent: "space-between", gap: "1rem", fontSize: "0.85rem",
                     padding: "0.5rem 0", borderBottom: "1px solid var(--border)", textDecoration: "none", color: "inherit",
