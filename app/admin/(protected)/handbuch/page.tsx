@@ -184,6 +184,27 @@ const content: Record<string, React.ReactNode> = {
       <H3>Optionen verwalten</H3>
       <p>Alle Optionslisten befinden sich im unteren Bereich des Felder-Abschnitts. Einfach Einträge hinzufügen, bearbeiten oder löschen und anschließend <strong>Änderungen speichern</strong> klicken.</p>
 
+      <H3>Eigene Felder</H3>
+      <p>Unter <strong>Eigene Felder</strong> (eigener Abschnitt am Ende des Formular-Tabs) kannst du zusätzliche Fragen anlegen, die es sonst nirgends gibt — z.B. „Kulinarischer Fokus" oder „Lieblingsgericht". Über <strong>+ Feld hinzufügen</strong> legst du fest:</p>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.75rem", fontSize: "0.875rem" }}>
+        <tbody>
+          {[
+            ["Frage / Label", "Der Text, den Gäste sehen"],
+            ["Schritt", "In welchem der 5 Formular-Schritte das Feld erscheint"],
+            ["Typ", "Text (einzeilig), Text (mehrzeilig), Auswahl (Dropdown), Checkbox-Gruppe oder Zahl"],
+            ["Gruppen-Überschrift", "Optional — fasst mehrere Felder unter einer gemeinsamen Überschrift zusammen"],
+            ["Pflichtfeld", "Blockiert das Weiterkommen im Formular, bis ausgefüllt"],
+          ].map(([feld, desc]) => (
+            <tr key={feld as string} style={{ borderBottom: "1px solid var(--border)" }}>
+              <td style={{ padding: "0.6rem 0.75rem", fontWeight: 500, whiteSpace: "nowrap" }}>{feld}</td>
+              <td style={{ padding: "0.6rem 0.75rem", color: "var(--muted)" }}>{desc}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p style={{ marginTop: "0.75rem" }}>Bei Auswahl/Checkbox-Gruppe pflegst du die Optionen direkt im Feld, genau wie bei den anderen Optionslisten. Die Antworten erscheinen später in der Anfragen-Detailansicht unter dem jeweiligen Feldnamen.</p>
+      <Callout>Ein Feld entfernen ist nicht ohne Warnung möglich: bereits erhaltene Antworten darauf sind danach in den Anfragen nicht mehr sichtbar (die Anzeige folgt der aktuellen Feldliste, nicht dem Stand zum Anfragezeitpunkt).</Callout>
+
       <H2>Events</H2>
       <p>Events sind terminierte, buchbare Angebote deines Hotels — z.B. ein Yoga-Retreat oder eine Seminarwoche mit festem Zeitraum, Preis und Teilnehmerzahl. Sie werden über den eigenen Events-Embed-Code angezeigt (siehe Embed-Codes), getrennt vom normalen Anfrageformular.</p>
       <H3>Event anlegen</H3>
@@ -282,6 +303,12 @@ const content: Record<string, React.ReactNode> = {
       <p>Reagierst du 48 Stunden nicht auf eine Event- oder Raum-Anfrage, wird sie automatisch auf „Abgelaufen" gesetzt. Bei Events wird dabei der reservierte Platz wieder freigegeben — läuft stündlich im Hintergrund, ohne dass du etwas tun musst.</p>
       <H3>Anfrage öffnen</H3>
       <p>Klick auf eine Anfrage öffnet die Detailansicht mit allen Formulardaten. Im rechten Bereich befindet sich das Angebots-Panel.</p>
+
+      <H3>Seitengröße & weitere laden</H3>
+      <p>Standardmäßig werden 20 Anfragen geladen. Über das Dropdown rechts stellst du 20, 50 oder 100 pro Seite ein (wird im Browser gemerkt) — reicht das nicht, klickst du unten auf <strong>Weitere laden</strong>. Eine Textsuche durchsucht dabei immer den kompletten Bestand, nicht nur die aktuell geladene Seite.</p>
+
+      <H3>Archiv</H3>
+      <p>Über das kleine Archiv-Symbol — in jeder Zeile sichtbar, auch ohne sie aufzuklappen — verschiebst du eine Anfrage ins Archiv. Archivierte Anfragen verschwinden aus der normalen Ansicht und erscheinen nur noch unter dem Tab <strong>Archiv</strong>. Das ist rein manuell: nichts wird automatisch archiviert. Über denselben Button (bzw. „Aus Archiv holen" in der aufgeklappten Ansicht) holst du eine Anfrage jederzeit wieder zurück.</p>
     </>
   ),
   angebote: (
@@ -292,14 +319,18 @@ const content: Record<string, React.ReactNode> = {
       <H3>Als PDF speichern</H3>
       <p>Klicke auf <strong>Drucken / PDF</strong> im Angebot. Im Browser-Dialog wähle „Als PDF speichern" als Drucker.</p>
       <H3>Archiv</H3>
-      <p>Unter <strong>Angebote</strong> findest du alle Angebote mit Filterung nach Status (Offen / Storniert).</p>
-      <Callout>Angebote können storniert, aber nicht gelöscht werden.</Callout>
+      <p>Unter <strong>Angebote</strong> findest du alle Angebote mit Filterung nach Status (Offen / Storniert). Standardmäßig werden 20 Angebote geladen, über das Dropdown rechts stellst du 20, 50 oder 100 pro Seite ein und klickst bei Bedarf auf <strong>Weitere laden</strong> — genau wie bei den Anfragen.</p>
+      <Callout>Angebote können storniert, aber nicht gelöscht werden. Ein storniertes Angebot lässt sich über <strong>Wieder öffnen</strong> jederzeit zurück auf „Offen" setzen.</Callout>
     </>
   ),
   einbetten: (
     <>
       <p>Klicke auf einen Eintrag, um ihn aufzuklappen. Zwei getrennte HTML-Codes zum Einbetten: das <strong>Anfrageformular</strong> (für Gäste, die selbst eine Veranstaltung durchführen wollen) und die <strong>Events</strong>-Liste (deine terminierten Events zum direkten Anfragen). Einfach kopieren und in den <code>&lt;body&gt;</code> deiner Website einfügen — beide passen sich automatisch in der Höhe an und lassen sich unabhängig voneinander einbetten.</p>
       <Callout>Bei <strong>Framer</strong> funktioniert die automatische Höhenanpassung über den normalen HTML-Code nicht (Framer verpackt ihn in ein eigenes iFrame). Nutze stattdessen eine Code Component — den fertigen Code dafür findest du direkt weiter unten auf dieser Seite unter „Einbetten in Framer".</Callout>
+
+      <H3>Mehrere Widgets mit unterschiedlichen Räumen</H3>
+      <p>Hast du mehr als einen Raum angelegt, erscheint über dem Anfrageformular-Code eine Checkbox-Auswahl <strong>„Nur bestimmte Räume in diesem Code anbieten"</strong>. Wählst du hier z.B. nur den Seminarraum aus, bietet genau dieser eine Code nur diesen Raum an — praktisch, wenn du für „Hochzeiten" und „Seminare" eigene Seiten mit jeweils passenden Räumen hast. Nichts ausgewählt = alle Räume, der Code bleibt wie gehabt.</p>
+      <Callout>Bei der Framer Code Component funktioniert das über die Property „Nur diese Räume" statt Checkboxen. Legst du später einen neuen Raum an oder benennst einen um, taucht das dort nicht automatisch auf — dafür den Code hier nochmal kopieren und in der bestehenden Framer-Datei ersetzen (nicht neu anlegen).</Callout>
     </>
   ),
   vorschau: (
