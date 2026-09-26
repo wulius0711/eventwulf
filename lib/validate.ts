@@ -1,4 +1,4 @@
-import type { CustomField, EventConfig, FormFields, InquiryFormData } from "@/lib/types";
+import type { CustomField, PublicWidgetConfig, FormFields, InquiryFormData } from "@/lib/types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -231,7 +231,7 @@ interface RequirableField {
   // Mirrors each step component's own render condition — a field an admin
   // marked "required" but that (e.g. via an emptied options list) wouldn't
   // actually be shown to the guest must never block submission.
-  isShown: (config: EventConfig) => boolean;
+  isShown: (config: PublicWidgetConfig) => boolean;
 }
 
 export const REQUIRABLE_FIELDS: RequirableField[] = [
@@ -257,7 +257,7 @@ export const REQUIRABLE_FIELDS: RequirableField[] = [
 // "required" actually enforces that. `step` narrows to one wizard step;
 // omitted, every field is checked (the server's use case).
 export function findMissingRequiredField(
-  config: EventConfig,
+  config: PublicWidgetConfig,
   data: Partial<Record<keyof InquiryFormData, unknown>>,
   step?: number
 ): RequirableField | null {
@@ -275,7 +275,7 @@ export function findMissingRequiredField(
 // set instead of the fixed REQUIRABLE_FIELDS list — a required checkboxGroup
 // counts as filled once at least one option is checked.
 export function findMissingCustomField(
-  config: EventConfig,
+  config: PublicWidgetConfig,
   customData: Record<string, unknown> | undefined,
   step?: number
 ): CustomField | null {

@@ -85,6 +85,25 @@ export interface EventConfig {
   };
 }
 
+// The ONLY part of a tenant's config that may be handed to the public widget
+// (a client component — everything passed to it is embedded in the page HTML).
+// Deliberately an allowlist: notifyEmail, company.* contact data and billing
+// stay on the server. Client code is typed against this, so reading anything
+// else there is a compile error. Audit 2026-09-26, M2.
+export type PublicWidgetConfig = Pick<
+  EventConfig,
+  | "formFields"
+  | "verpflegungOptions"
+  | "zimmerwunschOptions"
+  | "abrechnungOptions"
+  | "ausstattungOptions"
+  | "anreiseOptions"
+  | "zahlungOptions"
+  | "budgetOptions"
+  | "quelleOptions"
+  | "customFields"
+>;
+
 export interface InvoiceLineItem {
   description: string;
   quantity: number;

@@ -1,9 +1,9 @@
 "use client";
 import { useFormStore } from "@/store/form";
-import type { CustomField, EventConfig } from "@/lib/types";
+import type { CustomField, PublicWidgetConfig } from "@/lib/types";
 
 interface Props {
-  config: EventConfig;
+  config: PublicWidgetConfig;
   step: 1 | 2 | 3 | 4 | 5;
 }
 

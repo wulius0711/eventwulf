@@ -1,9 +1,9 @@
 "use client";
 import { useFormStore } from "@/store/form";
 import CustomFieldsSection from "@/components/CustomFieldsSection";
-import type { EventConfig } from "@/lib/types";
+import type { PublicWidgetConfig } from "@/lib/types";
 
-interface Props { config: EventConfig }
+interface Props { config: PublicWidgetConfig }
 
 export default function Step4Verpflegung({ config }: Props) {
   const { form, setField } = useFormStore();

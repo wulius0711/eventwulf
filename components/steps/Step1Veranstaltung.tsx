@@ -3,11 +3,11 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useFormStore } from "@/store/form";
 import Calendar from "@/components/Calendar";
 import CustomFieldsSection from "@/components/CustomFieldsSection";
-import type { EventConfig, RoomEntry } from "@/lib/types";
+import type { PublicWidgetConfig, RoomEntry } from "@/lib/types";
 
 interface Props {
   slug: string;
-  config: EventConfig;
+  config: PublicWidgetConfig;
   initialRooms?: RoomEntry[];
   roomIds?: string[];
 }
@@ -17,7 +17,7 @@ const HOURS = Array.from({ length: 19 }, (_, i) => {
   return `${String(h).padStart(2, "0")}:00`;
 });
 
-function RoomPicker({ slug, config, initialRooms, roomIds }: { slug: string; config: EventConfig; initialRooms?: RoomEntry[]; roomIds?: string[] }) {
+function RoomPicker({ slug, config, initialRooms, roomIds }: { slug: string; config: PublicWidgetConfig; initialRooms?: RoomEntry[]; roomIds?: string[] }) {
   const { form, setField } = useFormStore();
   const [rooms, setRooms] = useState<RoomEntry[]>(initialRooms ?? []);
   const [expandedId, setExpandedId] = useState<string | null>(null);

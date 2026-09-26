@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { loadConfigFromDB } from "@/lib/loadConfig";
+import { toPublicWidgetConfig } from "@/lib/publicWidgetConfig";
 import { buildThemeVars, DEFAULT_PRIMARY_COLOR } from "@/lib/theme";
 import { isSafeCssColor } from "@/lib/validate";
 import { hasFeature, effectivePlan } from "@/lib/plan";
@@ -102,7 +103,7 @@ export default async function Home({ searchParams }: Props) {
             {config.formTitle}
           </h2>
         )}
-        <Wizard config={config} slug={slug} hasRooms={hasRooms} isDemo={isDemo} initialRooms={initialRooms} roomIds={roomIds} showBranding={showBranding} />
+        <Wizard config={toPublicWidgetConfig(config)} slug={slug} hasRooms={hasRooms} isDemo={isDemo} initialRooms={initialRooms} roomIds={roomIds} showBranding={showBranding} />
       </div>
     </div>
   );

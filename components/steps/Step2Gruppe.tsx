@@ -1,11 +1,11 @@
 "use client";
 import { useFormStore } from "@/store/form";
 import CustomFieldsSection from "@/components/CustomFieldsSection";
-import type { EventConfig } from "@/lib/types";
+import type { PublicWidgetConfig } from "@/lib/types";
 
-interface Props { config: EventConfig }
+interface Props { config: PublicWidgetConfig }
 
-function show(config: EventConfig, field: keyof NonNullable<EventConfig["formFields"]>) {
+function show(config: PublicWidgetConfig, field: keyof NonNullable<PublicWidgetConfig["formFields"]>) {
   return config.formFields?.[field] !== false;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useFormStore, TOTAL_STEPS } from "@/store/form";
-import type { EventConfig } from "@/lib/types";
+import type { PublicWidgetConfig } from "@/lib/types";
 import { isValidParticipantCount, findMissingRequiredField, findMissingCustomField } from "@/lib/validate";
 import Step1Veranstaltung from "@/components/steps/Step1Veranstaltung";
 import type { RoomEntry } from "@/lib/types";
@@ -14,7 +14,7 @@ import PoweredByBadge from "@/components/PoweredByBadge";
 const STEP_LABELS = ["Veranstaltung", "Gruppe", "Ausstattung", "Verpflegung", "Abschluss"];
 
 interface Props {
-  config: EventConfig;
+  config: PublicWidgetConfig;
   slug: string;
   hasRooms: boolean;
   isDemo?: boolean;
@@ -27,7 +27,7 @@ type SubmitState = "idle" | "loading" | "success" | "error" | "demo";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validate(step: number, form: import("@/lib/types").InquiryFormData, config: EventConfig, hasRooms: boolean): string {
+function validate(step: number, form: import("@/lib/types").InquiryFormData, config: PublicWidgetConfig, hasRooms: boolean): string {
   if (step === 1 && !form.artTitel.trim()) return "Bitte Veranstaltungstitel eingeben.";
   // The server already rejects a submit without both dates (validateSubmit) —
   // this just surfaces that on step 1 instead of letting a guest click all
