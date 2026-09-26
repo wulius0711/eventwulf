@@ -33,7 +33,10 @@ export async function GET(req: NextRequest) {
         inquiries: roomId
           ? {
               where: { roomId, status: { in: BLOCKING_STATUSES } },
-              select: { id: true, data: true },
+              // No id: this response is public, and an Inquiry id is the key to
+              // /api/ical/[id] (guest name, title, participant count). Audit
+              // 2026-09-26, H2 — the calendar never read it.
+              select: { data: true },
             }
           : false,
       },
@@ -52,7 +55,6 @@ export async function GET(req: NextRequest) {
         const d = JSON.parse(inq.data) as { datumVon?: string; datumBis?: string };
         if (!d.datumVon || !d.datumBis) return [];
         return [{
-          id: inq.id,
           startDate: new Date(d.datumVon).toISOString(),
           endDate: new Date(d.datumBis).toISOString(),
           label: "Raum belegt",

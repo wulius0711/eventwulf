@@ -105,7 +105,9 @@ export interface InvoiceEntry {
 }
 
 export interface BlockedDateEntry {
-  id: string;
+  // Optional: nothing reads it (the calendar keys by index), and entries for a
+  // room's confirmed bookings deliberately carry none — see /api/availability.
+  id?: string;
   startDate: string;
   endDate: string;
   label: string;
