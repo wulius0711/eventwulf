@@ -203,6 +203,7 @@ Alle vergleichen strikt gegen denselben Wert, keine weicht ab. Das Risiko ist Wa
 ### M13: Test-Branch enthält möglicherweise echte Daten
 - **Befund:** Commit `fd39532` sagt selbst, der Test-Branch (`TEST_DATABASE_URL`) sei per Copy-on-Write-Fork von der Produktion entstanden und habe echte Daten geerbt. Ersetzt wurde nur der Superadmin-Client. **Verdacht, nicht verifiziert:** Der Rest des Forks (echte Inquiries, User, Organisationen zum Zeitpunkt des Forks) kann noch im Test-Branch liegen. Tests laufen auf Entwickler-Rechnern mit diesem Branch.
 - **Schwere:** Mittel, Einstufung abhängig vom Befund im Neon-Dashboard (Manuell Nr. 4).
+- **Nachtrag 26.09.:** Geprüft 26.09.: Test-Branch enthält nur Demo-Mandanten (`marigold`, `loci`). Einstufung damit **Niedrig**. Vor dem ersten echten Kunden Test-Branch schema-only neu aufsetzen statt Fork.
 
 ---
 
