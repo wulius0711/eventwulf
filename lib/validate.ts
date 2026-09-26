@@ -44,6 +44,32 @@ export function isValidEmail(val: unknown): val is string {
   return typeof val === "string" && EMAIL_RE.test(val) && val.length <= 254;
 }
 
+// The only image URLs an Event/Room may carry: exactly what the upload route
+// (app/api/admin/events/upload/route.ts) hands out —
+// `https://<BUNNY_CDN_HOST>/<own client slug>/<24 lowercase hex>.<ext>` — or
+// "" for "no image". Anything else (another tenant's slug, "..", "?", "#", a
+// trailing slash, a foreign host, wrong case) is rejected. The extension list
+// also covers images saved before uploads were normalised to WebP, so those
+// records stay editable and duplicable. Compared as a literal prefix plus one
+// anchored filename pattern rather than a regex built from host/slug, so
+// there is nothing to escape. Audit 2026-09-26, H1.
+const UPLOADED_IMAGE_FILE_RE = /^[0-9a-f]{24}\.(webp|jpe?g|png)$/;
+
+export function isValidUploadedImageUrl(val: unknown, cdnHost: string | undefined, clientSlug: string): val is string {
+  if (typeof val !== "string") return false;
+  if (val === "") return true;
+  if (!cdnHost || !clientSlug) return false;
+  const prefix = `https://${cdnHost}/${clientSlug}/`;
+  return val.startsWith(prefix) && UPLOADED_IMAGE_FILE_RE.test(val.slice(prefix.length));
+}
+
+// null/undefined mean "not provided" (the routes keep the stored value or
+// default to ""); everything else must pass isValidUploadedImageUrl.
+export function validateImageField(val: unknown, clientSlug: string): string | null {
+  if (val === undefined || val === null) return null;
+  return isValidUploadedImageUrl(val, process.env.BUNNY_CDN_HOST, clientSlug) ? null : "Bild-URL ungültig";
+}
+
 export function isValidDate(val: unknown): val is string {
   return typeof val === "string" && DATE_RE.test(val);
 }

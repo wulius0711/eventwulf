@@ -3,7 +3,7 @@ import sanitizeHtml from "sanitize-html";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseEventImage } from "@/lib/bunny";
-import { validateMinParticipants } from "@/lib/validate";
+import { validateMinParticipants, validateImageField } from "@/lib/validate";
 import { eventLimitFor, effectivePlan, PLAN_LABELS, PlanLimitExceededError, type Plan } from "@/lib/plan";
 import { hasActiveSubscription } from "@/lib/stripe";
 
@@ -107,6 +107,11 @@ export async function POST(req: NextRequest) {
     pricePerPerson, minParticipants, maxParticipants, showCapacity, isActive, sortOrder, roomId,
   } = body;
 
+  const imageError = validateImageField(image, session.clientSlug);
+  if (imageError) {
+    return NextResponse.json({ error: imageError }, { status: 400 });
+  }
+
   if (!name || typeof name !== "string" || name.trim().length === 0) {
     return NextResponse.json({ error: "Name fehlt" }, { status: 400 });
   }
@@ -187,6 +192,11 @@ export async function PATCH(req: NextRequest) {
     id, name, description, image, startDate, endDate, color, intern,
     pricePerPerson, minParticipants, maxParticipants, showCapacity, isActive, sortOrder, roomId,
   } = body;
+
+  const imageError = validateImageField(image, session.clientSlug);
+  if (imageError) {
+    return NextResponse.json({ error: imageError }, { status: 400 });
+  }
 
   const existing = await prisma.event.findFirst({ where: { id, clientId } });
   if (!existing) return NextResponse.json({ error: "Nicht gefunden" }, { status: 404 });

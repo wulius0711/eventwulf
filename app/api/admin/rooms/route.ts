@@ -3,6 +3,7 @@ import sanitizeHtml from "sanitize-html";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { releaseRoomImage } from "@/lib/bunny";
+import { validateImageField } from "@/lib/validate";
 import { hasFeature, effectivePlan, minPlanFor, roomLimitFor, PLAN_LABELS, PlanLimitExceededError, type Plan } from "@/lib/plan";
 import { hasActiveSubscription } from "@/lib/stripe";
 
@@ -32,7 +33,7 @@ function serialize(r: {
 const LOCKED_MESSAGE = `Räume sind ab dem ${PLAN_LABELS[minPlanFor("rooms")]}-Paket verfügbar.`;
 
 async function requireRoomsAccess(): Promise<
-  { ok: true; clientId: string; plan: Plan; hasActiveSubscription: boolean } | { ok: false; status: number; error: string }
+  { ok: true; clientId: string; clientSlug: string; plan: Plan; hasActiveSubscription: boolean } | { ok: false; status: number; error: string }
 > {
   const session = await getSession();
   if (!session) return { ok: false, status: 401, error: "Nicht eingeloggt" };
@@ -44,7 +45,7 @@ async function requireRoomsAccess(): Promise<
   const plan = effectivePlan(org);
   if (!hasFeature(plan, "rooms")) return { ok: false, status: 403, error: LOCKED_MESSAGE };
 
-  return { ok: true, clientId: client.id, plan, hasActiveSubscription: hasActiveSubscription(org ?? {}) };
+  return { ok: true, clientId: client.id, clientSlug: session.clientSlug, plan, hasActiveSubscription: hasActiveSubscription(org ?? {}) };
 }
 
 export async function GET() {
@@ -78,6 +79,11 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { name, description, image, capacity, isActive, sortOrder } = body;
+
+  const imageError = validateImageField(image, access.clientSlug);
+  if (imageError) {
+    return NextResponse.json({ error: imageError }, { status: 400 });
+  }
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
     return NextResponse.json({ error: "Name fehlt" }, { status: 400 });
@@ -133,6 +139,11 @@ export async function PATCH(req: NextRequest) {
 
   const body = await req.json();
   const { id, name, description, image, capacity, isActive, sortOrder } = body;
+
+  const imageError = validateImageField(image, access.clientSlug);
+  if (imageError) {
+    return NextResponse.json({ error: imageError }, { status: 400 });
+  }
 
   const existing = await prisma.room.findFirst({ where: { id, clientId: access.clientId } });
   if (!existing) return NextResponse.json({ error: "Nicht gefunden" }, { status: 404 });
