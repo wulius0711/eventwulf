@@ -331,3 +331,13 @@ Letzter Track vor Track B. Fünf Punkte aus der ursprünglichen „nach Launch n
 **Offener Folgepunkt, bewusst zurückgestellt:** CSP-Nonce-Migration für `script-src` + `style-src` gemeinsam (nicht nur `style-src` allein, wie ursprünglich vermutet) — deutlich über den Umfang eines Low/Info-Fixes hinaus, da ein Nonce-Ansatz app-weit dynamisches Rendering erzwingen würde, inklusive Next.js' eigener Hydration-Scripts. Eigener, künftiger Task, kein Teil dieses Abschlusses.
 
 Damit ist der komplette Code-Track fertig: Critical/High (14/14), Medium (11/11), Low/Info (5/5 + 3 Zusatzfunde). Bekannte, unabhängig verifizierte Restpunkte, die bewusst offen bleiben: CSP-Nonce-Migration (oben), `cron-status-race.spec.ts`-Restfragilität ~17 % (Medium-Track), Migrationshistorie-Lücke für den Fall einer komplett neu provisionierten DB (Medium-Track, gehört zu Track B).
+
+## Bekannte Test-Flakes (Stand 26.09.2026)
+
+Netzwerk- bzw. Last-abhängige Tests, die ohne jede Code-Änderung gelegentlich rot werden. Kein Produktfehler, nicht jetzt zu beheben. Bei einem roten Lauf zuerst prüfen, ob es einer dieser drei ist, und den Test einzeln wiederholen: `node run_tests_with_env.mjs <spec> --reporter=list`.
+
+| Test | Symptom | Ursache | Beobachtet |
+|---|---|---|---|
+| `__tests__/validation/team-invite-email-enumeration.spec.ts:50` (Antwortzeit-Vergleich) | `expect(Math.abs(existingMs - newMs)).toBeLessThan(1000)` schlägt fehl (z. B. 1894 ms) | Der Test misst den echten Resend-Roundtrip mit dem Dummy-Key auf dem Pfad „neue Einladung“. Netzwerkschwankungen zu `api.resend.com` überschreiten die Toleranz von 1000 ms. | 26.09.: 2 von 3 Läufen rot, in allen übrigen Läufen desselben Tages grün |
+| `__tests__/concurrency/inquiry-conflict.spec.ts:95` (Fix A) | `POST /api/admin/invoices` liefert 500 statt 409 | Prisma `P2028` (Transaction-API-Fehler, Transaktion konnte nicht rechtzeitig starten) unter Last auf dem Neon-Test-Branch | 26.09.: 1 Lauf rot, danach grün |
+| `__tests__/concurrency/cron-status-race.spec.ts:53` | siehe oben (Abschnitt „Bekannte, nicht durch diesen Track verursachte Restfragilität“) | aggregierte Nebenläufigkeit der Suite | dokumentiert ~17 %; am 26.09. in keinem der ~9 Läufe aufgefallen |
