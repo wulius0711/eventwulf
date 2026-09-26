@@ -145,6 +145,8 @@ Alle vergleichen strikt gegen denselben Wert, keine weicht ab. Das Risiko ist Wa
 - **Nachweis:** `curl -I https://app.eventwulf.at/signup`.
 - **Fix:** Globaler Header-Block mit `frame-ancestors 'none'`, Ausnahme nur für `/` und `/events`.
 - **Bekannt und offen aus 10.09.:** die CSP-Nonce-Migration (`unsafe-inline`).
+- **Nachtrag 26.09. (umgesetzt):** Alle Pfade außer `/`, `/events` und `/api/submit` bekommen `X-Frame-Options: DENY` und die CSP mit `frame-ancestors 'none'`, dazu `nosniff` und die Referrer-Policy. Der HSTS-Wert bleibt unverändert (`max-age=63072000; includeSubDomains; preload`), `X-XSS-Protection` ist entfernt. Die Widget-Seiten `/` und `/events` bleiben mit `frame-ancestors *` einbettbar.
+- **Sonderfall, gewollt:** `app/page.tsx:29` und `app/events/page.tsx:30` leiten bei fehlendem oder leerem `kunde`-Parameter auf `/signup` um. Ein Embed ohne `kunde` zeigt nach dem Deploy deshalb im Frame eine Browser-Fehlerseite statt des Signup-Formulars. Das ist beabsichtigt: Das Signup-Formular (mit Weg zu Stripe) soll nicht in einem Fremd-Iframe erscheinen. Alle bekannten Einbettungen (Demo auf eventwulf.at, Admin-Snippets, Framer-Komponente, Admin-Vorschau) enthalten `kunde`.
 
 ### M4: `GET /api/cancel/[token]` ändert Zustand, dazu ungesichertes Doppel-Storno
 - **Befund:**

@@ -9,7 +9,6 @@ const scriptSrc = `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" :
 
 const commonHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-XSS-Protection", value: "1; mode=block" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
@@ -32,8 +31,10 @@ const widgetHeaders = [
   },
 ];
 
-// Admin routes – no embedding allowed
-const adminHeaders = [
+// Everything except the widget pages and /api/submit — no embedding allowed.
+// (Used to be admin-only; audit 2026-09-26, M3: /signup, /signup/complete,
+// /storniert and the /login redirect had no headers at all.)
+const lockedDownHeaders = [
   ...commonHeaders,
   { key: "X-Frame-Options", value: "DENY" },
   {
@@ -76,16 +77,17 @@ const nextConfig: NextConfig = {
     ];
 
     return [
+      // The two embeddable widget pages and the CORS-enabled submit endpoint keep
+      // their own rules ...
       { source: "/",               headers: widgetHeaders, missing: notEventwulfAt },
       { source: "/events",         headers: widgetHeaders, missing: notEventwulfAt },
-      { source: "/admin/(.*)",     headers: adminHeaders,  missing: notEventwulfAt },
       { source: "/api/submit",     headers: submitHeaders, missing: notEventwulfAt },
-      // Excludes /api/submit — Next.js merges ALL matching header rules for a
-      // path rather than letting the first/more-specific one win, so without
-      // this exclusion /api/submit silently also inherited adminHeaders'
-      // X-Frame-Options and admin Content-Security-Policy on top of its own
-      // (Low/Info: redundant headers).
-      { source: "/api/((?!submit).*)", headers: adminHeaders, missing: notEventwulfAt },
+      // ... and EVERY other path gets the lock-down. The rules must not overlap:
+      // Next.js merges ALL matching header rules for a path instead of letting the
+      // first one win (that is how /api/submit once inherited the admin CSP and
+      // X-Frame-Options on top of its own). "/" is excluded by `.+` (needs at
+      // least one character), the other two by the negative lookahead.
+      { source: "/((?!events$|api/submit$).+)", headers: lockedDownHeaders, missing: notEventwulfAt },
     ];
   },
 };
