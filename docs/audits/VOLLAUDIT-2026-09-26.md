@@ -44,6 +44,7 @@
   - **Beim Löschen:** dieselbe Regex-Prüfung erneut und zusätzlich `..`, `?`, `#`, `%` und leere Pfade ablehnen. Nur Werte löschen, die eine vom Server ausgestellte Upload-URL sind.
   - **Solange das nicht umgesetzt ist:** die Löschfunktion deaktivieren. Verwaiste Bilder sind billig, wie schon im Code-Kommentar steht.
   - **Zusätzlich:** Bunny-Zone-Backup bzw. Replikation prüfen (Manuell Nr. 1).
+- **Nachtrag 26.09.:** Die Produktions-SQL zum Bestand (alle Events/Rooms mit `image`, das nicht dem neuen Format des eigenen Clients entspricht) wurde am 26.09. auf `main` ausgeführt: **0 Treffer**. Alle Bild-URLs in Produktion entsprechen dem neuen Format, die Prüfung aus Teil 1 sperrt also keinen Bestandsdatensatz aus.
 
 ### H2: Unauthentifizierter Gastdaten-Abfluss (`/api/availability` → `/api/ical/[id]`)
 
@@ -69,6 +70,19 @@ Belege: `invoices/route.ts:121,180`, `reminders/route.ts:97,107,110`, `forgot/ro
 Zwei Ergänzungen:
 - Die vorhandenen `console.error("Failed to send …")` in `forgot:70`, `webhook:170`, `team:148` und `invoices:188` sind Totcode, weil `send()` nie wirft.
 - `cancel-cron-race.spec.ts` deckt nur „Admin-Storno gegen Cron“ ab. Für die Mail-Pfade gibt es keinen Test.
+
+### H5: Preview und Production teilen sich Datenbank und Secrets (Nachtrag 26.09.)
+
+- **Befund:**
+  - `vercel env ls` (26.09., nur Namen und Environments, keine Werte) zeigt `DATABASE_URL`, `JWT_SECRET`, `RESEND_API_KEY`, `CRON_SECRET`, `PROVISIONING_SECRET` und `SUPERADMIN_SLUG` je als **einen** Eintrag für **Preview und Production**. Preview-Deployments laufen damit gegen dieselbe Datenbank und mit denselben Secrets wie die Produktion.
+  - Das Script `build` führt `prisma migrate deploy` aus (`package.json:7`, `scripts/migrate-deploy-unpooled.js`). Jeder Preview-Deploy migriert also die Produktions-DB, mit dem Schema-Stand des jeweils deployten Codes, auch unfertigem oder unreviewtem.
+  - Mindestens ein Preview-Deploy ist am 22.09. erfolgt (Verifikation von `getIp()`, siehe Kommentar in `lib/ratelimit.ts:36-41`).
+  - Weitere Folgen: Ein Preview-Deploy kann mit dem Produktions-`JWT_SECRET` gültige Sitzungen ausstellen und lesen, mit dem Produktions-Resend-Key echte Mails an echte Adressen versenden und akzeptiert `CRON_SECRET` und `PROVISIONING_SECRET` der Produktion. Sein Code liest und schreibt echte Mandantendaten.
+- **Schwere:** Hoch.
+- **Beleg:** `vercel env ls` (Spalte „environments“ = „Preview, Production“ für die genannten sechs Variablen), `package.json:7`, `scripts/migrate-deploy-unpooled.js`.
+- **Nachweis:** `vercel env ls` im Projekt `eventwulf`. Die Werte selbst wurden nicht gelesen. Ob der Preview-Wert tatsächlich derselbe ist wie der Produktionswert, folgt aus der gemeinsamen Zuordnung: Eine Variable hat in Vercel einen Wert pro Eintrag.
+- **Fix (manuell, nicht im Code):** Eigene Preview-Werte in Vercel setzen: eigener Neon-Branch für Preview, eigene Secrets (`JWT_SECRET`, `CRON_SECRET`, `PROVISIONING_SECRET`), eigener Resend-Key (oder Versand in Preview abschalten). Bis das erledigt ist: keine Preview-Deploys (`vercel` ohne `--prod` vermeiden).
+- **Sofortmaßnahme umgesetzt 26.09.:** Preview-Scope bei den sechs Variablen in Vercel entfernt, nur noch Production. Preview-Deploys schlagen damit beim Build fehl, das ist gewollt. **Eigene Preview-Umgebung offen** (eigener Neon-Branch, eigene Secrets, eigener Resend-Key).
 
 ---
 
@@ -304,13 +318,13 @@ Kündigung durch den Kunden (`customer.subscription.deleted`) setzt nur `plan = 
 
 ## H. Manuell zu prüfen (ohne Schwere)
 
-1. **Bunny (Test-Zone, nicht Produktion):** Eigene, separate Storage-Zone anlegen und dort prüfen, ob `DELETE …/<zone>/?allowRootDelete=true`, `DELETE …/<zone>/<verzeichnis>/` und `…/a/../<verzeichnis>/` wie in H1 beschrieben wirken. In der Produktions-Zone (`BUNNY_STORAGE_ZONE`, Vercel Env): Dashboard → Storage → File Manager (Ordner je Slug, was liegt sonst dort?), Replikation und ob eine Wiederherstellung nach Löschung möglich ist. AccessKey-Rotation.
+1. **Bunny (Test-Zone, nicht Produktion):** Eigene, separate Storage-Zone anlegen und dort prüfen, ob `DELETE …/<zone>/?allowRootDelete=true`, `DELETE …/<zone>/<verzeichnis>/` und `…/a/../<verzeichnis>/` wie in H1 beschrieben wirken. In der Produktions-Zone (`BUNNY_STORAGE_ZONE`, Vercel Env): Dashboard → Storage → File Manager (Ordner je Slug, was liegt sonst dort?), Replikation und ob eine Wiederherstellung nach Löschung möglich ist. AccessKey-Rotation. **Nachtrag 26.09.:** Die Testumgebung nutzt dieselbe Bunny-Storage-Zone und sehr wahrscheinlich denselben AccessKey wie die Produktion (die `BUNNY_*`-Werte kommen über `.env.local` und `run_tests_with_env.mjs` in den Test-Server; die Variablen gibt es in Vercel nur für Production). Der Test-Server konnte damit bisher in der Produktionszone schreiben und löschen. Der Test-Isolations-Commit überschreibt diese Werte in `playwright.config.ts` mit Dummies. Solange die echten Werte in `.env.local` liegen, bleibt das Risiko für alles, was nicht über die Playwright-Config läuft.
 2. **Vercel-Region und Cron:** Project → Settings → Functions → Function Region (laut Live-Header `iad1`). Project → Settings → Cron Jobs: Plan-Grenzen (stündliche Crons brauchen Pro), letzte Läufe mit Status (200/401), ob `reminders` und `event-holds` real laufen.
 3. **Vercel-Env (Production):** Vorhanden sein müssen `JWT_SECRET`, `CRON_SECRET`, `SUPERADMIN_SLUG`, `PROVISIONING_SECRET`, `NEXT_PUBLIC_APP_URL`, `RESEND_API_KEY`, `STRIPE_*`, `BUNNY_*`. **Nicht** gesetzt sein dürfen `RATELIMIT_DISABLED`, `STRIPE_CHECKOUT_FAKE_FOR_TESTS`, `PASSWORD_BREACH_CHECK_DISABLED`, `HIBP_API_URL`, `TEST_DATABASE_URL*`. Environment-Scopes: Zeigt `DATABASE_URL` in **Preview** auf die Produktions-DB? Der Build führt `prisma migrate deploy` aus (`package.json`, Script `build`), das würde bei Preview-Builds Migrationen gegen Produktion laufen lassen.
 4. **Neon:** Point-in-Time-Recovery-Fenster (Project → Settings → Storage/History), Datum des letzten getesteten Restores (die Migrationshistorie-Lücke aus Track B beachten). Region des Projekts (Host sagt `eu-central-1`). Test-Branch `ep-mute-pond-…`: Enthält er echte Daten aus dem Fork (M13)? Zeigen `.env` und `.env.local` auf dem Entwicklungsrechner auf die Produktions-DB (beide haben denselben Host `ep-wandering-king-…`)? Ist die Verbindung auf IPs eingeschränkt?
 5. **Resend Dashboard:** Domain `eventwulf.at` verifiziert (SPF, DKIM), Logs der letzten 30 Tage auf Fehlversand (beweist oder widerlegt H4), Bounce- und Complaint-Rate, API-Key-Rechte (nur Senden), Open/Click-Tracking, Region (EU/US), AVV.
 6. **DNS:** `_dmarc.eventwulf.at`, SPF (inkl. Resend und Hostinger für `info@`), DKIM, CAA. HSTS-Preload für `eventwulf.at` und `app.eventwulf.at`.
-7. **Stripe Dashboard:** Webhook-Endpunkt: abonnierte Ereignistypen (nur die im Code behandelten), Zustellstatus und Fehlerrate (Konto wird mit bookingwulf geteilt). Kunden und Abos, deren Organisation per Superadmin gelöscht wurde (M5). Restricted Keys statt Vollzugriff. Live-Key liegt laut `playwright.config.ts` auf dem Entwicklungsrechner.
+7. **Stripe Dashboard:** Webhook-Endpunkt: abonnierte Ereignistypen (nur die im Code behandelten), Zustellstatus und Fehlerrate (Konto wird mit bookingwulf geteilt). Kunden und Abos, deren Organisation per Superadmin gelöscht wurde (M5). Restricted Keys statt Vollzugriff. Ein Live-Key lag laut Kommentaren in `playwright.config.ts` und den Stripe-Specs auf dem Entwicklungsrechner. Seit 26.09. steht in `.env.local` ein `sk_test_`-Key (Präfixe geprüft: `sk_test_`, `whsec_`, `bpc_`, keine Doppelten, kein `rk_live_`/`pk_live_`). Ob das `whsec_` zum Test-Modus-Endpunkt gehört, ist im Stripe-Dashboard zu prüfen.
 8. **Verträge und Rechtstexte:** AVV/DPA mit Neon, Vercel, Resend, Bunny, Stripe (SCC/DPF). AVV eventwulf ↔ Mandanten (AGB). Verarbeitungsverzeichnis und TOM. Datenschutzerklärung `eventwulf.at/legal/privacy-policy` gegen den Code abgleichen (Rollen, Unterauftragsverarbeiter, Speicherdauer, Art. 9, Kartenfingerprint, Region `iad1`). Aufbewahrungspflicht für Angebote/Rechnungen vor Löschautomatik klären.
 9. **GitHub:** Repo privat, Branch-Schutz, Secret-Scanning aktiv, Zugriffsliste. Vercel-Git-Integration (manueller Deploy, siehe Memory) bewusst aus.
 10. **Vercel Firewall/Logs:** Bot-Schutz oder Rate-Limit-Regeln auf `/api/submit` (ergänzt H3), Log-Retention und Log-Drains (Personendaten in Logs, N14).
@@ -342,6 +356,7 @@ Kündigung durch den Kunden (`customer.subscription.deleted`) setzt nur `plan = 
 2. **H2** ⚡ `id` aus `/api/availability` entfernen (klein, sofort), danach `icalToken` und Rate-Limit.
 3. **H3** Bot-Schutz, Limit pro Zieladresse, Text in der Gastmail kürzen. Mittlerer Aufwand.
 4. **H4** Mail-Wrapper, der `error` auswertet und Statusfelder erst nach Erfolg setzt. Error-Tracking und Health-Endpoint. Mittlerer Aufwand.
+5. **H5** Preview-Werte in Vercel trennen (eigener Neon-Branch, eigene Secrets). Manuell. Sofortmaßnahme umgesetzt 26.09. (Preview-Scope entfernt, keine Preview-Deploys mehr möglich); eigene Preview-Umgebung offen.
 
 **Vor dem Livegang dringend, weil klein:**
 - ⚡ M2 `notifyEmail` aus dem Widget entfernen.
