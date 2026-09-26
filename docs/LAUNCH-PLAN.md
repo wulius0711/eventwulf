@@ -8,17 +8,18 @@ Vor dem Launch kein weiterer Vollaudit.
 
 Code:
 - [x] H1 Teil 1: Bunny-Löschung abgeschaltet, Bild-URL pro Mandant geprüft
-- [ ] Test-Isolation: Dummy-Keys für Bunny und Stripe im Test-Server
-- [ ] H2 Teil 1: Inquiry-ID aus /api/availability entfernt
-- [ ] M2: nur öffentliche Konfigurationsfelder im Widget
-- [ ] M3: Sicherheits-Header auf allen Routen
-- [ ] M10: Funktionsregion fra1
-- [ ] Doku-Nachtrag H5 im Audit
+- [x] Test-Isolation: Dummy-Keys für Bunny und Stripe im Test-Server
+- [x] H2 Teil 1: Inquiry-ID aus /api/availability entfernt
+- [x] M2: nur öffentliche Konfigurationsfelder im Widget
+- [x] M3: Sicherheits-Header auf allen Routen
+- [x] M10: Funktionsregion fra1
+- [x] Doku-Nachtrag H5 im Audit
 
 Kai:
-- [ ] H5: eigene Preview-Werte in Vercel (eigener Neon-Branch, eigene Secrets). Bis dahin keine Preview-Deploys.
-- [ ] Stripe-Live-Key in .env.local durch Test-Key ersetzen
-- [ ] Prod-SQL aus H1 im Neon-Editor ausführen, Treffer vor dem Deploy klären
+- [x] H5 Sofortmaßnahme (26.09.): Preview-Scope bei den sechs Variablen entfernt, Preview-Deploys schlagen bewusst fehl
+- [ ] H5: eigene Preview-Umgebung (eigener Neon-Branch, eigene Secrets), erst dann wieder Preview-Deploys
+- [x] Stripe-Live-Key in .env.local durch Test-Key ersetzen
+- [x] Prod-SQL aus H1 im Neon-Editor ausführen, Treffer vor dem Deploy klären (26.09.: 0 Treffer)
 
 Deploy 1, danach prüfen:
 - [ ] x-vercel-id zeigt fra1::fra1
